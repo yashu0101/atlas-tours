@@ -4,9 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
 interface GalleryImage {
-  _id: string;
-  url: string;
-  alt?: string;
+  id: string;
+  src: string;
+  caption?: string;
   category?: string;
 }
 
@@ -203,20 +203,20 @@ const Gallery: React.FC = () => {
         <div style={styles.masonry}>
           {images.map((img, i) => (
             <div
-              key={img._id}
+              key={img.id}
               className="gallery-item"
               style={styles.masonryItem}
               onClick={() => openLightbox(i)}
             >
               <Image
-                src={img.url}
-                alt={img.alt || "Gallery image"}
+                src={img.src}
+                alt={img.caption || "Gallery image"}
                 width={400}
                 height={300 + (i % 3) * 80}
                 style={{ width: "100%", height: "auto", display: "block" }}
               />
               <div className="gallery-overlay" style={styles.imgOverlay}>
-                {img.alt || img.category || ""}
+                {img.caption || img.category || ""}
               </div>
             </div>
           ))}
@@ -241,8 +241,8 @@ const Gallery: React.FC = () => {
           </button>
           <div style={styles.lbImgWrap} onClick={(e) => e.stopPropagation()}>
             <Image
-              src={images[lightboxIndex].url}
-              alt={images[lightboxIndex].alt || ""}
+              src={images[lightboxIndex].src}
+              alt={images[lightboxIndex].caption || ""}
               width={1000}
               height={700}
               style={{
