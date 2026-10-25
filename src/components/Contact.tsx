@@ -66,10 +66,10 @@ const Contact: React.FC = () => {
     width: "100%",
     padding: "14px 18px",
     borderRadius: 12,
-    border: "1px solid #e0e0e0",
+    border: "1px solid var(--bg3)",
     fontSize: 15,
     fontFamily: "'Poppins', sans-serif",
-    background: "#f9f9f9",
+    background: "var(--bg2)",
     outline: "none",
     transition: "border-color 0.3s, box-shadow 0.3s",
     boxSizing: "border-box",
@@ -78,7 +78,7 @@ const Contact: React.FC = () => {
   const labelStyle: React.CSSProperties = {
     fontSize: 14,
     fontWeight: 600,
-    color: "#1a3a6b",
+    color: "var(--text)",
     marginBottom: 6,
     display: "block",
   };
@@ -87,7 +87,7 @@ const Contact: React.FC = () => {
     section: {
       padding: "100px 24px",
       fontFamily: "'Poppins', sans-serif",
-      background: "#fff",
+      background: "var(--bg)",
     },
     header: {
       textAlign: "center",
@@ -108,12 +108,12 @@ const Contact: React.FC = () => {
     heading: {
       fontSize: "clamp(28px, 4vw, 40px)",
       fontWeight: 800,
-      color: "#1a3a6b",
+      color: "var(--primary)",
       marginBottom: 12,
     },
     subheading: {
       fontSize: 16,
-      color: "#777",
+      color: "var(--text2)",
       maxWidth: 500,
       margin: "0 auto",
     },
@@ -126,10 +126,10 @@ const Contact: React.FC = () => {
       alignItems: "start",
     },
     form: {
-      background: "#fff",
+      background: "var(--card-bg)",
       borderRadius: 20,
       padding: 36,
-      boxShadow: "0 8px 40px rgba(0,0,0,0.07)",
+      boxShadow: "var(--shadow)",
     },
     formGrid: {
       display: "grid",
@@ -174,7 +174,7 @@ const Contact: React.FC = () => {
       alignItems: "center",
       gap: 18,
       padding: "20px 24px",
-      background: "#f8f9fa",
+      background: "var(--bg2)",
       borderRadius: 14,
       textDecoration: "none",
       transition: "all 0.3s",
@@ -199,7 +199,7 @@ const Contact: React.FC = () => {
     cardValue: {
       fontSize: 15,
       fontWeight: 600,
-      color: "#1a3a6b",
+      color: "var(--text)",
     },
     mapWrap: {
       borderRadius: 14,

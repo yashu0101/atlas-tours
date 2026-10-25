@@ -52,7 +52,7 @@ const Gallery: React.FC = () => {
     section: {
       padding: "100px 24px",
       fontFamily: "'Poppins', sans-serif",
-      background: "#f8f9fa",
+      background: "var(--bg2)",
     },
     header: {
       textAlign: "center",
@@ -73,12 +73,12 @@ const Gallery: React.FC = () => {
     heading: {
       fontSize: "clamp(28px, 4vw, 40px)",
       fontWeight: 800,
-      color: "#1a3a6b",
+      color: "var(--text)",
       marginBottom: 12,
     },
     subheading: {
       fontSize: 16,
-      color: "#777",
+      color: "var(--text2)",
       maxWidth: 500,
       margin: "0 auto",
     },

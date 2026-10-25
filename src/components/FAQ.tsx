@@ -24,13 +24,13 @@ const FAQAccordionItem: React.FC<{
 
   const styles: Record<string, React.CSSProperties> = {
     item: {
-      background: "#fff",
+      background: "var(--card-bg)",
       borderRadius: 14,
       marginBottom: 14,
       boxShadow: isOpen
         ? "0 8px 30px rgba(230,126,34,0.12)"
         : "0 2px 10px rgba(0,0,0,0.04)",
-      border: isOpen ? "1px solid rgba(230,126,34,0.3)" : "1px solid #eee",
+      border: isOpen ? "1px solid rgba(230,126,34,0.3)" : "1px solid var(--bg3)",
       transition: "all 0.3s ease",
       overflow: "hidden",
     },
@@ -50,7 +50,7 @@ const FAQAccordionItem: React.FC<{
     question: {
       fontSize: 16,
       fontWeight: 600,
-      color: isOpen ? "#e67e22" : "#1a3a6b",
+      color: isOpen ? "#e67e22" : "var(--text)",
       transition: "color 0.3s",
       flex: 1,
     },
@@ -79,7 +79,7 @@ const FAQAccordionItem: React.FC<{
       padding: "0 24px 20px",
       fontSize: 15,
       lineHeight: 1.8,
-      color: "#666",
+      color: "var(--text2)",
     },
   };
 
@@ -117,7 +117,7 @@ const FAQ: React.FC = () => {
     section: {
       padding: "100px 24px",
       fontFamily: "'Poppins', sans-serif",
-      background: "#f8f9fa",
+      background: "var(--bg2)",
     },
     header: {
       textAlign: "center",
@@ -138,12 +138,12 @@ const FAQ: React.FC = () => {
     heading: {
       fontSize: "clamp(28px, 4vw, 40px)",
       fontWeight: 800,
-      color: "#1a3a6b",
+      color: "var(--primary)",
       marginBottom: 12,
     },
     subheading: {
       fontSize: 16,
-      color: "#777",
+      color: "var(--text2)",
       maxWidth: 500,
       margin: "0 auto",
     },

@@ -22,7 +22,7 @@ const About: React.FC = () => {
     section: {
       padding: "100px 24px",
       fontFamily: "'Poppins', sans-serif",
-      background: "#f8f9fa",
+      background: "var(--bg2)",
     },
     container: {
       maxWidth: 1200,
@@ -70,7 +70,7 @@ const About: React.FC = () => {
     heading: {
       fontSize: "clamp(28px, 4vw, 40px)",
       fontWeight: 800,
-      color: "#1a3a6b",
+      color: "var(--primary)",
       lineHeight: 1.25,
       marginBottom: 20,
     },
@@ -80,7 +80,7 @@ const About: React.FC = () => {
     desc: {
       fontSize: 16,
       lineHeight: 1.8,
-      color: "#555",
+      color: "var(--text2)",
       marginBottom: 32,
     },
     featuresGrid: {
@@ -95,8 +95,8 @@ const About: React.FC = () => {
       alignItems: "flex-start",
       padding: 16,
       borderRadius: 12,
-      background: "#fff",
-      boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+      background: "var(--card-bg)",
+      boxShadow: "var(--shadow)",
       transition: "transform 0.3s, box-shadow 0.3s",
     },
     featureIcon: {
@@ -112,12 +112,12 @@ const About: React.FC = () => {
     featureTitle: {
       fontSize: 15,
       fontWeight: 700,
-      color: "#1a3a6b",
+      color: "var(--primary)",
       marginBottom: 4,
     },
     featureDesc: {
       fontSize: 13,
-      color: "#777",
+      color: "var(--text2)",
       lineHeight: 1.5,
     },
     btnGroup: {
@@ -140,8 +140,8 @@ const About: React.FC = () => {
     },
     btnOutline: {
       background: "transparent",
-      color: "#1a3a6b",
-      border: "2px solid #1a3a6b",
+      color: "var(--primary)",
+      border: "2px solid var(--primary)",
       borderRadius: 28,
       padding: "12px 32px",
       fontSize: 15,
@@ -164,7 +164,7 @@ const About: React.FC = () => {
         <div style={styles.imageCol}>
           <div style={styles.imgWrap}>
             <Image
-              src="/images/about.jpg"
+              src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=500&q=75"
               alt="About Atlas Tours"
               width={500}
               height={600}

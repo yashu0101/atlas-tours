@@ -41,7 +41,7 @@ const Packages: React.FC = () => {
     section: {
       padding: "100px 24px",
       fontFamily: "'Poppins', sans-serif",
-      background: "#fff",
+      background: "var(--bg)",
     },
     header: {
       textAlign: "center",
@@ -62,12 +62,12 @@ const Packages: React.FC = () => {
     heading: {
       fontSize: "clamp(28px, 4vw, 40px)",
       fontWeight: 800,
-      color: "#1a3a6b",
+      color: "var(--primary)",
       marginBottom: 12,
     },
     subheading: {
       fontSize: 16,
-      color: "#777",
+      color: "var(--text2)",
       maxWidth: 550,
       margin: "0 auto",
     },
@@ -81,8 +81,8 @@ const Packages: React.FC = () => {
     card: {
       borderRadius: 18,
       overflow: "hidden",
-      background: "#fff",
-      boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+      background: "var(--card-bg)",
+      boxShadow: "var(--shadow)",
       transition: "transform 0.3s, box-shadow 0.3s",
       display: "flex",
       flexDirection: "column",
@@ -138,7 +138,7 @@ const Packages: React.FC = () => {
     cardTitle: {
       fontSize: 20,
       fontWeight: 700,
-      color: "#1a3a6b",
+      color: "var(--primary)",
       marginBottom: 10,
     },
     highlightsList: {
@@ -151,7 +151,7 @@ const Packages: React.FC = () => {
     },
     highlightItem: {
       background: "rgba(26,58,107,0.06)",
-      color: "#1a3a6b",
+      color: "var(--primary)",
       padding: "4px 12px",
       borderRadius: 6,
       fontSize: 12,
@@ -165,10 +165,10 @@ const Packages: React.FC = () => {
     btnView: {
       flex: 1,
       padding: "10px 0",
-      border: "2px solid #1a3a6b",
+      border: "2px solid var(--primary)",
       borderRadius: 10,
       background: "transparent",
-      color: "#1a3a6b",
+      color: "var(--primary)",
       fontSize: 14,
       fontWeight: 600,
       cursor: "pointer",
@@ -209,7 +209,7 @@ const Packages: React.FC = () => {
       padding: 24,
     },
     modal: {
-      background: "#fff",
+      background: "var(--card-bg)",
       borderRadius: 20,
       maxWidth: 700,
       width: "100%",
@@ -246,7 +246,7 @@ const Packages: React.FC = () => {
     modalTitle: {
       fontSize: 26,
       fontWeight: 800,
-      color: "#1a3a6b",
+      color: "var(--primary)",
       marginBottom: 8,
     },
     modalMeta: {
@@ -259,7 +259,7 @@ const Packages: React.FC = () => {
     modalDesc: {
       fontSize: 15,
       lineHeight: 1.8,
-      color: "#555",
+      color: "var(--text2)",
       marginBottom: 24,
     },
     itineraryDay: {
@@ -283,7 +283,7 @@ const Packages: React.FC = () => {
     },
     dayDesc: {
       fontSize: 14,
-      color: "#666",
+      color: "var(--text2)",
       marginTop: 6,
       lineHeight: 1.6,
     },
@@ -295,7 +295,7 @@ const Packages: React.FC = () => {
     inclusionItem: {
       padding: "6px 0",
       fontSize: 14,
-      color: "#555",
+      color: "var(--text2)",
       display: "flex",
       alignItems: "center",
       gap: 8,
@@ -303,7 +303,7 @@ const Packages: React.FC = () => {
     sectionTitle: {
       fontSize: 18,
       fontWeight: 700,
-      color: "#1a3a6b",
+      color: "var(--primary)",
       marginBottom: 12,
       marginTop: 24,
     },

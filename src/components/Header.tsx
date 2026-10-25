@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { useApp } from "@/lib/context";
 
 const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [lang, setLang] = useState<"EN" | "HI">("EN");
+  const { theme, setTheme, lang, setLang } = useApp();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -15,18 +15,14 @@ const Header: React.FC = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "light");
-  }, [darkMode]);
-
   const navLinks = [
-    { label: "Home", href: "#home" },
-    { label: "About", href: "#about" },
-    { label: "Packages", href: "#packages" },
-    { label: "Gallery", href: "#gallery" },
-    { label: "Blog", href: "#blog" },
-    { label: "FAQ", href: "#faq" },
-    { label: "Contact", href: "#contact" },
+    { label: lang === "en" ? "Home" : "\u0939\u094B\u092E", href: "#home" },
+    { label: lang === "en" ? "About" : "\u0939\u092E\u093E\u0930\u0947 \u092C\u093E\u0930\u0947 \u092E\u0947\u0902", href: "#about" },
+    { label: lang === "en" ? "Packages" : "\u092A\u0948\u0915\u0947\u091C", href: "#packages" },
+    { label: lang === "en" ? "Gallery" : "\u0917\u0948\u0932\u0930\u0940", href: "#gallery" },
+    { label: lang === "en" ? "Blog" : "\u092C\u094D\u0932\u0949\u0917", href: "#blog" },
+    { label: lang === "en" ? "FAQ" : "\u0938\u0935\u093E\u0932", href: "#faq" },
+    { label: lang === "en" ? "Contact" : "\u0938\u0902\u092A\u0930\u094D\u0915", href: "#contact" },
   ];
 
   const styles: Record<string, React.CSSProperties> = {
@@ -240,20 +236,20 @@ const Header: React.FC = () => {
             <button
               className="toggle-btn-h"
               style={styles.toggleBtn}
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               aria-label="Toggle dark mode"
             >
-              {darkMode ? "Light" : "Dark"}
+              {theme === "dark" ? "\u2600\uFE0F Light" : "\uD83C\uDF19 Dark"}
             </button>
             <button
               className="toggle-btn-h"
               style={styles.toggleBtn}
-              onClick={() => setLang(lang === "EN" ? "HI" : "EN")}
+              onClick={() => setLang(lang === "en" ? "hi" : "en")}
             >
-              {lang}
+              {lang === "en" ? "\u0939\u093F\u0902\u0926\u0940" : "EN"}
             </button>
             <a href="tel:+916388360881" style={styles.callBtn}>
-              Call Now
+              {lang === "en" ? "Call Now" : "\u0915\u0949\u0932 \u0915\u0930\u0947\u0902"}
             </a>
           </div>
 
@@ -305,20 +301,20 @@ const Header: React.FC = () => {
           <button
             className="toggle-btn-h"
             style={styles.toggleBtn}
-            onClick={() => setDarkMode(!darkMode)}
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           >
-            {darkMode ? "Light" : "Dark"}
+            {theme === "dark" ? "\u2600\uFE0F Light" : "\uD83C\uDF19 Dark"}
           </button>
           <button
             className="toggle-btn-h"
             style={styles.toggleBtn}
-            onClick={() => setLang(lang === "EN" ? "HI" : "EN")}
+            onClick={() => setLang(lang === "en" ? "hi" : "en")}
           >
-            {lang}
+            {lang === "en" ? "\u0939\u093F\u0902\u0926\u0940" : "EN"}
           </button>
         </div>
         <a href="tel:+916388360881" style={{ ...styles.callBtn, marginTop: 12, justifyContent: "center" }}>
-          Call Now
+          {lang === "en" ? "Call Now" : "\u0915\u0949\u0932 \u0915\u0930\u0947\u0902"}
         </a>
       </div>
     </>

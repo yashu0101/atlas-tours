@@ -33,7 +33,7 @@ const Blog: React.FC = () => {
     section: {
       padding: "100px 24px",
       fontFamily: "'Poppins', sans-serif",
-      background: "#fff",
+      background: "var(--bg)",
     },
     header: {
       textAlign: "center",
@@ -54,12 +54,12 @@ const Blog: React.FC = () => {
     heading: {
       fontSize: "clamp(28px, 4vw, 40px)",
       fontWeight: 800,
-      color: "#1a3a6b",
+      color: "var(--primary)",
       marginBottom: 12,
     },
     subheading: {
       fontSize: 16,
-      color: "#777",
+      color: "var(--text2)",
       maxWidth: 500,
       margin: "0 auto",
     },
@@ -73,8 +73,8 @@ const Blog: React.FC = () => {
     card: {
       borderRadius: 18,
       overflow: "hidden",
-      background: "#fff",
-      boxShadow: "0 6px 25px rgba(0,0,0,0.07)",
+      background: "var(--card-bg)",
+      boxShadow: "var(--shadow)",
       transition: "transform 0.3s, box-shadow 0.3s",
       display: "flex",
       flexDirection: "column",
@@ -111,21 +111,21 @@ const Blog: React.FC = () => {
     title: {
       fontSize: 20,
       fontWeight: 700,
-      color: "#1a3a6b",
+      color: "var(--primary)",
       marginBottom: 10,
       lineHeight: 1.35,
     },
     excerpt: {
       fontSize: 14,
       lineHeight: 1.7,
-      color: "#666",
+      color: "var(--text2)",
       marginBottom: 16,
       flex: 1,
     },
     content: {
       fontSize: 14,
       lineHeight: 1.8,
-      color: "#555",
+      color: "var(--text2)",
       marginBottom: 16,
       overflow: "hidden",
       transition: "max-height 0.4s ease",
