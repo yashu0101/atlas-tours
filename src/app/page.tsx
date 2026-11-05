@@ -24,12 +24,16 @@ export default function HomePage() {
     };
     window.addEventListener("scroll", handleScroll);
 
-    // Fade-in observer
+    // Scroll reveal observer
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("visible"); }),
-      { threshold: 0.1 }
+      (entries) => entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add("visible", "active");
+        }
+      }),
+      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
     );
-    document.querySelectorAll(".fade-in").forEach((el) => observer.observe(el));
+    document.querySelectorAll(".fade-in, .reveal, .reveal-left, .reveal-right, .reveal-scale").forEach((el) => observer.observe(el));
 
     return () => {
       window.removeEventListener("scroll", handleScroll);

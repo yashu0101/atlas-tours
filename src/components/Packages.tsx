@@ -325,9 +325,9 @@ const Packages: React.FC = () => {
         }
       `}</style>
 
-      <div style={styles.header}>
+      <div className="reveal" style={styles.header}>
         <span style={styles.badge}>Our Packages</span>
-        <h2 style={styles.heading}>Popular Tour Packages</h2>
+        <h2 className="gradient-text" style={{ ...styles.heading, WebkitTextFillColor: undefined }}>Popular Tour Packages</h2>
         <p style={styles.subheading}>
           Choose from our carefully curated travel packages designed for unforgettable experiences.
         </p>
@@ -337,9 +337,9 @@ const Packages: React.FC = () => {
         <div style={styles.loader}>Loading packages...</div>
       ) : (
         <div className="pkg-grid" style={{ ...styles.grid, gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}>
-          {packages.map((pkg) => (
-            <div key={pkg._id} className="pkg-card" style={styles.card}>
-              <div style={styles.cardImgWrap}>
+          {packages.map((pkg, idx) => (
+            <div key={pkg._id} className={`pkg-card card-hover reveal stagger-${(idx % 3) + 1}`} style={styles.card}>
+              <div className="img-zoom" style={styles.cardImgWrap}>
                 <Image
                   src={pkg.image || "/images/placeholder.jpg"}
                   alt={pkg.name}

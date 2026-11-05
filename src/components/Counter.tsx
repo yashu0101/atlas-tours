@@ -162,7 +162,7 @@ const Counter: React.FC = () => {
       <div style={styles.bgDecor} />
       <div className="counter-grid" style={styles.container}>
         {counters.map((c, i) => (
-          <div key={i} className="counter-card" style={styles.card}>
+          <div key={i} className={`counter-card reveal-scale stagger-${i + 1}`} style={styles.card}>
             <div style={styles.iconWrap}>
               <svg
                 width="28"

@@ -16,6 +16,7 @@ const Reviews: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [current, setCurrent] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [slideDir, setSlideDir] = useState<"right" | "left">("right");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -38,10 +39,12 @@ const Reviews: React.FC = () => {
     };
   }, [reviews.length]);
 
-  const goTo = (i: number) => {
+  const goTo = (i: number, dir: "right" | "left" = "right") => {
+    setSlideDir(dir);
     setCurrent(i);
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
+      setSlideDir("right");
       setCurrent((p) => (p + 1) % reviews.length);
     }, 5000);
   };
@@ -195,7 +198,7 @@ const Reviews: React.FC = () => {
       <style>{`
         .review-arrow:hover { background: rgba(243,156,18,0.3) !important; border-color: #f39c12 !important; }
       `}</style>
-      <div style={styles.header}>
+      <div className="reveal" style={styles.header}>
         <span style={styles.badge}>Testimonials</span>
         <h2 style={styles.heading}>What Our Travellers Say</h2>
         <p style={styles.subheading}>
@@ -204,7 +207,7 @@ const Reviews: React.FC = () => {
       </div>
 
       <div style={styles.carousel}>
-        <div style={styles.card}>
+        <div key={current} className={slideDir === "right" ? "slide-in-right" : "slide-in-left"} style={styles.card}>
           <div style={styles.avatar}>
             {review.name?.charAt(0).toUpperCase()}
           </div>
@@ -220,7 +223,7 @@ const Reviews: React.FC = () => {
           <button
             className="review-arrow"
             style={styles.arrow}
-            onClick={() => goTo((current - 1 + reviews.length) % reviews.length)}
+            onClick={() => goTo((current - 1 + reviews.length) % reviews.length, "left")}
           >
             &#8249;
           </button>

@@ -239,6 +239,7 @@ const Hero: React.FC = () => {
 
       <video
         ref={videoRef}
+        className="kenburns"
         style={styles.video}
         autoPlay
         muted
@@ -270,19 +271,19 @@ const Hero: React.FC = () => {
       ))}
 
       <div style={styles.content}>
-        <p style={styles.subtitle}>Welcome to Atlas Tours</p>
-        <h1 style={styles.heading}>Discover</h1>
-        <div style={styles.typingWrap}>
+        <p className="hero-stagger-1" style={styles.subtitle}>Welcome to Atlas Tours</p>
+        <h1 className="hero-stagger-2" style={styles.heading}>Discover</h1>
+        <div className="hero-stagger-2" style={styles.typingWrap}>
           <span style={{ ...styles.typingText, animation: "blink-cursor 0.8s infinite" }}>
             {displayText}
           </span>
         </div>
-        <p style={styles.description}>
+        <p className="hero-stagger-3" style={styles.description}>
           Experience the magic of India with curated travel packages designed
           for spiritual seekers, adventure lovers, and culture enthusiasts.
         </p>
-        <div style={styles.btnGroup}>
-          <a href="#packages" className="hero-btn-primary" style={styles.btnPrimary}>
+        <div className="hero-stagger-4" style={styles.btnGroup}>
+          <a href="#packages" className="hero-btn-primary pulse-glow" style={styles.btnPrimary}>
             View Packages
           </a>
           <a
@@ -295,9 +296,9 @@ const Hero: React.FC = () => {
             Book on WhatsApp
           </a>
         </div>
-        <div style={styles.statsRow}>
+        <div className="hero-stagger-5" style={styles.statsRow}>
           {stats.map((s) => (
-            <div key={s.label} style={styles.statCard}>
+            <div key={s.label} className="glass" style={styles.statCard}>
               <div style={styles.statValue}>{s.value}</div>
               <div style={styles.statLabel}>{s.label}</div>
             </div>

@@ -163,7 +163,7 @@ const Blog: React.FC = () => {
         }
       `}</style>
 
-      <div style={styles.header}>
+      <div className="reveal" style={styles.header}>
         <span style={styles.badge}>Our Blog</span>
         <h2 style={styles.heading}>Travel Stories & Tips</h2>
         <p style={styles.subheading}>
@@ -178,8 +178,8 @@ const Blog: React.FC = () => {
           {blogs.map((blog) => {
             const isExpanded = expanded === blog._id;
             return (
-              <div key={blog._id} className="blog-card" style={styles.card}>
-                <div style={styles.imgWrap}>
+              <div key={blog._id} className="blog-card card-hover reveal" style={styles.card}>
+                <div className="img-zoom" style={styles.imgWrap}>
                   <Image
                     src={blog.image || "/images/placeholder.jpg"}
                     alt={blog.title}

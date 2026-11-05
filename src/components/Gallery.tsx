@@ -189,7 +189,7 @@ const Gallery: React.FC = () => {
         .lb-arrow:hover { background: rgba(255,255,255,0.3) !important; }
       `}</style>
 
-      <div style={styles.header}>
+      <div className="reveal" style={styles.header}>
         <span style={styles.badge}>Gallery</span>
         <h2 style={styles.heading}>Travel Moments</h2>
         <p style={styles.subheading}>
@@ -204,7 +204,7 @@ const Gallery: React.FC = () => {
           {images.map((img, i) => (
             <div
               key={img.id}
-              className="gallery-item"
+              className={`gallery-item img-zoom reveal stagger-${(i % 3) + 1}`}
               style={styles.masonryItem}
               onClick={() => openLightbox(i)}
             >

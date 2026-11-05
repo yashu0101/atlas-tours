@@ -228,7 +228,7 @@ const Contact: React.FC = () => {
         }
       `}</style>
 
-      <div style={styles.header}>
+      <div className="reveal" style={styles.header}>
         <span style={styles.badge}>Contact</span>
         <h2 style={styles.heading}>Get In Touch</h2>
         <p style={styles.subheading}>

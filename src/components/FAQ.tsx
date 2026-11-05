@@ -161,7 +161,7 @@ const FAQ: React.FC = () => {
 
   return (
     <section id="faq" style={styles.section}>
-      <div style={styles.header}>
+      <div className="reveal" style={styles.header}>
         <span style={styles.badge}>FAQ</span>
         <h2 style={styles.heading}>Frequently Asked Questions</h2>
         <p style={styles.subheading}>
