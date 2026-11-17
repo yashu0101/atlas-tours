@@ -35,9 +35,7 @@ Last updated: 2026-11-18
 |---|---|
 | E-10 | **Already applied (please sign off):** for readability/accessibility, grey and orange text is slightly darker, and **text on the orange buttons is now dark navy instead of white** (white on orange was too faint to pass accessibility standards). Keep this, or prefer a darker orange button with white text? |
 | Q-3 | Contact form errors currently use the same green box as success. OK to show errors in red? |
-| Q-4 | The admin login placeholder shows `admin@atlastours.com`. OK to change to a generic "you@example.com"? |
-| Q-5 | The two sample offers expired on 2025-12-31. New offers/dates, or remove them? (Expired offers are now hidden automatically.) |
-| Q-6 | Add a visible pause button to the reviews carousel? |
+| Q-5 | **Resolved — sample offers removed.** When you have real offers (title, discount, code, start and end date), add them in Admin → Offers; the Offers section on the home page appears automatically while an offer is valid. |
 | G-06 | Package filter/search and gallery category tabs: review the new UI |
 | G-08 | Full Hindi translation: please send the Hindi text for every section (the site has a translation file ready for it) |
 | G-03 / G-07 | Package and blog detail pages: review the new pages |

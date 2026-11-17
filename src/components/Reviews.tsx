@@ -10,12 +10,17 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
   const t = useT();
   const [current, setCurrent] = useState(0);
   const [slideDir, setSlideDir] = useState<"right" | "left">("right");
-  // E-08 (WCAG 2.2.2): auto-advance pauses while the carousel is hovered or holds keyboard
-  // focus, and never runs under prefers-reduced-motion.
+  // E-08 / Q-6 (WCAG 2.2.2): auto-advance pauses while the carousel is hovered or holds
+  // *keyboard* focus (mouse clicks don't count), never runs under prefers-reduced-motion, and
+  // can be stopped with the visible pause/play button (userPaused persists until play is pressed).
+  // Pressing play also clears the focus pause, so rotation resumes even though focus stays on
+  // the button (the usual carousel pattern).
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-  const rotating = reviews.length > 1 && !hovered && !focused && !reducedMotion;
+  const [userPaused, setUserPaused] = useState(false);
+  const canRotate = reviews.length > 1 && !reducedMotion;
+  const rotating = canRotate && !userPaused && !hovered && !focused;
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -191,7 +196,9 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
         aria-label={t("reviews.carouselAria")}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        onFocus={() => setFocused(true)}
+        onFocus={(e) => {
+          if ((e.target as HTMLElement).matches?.(":focus-visible")) setFocused(true);
+        }}
         onBlur={(e) => {
           if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
         }}
@@ -229,6 +236,28 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
           >
             <span aria-hidden="true">&#8249;</span>
           </button>
+          {canRotate && (
+            <button
+              className="review-arrow"
+              style={styles.arrow}
+              onClick={() => {
+                if (userPaused) setFocused(false);
+                setUserPaused(!userPaused);
+              }}
+              aria-label={userPaused ? t("reviews.playAria") : t("reviews.pauseAria")}
+            >
+              {userPaused ? (
+                <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false">
+                  <path d="M3 1.5v11l9-5.5z" fill="currentColor" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false">
+                  <rect x="2.5" y="1.5" width="3" height="11" rx="0.5" fill="currentColor" />
+                  <rect x="8.5" y="1.5" width="3" height="11" rx="0.5" fill="currentColor" />
+                </svg>
+              )}
+            </button>
+          )}
           <button
             className="review-arrow"
             style={styles.arrow}
