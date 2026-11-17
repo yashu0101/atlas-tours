@@ -2,7 +2,7 @@
 
 > **Single source of truth** for project status and the fix backlog.
 > Audit date: **2026-11-17** · Audited commit: `dd7e91d` · Rating at audit: **4.5 / 10**
-> Last updated: **2026-11-18** · PRs #1–#6 merged into `dev` (`a508f04`) · `master` not yet updated · Current rating: **8.5 / 10** · **68 / 77 done · 8 blocked on client decisions · 1 open (F-11)**
+> Last updated: **2026-11-18** · PRs #1–#7 merged into `dev` (`010334a`) · `master` not yet updated · Current rating: **8.5 / 10** · **68 / 77 done · 8 blocked on client decisions · 1 open (F-11, needs a replacement photo)**
 
 ---
 
@@ -44,18 +44,18 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 
 **Built with provisional answers (one-line changes once the client confirms):** C-09 email `info@atlastours.in`; G-01/Q-1 per-person pricing; E-10 dark text on orange buttons (visible change — needs a design sign-off).
 
-**Merge status:** PRs #1 → #2 → #3 → #4 → #5 → #6 are **merged into `dev`** (merge commits `f9a17c4`, `899fc03`, `e2bf268`, `3ebe2e9`, `ba4cd92`, `a508f04`; merge commits, not squash, so every hash in this file exists on `dev`). `master` is still at the audited commit `dd7e91d`; a `dev` → `master` PR is the step for production.
+**Merge status:** PRs #1 → #2 → #3 → #4 → #5 → #6 → #7 are **merged into `dev`** (merge commits `f9a17c4`, `899fc03`, `e2bf268`, `3ebe2e9`, `ba4cd92`, `a508f04`, `010334a`; merge commits, not squash, so every hash in this file exists on `dev`). `master` is still at the audited commit `dd7e91d`; a `dev` → `master` PR is the step for production.
 
-**For future work:** every remaining item is blocked on a client decision (§2 "Pending" lists the non-numbered ones). When a decision arrives, set the item to 🔄, keep agents inside their workstream's files, and keep the server-props contract for section components (see CLAUDE.md → Frontend).
+**For future work:** every remaining numbered item except F-11 is blocked on a client decision; F-11 only needs a replacement photo chosen (§2 "Pending" lists the non-numbered items). When a decision arrives, set the item to 🔄, keep agents inside their workstream's files, and keep the server-props contract for section components (see CLAUDE.md → Frontend).
 
 ---
 
 ## 2. Where the project stands
 
-### Current (2026-11-18, branch `dev` @ `a508f04`)
+### Current (2026-11-18, branch `dev` @ `010334a`)
 
 - **Stack:** Next.js **16.4.6** App Router, React 19.3, TypeScript strict, Neon Postgres or JSON-file storage (`DATABASE_URL` switches).
-- **Checks (recorded after the PR #6 merge, `a508f04`):** `npx tsc --noEmit` ✅ · `npm run lint` 0 errors ✅ · `npm test` 294/294 ✅ · `npm run test:e2e` 28/28 ✅ · `npm run build` ✅. PR #6 Vercel preview deployments passed.
+- **Checks (recorded after the PR #6 merge, `a508f04`):** `npx tsc --noEmit` ✅ · `npm run lint` 0 errors ✅ · `npm test` 294/294 ✅ · `npm run test:e2e` 28/28 ✅ · `npm run build` ✅. PR #6 Vercel preview deployments passed. PR #7 (`010334a`, `<html data-scroll-behavior>`): `tsc` ✅, `lint` 0 errors ✅, `npm test` 294/294 ✅, Vercel ✅.
 - **Client questions:** collected in **`CLIENT_QUESTIONS.md`** — keep it and the table below in sync.
 - **`npm audit --omit=dev`:** 0 vulnerabilities. Dev deps still report some (untriaged).
 - **Verdict:** **launchable after configuration and a staging check** — set `JWT_SECRET` (≥32 chars), `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH` (or `ADMIN_PASSWORD`), `DATABASE_URL`, `SEED_SECRET`, `NEXT_PUBLIC_SITE_URL`; run `/api/seed` and admin edits on staging Postgres; do the manual browser pass below. Every remaining numbered item needs a client decision.
@@ -65,7 +65,7 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 | # | Item | Type | Why it matters |
 |---|---|---|---|
 | V-1 | Postgres staging test: `/api/seed` twice (3/3/6/3/5/0 then all zeros — no seed offers since Q-5), admin create/edit/clear-field/delete | **Verify** | Postgres update (P2) and seed (P3) paths were reviewed but never executed |
-| V-2 | Browser pass: package modal & gallery lightbox (focus trap, Esc, Enter/Space), closed mobile menu/WhatsApp skipped by Tab, carousel pauses on hover, reduced-motion mode, dark-mode colours, login lock icon, skip link + focus rings; **P4:** `/packages/[id]` and `/blog/[id]` pages, booking form, package/gallery filters, offers section with a live (unexpired) offer, new button text colour | **Verify** | Covered by code review, curl, headless/Playwright runs — not by a person clicking through |
+| V-2 | Browser pass: package modal & gallery lightbox (focus trap, Esc, Enter/Space), closed mobile menu/WhatsApp skipped by Tab, carousel pauses on hover, reduced-motion mode, dark-mode colours, login lock icon, skip link + focus rings; **P4:** `/packages/[id]` and `/blog/[id]` pages, booking form, package/gallery filters, offers section with a live (unexpired) offer, new button text colour; **N-round (PR #6):** admin search/filters/pagination/CSV export, `/track`, `/reviews/new` + admin approval, `/plan-trip` (incl. callback mode), wishlist heart / compare bar / `/wishlist` / `/compare`, optimised images and click-to-play hero video | **Verify** | Covered by code review, curl, headless/Playwright runs — not by a person clicking through |
 | V-3 | CSP: check DevTools for report-only violations on `/`, `/login`, `/admin`, then switch to enforcing | **Verify** | CSP currently blocks nothing |
 | V-4 | Production env vars (list above) and `SESSION_VERSION` policy | **Configure** | Production auth fails closed without them |
 | Q-1 | `/api/book` pricing: `amount = price × travelers` | **Decide** (provisional, built) | P4's booking form (G-01) shows this estimate. Correct only if prices are **per person**; if per package, change to `price` in the route and the form |
@@ -388,3 +388,4 @@ Done: ~~Day 1: D-01 · A-01 · A-02 · C-01…C-05 · C-07 · B-01~~ · ~~Day 2:
 | 2026-11-18 | Claude | **Merged `dev` (PR #5) into `n-features` to resolve PR #6 conflicts.** Conflicts: `en.ts` (kept both `reviews.pauseAria`/`playAria` and `reviews.writeReview`), `docs/hindi-strings-needed.md` (regenerated), this file (header now lists PRs #1–#5 merged + PR #6). `Reviews.tsx`, `CLAUDE.md`, `CLIENT_QUESTIONS.md` merged cleanly. Re-verified after the merge (see PR #6). |
 | 2026-11-18 | Claude | **Merged PR #6 (`n-features`) into `dev`** (merge commit `a508f04`, merge commit not squash; after merging `dev`/PR #5 into the branch: `tsc` ✅, lint 0 errors ✅, `npm test` 294/294 ✅, `build` ✅, `test:e2e` 28/28 ✅ incl. PR #5's reviews spec; 3 Vercel checks passed; `dev` tree verified identical to `n-features`; `master` untouched). Status: 68/77 done, 8 ⏸, 1 open (F-11). |
 | 2026-11-18 | Claude, branch `fix-scroll-behavior` | **Fixed Next.js dev warning** "Detected `scroll-behavior: smooth` on the `<html>` element": added `data-scroll-behavior="smooth"` to `<html>` in `layout.tsx` (with a pairing note in `globals.css`), so Next disables smooth scrolling during route transitions while home-page hash links stay smooth. Verified on the running dev server with a headless route transition (`/` → `/packages/pkg-varanasi` → back): 0 scroll-behavior messages; `tsc` ✅, `lint` 0 errors ✅, `npm test` 294/294 ✅. **Found, not fixed (content):** the Unsplash photo for "Sacred Odisha Pilgrimage" (`photo-1621427642877-68e20cf5f770`, in `src/lib/config.ts` and `data/db.json`) returns 404 at Unsplash — dead since the initial commit; needs a replacement image chosen by the owner. |
+| 2026-11-18 | Claude | **Merged PR #7 (`fix-scroll-behavior`) into `dev`** (merge commit `010334a`; 3 Vercel checks passed; `dev` tree verified identical to the branch; `master` untouched). Tracker sync: header and §1 merge status now cover PRs #1–#7; §2 snapshot at `010334a`; V-2 extended with the N-round pages (PR #6); the "Odisha photo 404" noted in the PR #7 entry is the existing **F-11** (not a new item) and is now also asked in `CLIENT_QUESTIONS.md`. Status: 68/77 done, 8 ⏸, 1 open (F-11). |

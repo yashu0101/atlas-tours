@@ -44,6 +44,7 @@ Last updated: 2026-11-18
 |---|---|
 | E-10 | **Already applied (please sign off):** for readability/accessibility, grey and orange text is slightly darker, and **text on the orange buttons is now dark navy instead of white** (white on orange was too faint to pass accessibility standards). Keep this, or prefer a darker orange button with white text? |
 | Q-3 | Contact form errors currently use the same green box as success. OK to show errors in red? |
+| F-11 | The photo for **"Sacred Odisha Pilgrimage"** no longer exists online, so that package shows a broken image. Please send a photo (or pick one in Admin → Packages → Edit → Image URL). |
 | Q-5 | **Resolved — sample offers removed.** When you have real offers (title, discount, code, start and end date), add them in Admin → Offers; the Offers section on the home page appears automatically while an offer is valid. |
 | G-06 | Package filter/search and gallery category tabs: review the new UI |
 | G-08 | Full Hindi translation: please send the Hindi text for every section (the site has a translation file ready for it) |
