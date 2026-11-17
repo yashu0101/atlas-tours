@@ -1,12 +1,13 @@
 import { getPackages, addPackage, updatePackage, deletePackage } from "@/lib/db";
 import { crudRoute } from "@/lib/crud-route";
+import { isPublicPackage } from "@/lib/visibility";
 
 const route = crudRoute({
   list: getPackages,
   add: addPackage,
   update: updatePackage,
   remove: deletePackage,
-  isPublic: (p) => !p.hidden,
+  isPublic: isPublicPackage,
   fields: {
     name: "string", destination: "string", duration: "string", price: "number", originalPrice: "number",
     image: "string", description: "text", highlights: "string[]", itinerary: "string[]", inclusions: "string[]",

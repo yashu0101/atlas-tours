@@ -1,4 +1,5 @@
 import { SITE_CONFIG } from "./config";
+import type { FAQ } from "./types";
 
 // TODO: confirm the production domain with the client before launch.
 // Set NEXT_PUBLIC_SITE_URL in the deployment environment to override.
@@ -43,6 +44,19 @@ export function travelAgencyJsonLd() {
       { "@type": "State", name: "Rajasthan" },
       { "@type": "State", name: "Odisha" },
     ],
+  };
+}
+
+/** FAQPage structured data from the (already public-filtered) FAQs shown on the page (F-02/F-04). */
+export function faqPageJsonLd(faqs: readonly Pick<FAQ, "question" | "answer">[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
   };
 }
 

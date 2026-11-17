@@ -1,23 +1,25 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import type { BlogPost } from "@/lib/types";
 
-const Blog: React.FC = () => {
-  const [blogs, setBlogs] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState<string | null>(null);
+// Same output as toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+// for an Indian visitor (e.g. "1 Jun 2024"), but computed by hand in IST so the server-rendered
+// text and the hydrated text can never differ by timezone or ICU version (F-02).
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
+const IST_OFFSET_MS = 330 * 60 * 1000;
+const formatBlogDate = (iso: string) => {
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return "";
+  const d = new Date(t + IST_OFFSET_MS);
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+};
 
-  useEffect(() => {
-    fetch("/api/blogs")
-      .then((r) => r.json())
-      .then((data) => {
-        setBlogs(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+/** Posts are loaded on the server (F-02) and passed in already filtered for public visibility. */
+const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
+  const blogs = initialBlogs;
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
@@ -135,12 +137,6 @@ const Blog: React.FC = () => {
       transition: "color 0.3s",
       marginTop: "auto",
     },
-    loader: {
-      textAlign: "center",
-      padding: 60,
-      fontSize: 16,
-      color: "#888",
-    },
   };
 
   return (
@@ -161,61 +157,53 @@ const Blog: React.FC = () => {
         </p>
       </div>
 
-      {loading ? (
-        <div style={styles.loader}>Loading blogs...</div>
-      ) : (
-        <div className="blog-grid" style={styles.grid}>
-          {blogs.map((blog) => {
-            const isExpanded = expanded === blog.id;
-            return (
-              <div key={blog.id} className="blog-card card-hover reveal" style={styles.card}>
-                <div className="img-zoom" style={styles.imgWrap}>
-                  <Image
-                    src={blog.image || "/images/placeholder.jpg"}
-                    alt={blog.title}
-                    fill
-                    style={{ objectFit: "cover" }}
-                  />
-                  {blog.category && (
-                    <span style={styles.categoryBadge}>{blog.category}</span>
-                  )}
-                </div>
-                <div style={styles.body}>
-                  {blog.createdAt && (
-                    <div style={styles.date}>
-                      {new Date(blog.createdAt).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </div>
-                  )}
-                  <h3 style={styles.title}>{blog.title}</h3>
-                  <div
-                    style={{
-                      ...styles.content,
-                      maxHeight: isExpanded ? 1000 : 0,
-                    }}
-                  >
-                    {blog.content || blog.excerpt}
-                  </div>
-                  {!isExpanded && <p style={styles.excerpt}>{blog.excerpt}</p>}
-                  <button
-                    className="blog-read-more"
-                    style={styles.readMore}
-                    onClick={() => setExpanded(isExpanded ? null : blog.id)}
-                  >
-                    {isExpanded ? "Show Less" : "Read More"}{" "}
-                    <span style={{ transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.3s", display: "inline-block" }}>
-                      &#8595;
-                    </span>
-                  </button>
-                </div>
+      <div className="blog-grid" style={styles.grid}>
+        {blogs.map((blog) => {
+          const isExpanded = expanded === blog.id;
+          return (
+            <div key={blog.id} className="blog-card card-hover reveal" style={styles.card}>
+              <div className="img-zoom" style={styles.imgWrap}>
+                <Image
+                  src={blog.image || "/images/placeholder.jpg"}
+                  alt={blog.title}
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
+                {blog.category && (
+                  <span style={styles.categoryBadge}>{blog.category}</span>
+                )}
               </div>
-            );
-          })}
-        </div>
-      )}
+              <div style={styles.body}>
+                {blog.createdAt && (
+                  <div style={styles.date}>
+                    {formatBlogDate(blog.createdAt)}
+                  </div>
+                )}
+                <h3 style={styles.title}>{blog.title}</h3>
+                <div
+                  style={{
+                    ...styles.content,
+                    maxHeight: isExpanded ? 1000 : 0,
+                  }}
+                >
+                  {blog.content || blog.excerpt}
+                </div>
+                {!isExpanded && <p style={styles.excerpt}>{blog.excerpt}</p>}
+                <button
+                  className="blog-read-more"
+                  style={styles.readMore}
+                  onClick={() => setExpanded(isExpanded ? null : blog.id)}
+                >
+                  {isExpanded ? "Show Less" : "Read More"}{" "}
+                  <span style={{ transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.3s", display: "inline-block" }}>
+                    &#8595;
+                  </span>
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 };

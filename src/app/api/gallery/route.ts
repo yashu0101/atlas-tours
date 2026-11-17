@@ -1,12 +1,13 @@
 import { getGallery, addGalleryImage, updateGalleryImage, deleteGalleryImage } from "@/lib/db";
 import { crudRoute } from "@/lib/crud-route";
+import { isPublicGalleryImage } from "@/lib/visibility";
 
 const route = crudRoute({
   list: getGallery,
   add: addGalleryImage,
   update: updateGalleryImage,
   remove: deleteGalleryImage,
-  isPublic: (g) => g.active !== false,
+  isPublic: isPublicGalleryImage,
   fields: { src: "string", caption: "string", category: "string", active: "boolean" },
   required: ["src"],
   defaults: { caption: "", category: "", active: true },

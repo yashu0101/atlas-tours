@@ -7,24 +7,14 @@ import type { GalleryImage } from "@/lib/types";
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-const Gallery: React.FC = () => {
-  const [images, setImages] = useState<GalleryImage[]>([]);
-  const [loading, setLoading] = useState(true);
+/** Images are loaded on the server (F-02) and passed in already filtered for public visibility. */
+const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages }) => {
+  const images = initialImages;
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
   const isLightboxOpen = lightboxIndex !== null;
-
-  useEffect(() => {
-    fetch("/api/gallery")
-      .then((r) => r.json())
-      .then((data) => {
-        setImages(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
 
   // Move focus into the lightbox on open; restore it to the clicked tile on close.
   useEffect(() => {
@@ -206,12 +196,6 @@ const Gallery: React.FC = () => {
       fontSize: 14,
       fontWeight: 500,
     },
-    loader: {
-      textAlign: "center",
-      padding: 60,
-      fontSize: 16,
-      color: "#888",
-    },
   };
 
   return (
@@ -230,50 +214,46 @@ const Gallery: React.FC = () => {
         </p>
       </div>
 
-      {loading ? (
-        <div style={styles.loader}>Loading gallery...</div>
-      ) : (
-        <div style={styles.masonry}>
-          {images.map((img, i) => (
-            <div
-              key={img.id}
-              className={`gallery-item img-zoom reveal stagger-${(i % 3) + 1}`}
-              style={styles.masonryItem}
-              role="button"
-              tabIndex={0}
-              aria-label={img.caption || img.category || "Gallery image"}
-              onClick={(e) => openLightbox(i, e.currentTarget)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  openLightbox(i, e.currentTarget);
-                } else if (e.key === " ") {
-                  e.preventDefault(); // stop page scroll
-                }
-              }}
-              onKeyUp={(e) => {
-                // Open on key-up like a native button, so the same key-up
-                // doesn't immediately "click" the lightbox close button.
-                if (e.key === " ") {
-                  e.preventDefault();
-                  openLightbox(i, e.currentTarget);
-                }
-              }}
-            >
-              <Image
-                src={img.src}
-                alt={img.caption || "Gallery image"}
-                width={400}
-                height={300 + (i % 3) * 80}
-                style={{ width: "100%", height: "auto", display: "block" }}
-              />
-              <div className="gallery-overlay" style={styles.imgOverlay}>
-                {img.caption || img.category || ""}
-              </div>
+      <div style={styles.masonry}>
+        {images.map((img, i) => (
+          <div
+            key={img.id}
+            className={`gallery-item img-zoom reveal stagger-${(i % 3) + 1}`}
+            style={styles.masonryItem}
+            role="button"
+            tabIndex={0}
+            aria-label={img.caption || img.category || "Gallery image"}
+            onClick={(e) => openLightbox(i, e.currentTarget)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                openLightbox(i, e.currentTarget);
+              } else if (e.key === " ") {
+                e.preventDefault(); // stop page scroll
+              }
+            }}
+            onKeyUp={(e) => {
+              // Open on key-up like a native button, so the same key-up
+              // doesn't immediately "click" the lightbox close button.
+              if (e.key === " ") {
+                e.preventDefault();
+                openLightbox(i, e.currentTarget);
+              }
+            }}
+          >
+            <Image
+              src={img.src}
+              alt={img.caption || "Gallery image"}
+              width={400}
+              height={300 + (i % 3) * 80}
+              style={{ width: "100%", height: "auto", display: "block" }}
+            />
+            <div className="gallery-overlay" style={styles.imgOverlay}>
+              {img.caption || img.category || ""}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
 
       {/* Lightbox */}
       {lightboxIndex !== null && images[lightboxIndex] && (

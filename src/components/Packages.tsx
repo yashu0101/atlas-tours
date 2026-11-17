@@ -10,24 +10,17 @@ const FOCUSABLE =
 // Itinerary entries are stored as "Day N: ..." strings; strip that prefix since the day badge already shows it.
 const stripDayPrefix = (line: string) => line.replace(/^\s*Day\s*\d+\s*[:\-–—]\s*/i, "");
 
-const Packages: React.FC = () => {
-  const [packages, setPackages] = useState<TourPackage[]>([]);
-  const [loading, setLoading] = useState(true);
+// Fixed locale so server-rendered and hydrated prices are identical (F-02).
+const formatPrice = (n: number | undefined) => n?.toLocaleString("en-IN");
+
+/** Packages are loaded on the server (F-02) and passed in already filtered for public visibility. */
+const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackages }) => {
+  const packages = initialPackages;
   const [selectedPkg, setSelectedPkg] = useState<TourPackage | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
   const isModalOpen = selectedPkg !== null;
-
-  useEffect(() => {
-    fetch("/api/packages")
-      .then((r) => r.json())
-      .then((data) => {
-        setPackages(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
 
   // Dialog behaviour: focus close button on open, Esc closes, Tab is trapped, focus returns to the trigger on close.
   useEffect(() => {
@@ -337,12 +330,6 @@ const Packages: React.FC = () => {
       marginBottom: 12,
       marginTop: 24,
     },
-    loader: {
-      textAlign: "center",
-      padding: 60,
-      fontSize: 16,
-      color: "#888",
-    },
   };
 
   return (
@@ -363,71 +350,67 @@ const Packages: React.FC = () => {
         </p>
       </div>
 
-      {loading ? (
-        <div style={styles.loader}>Loading packages...</div>
-      ) : (
-        <div className="pkg-grid" style={{ ...styles.grid, gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}>
-          {packages.map((pkg, idx) => (
-            <div key={pkg.id}className={`pkg-card card-hover reveal stagger-${(idx % 3) + 1}`} style={styles.card}>
-              <div className="img-zoom" style={styles.cardImgWrap}>
-                <Image
-                  src={pkg.image || "/images/placeholder.jpg"}
-                  alt={pkg.name}
-                  fill
-                  style={{ objectFit: "cover" }}
-                />
-                <div style={styles.priceBadge}>
-                  <div>&#8377;{pkg.price?.toLocaleString()}</div>
-                  {pkg.originalPrice && (
-                    <div style={styles.originalPrice}>
-                      &#8377;{pkg.originalPrice.toLocaleString()}
-                    </div>
-                  )}
-                </div>
+      <div className="pkg-grid" style={{ ...styles.grid, gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}>
+        {packages.map((pkg, idx) => (
+          <div key={pkg.id}className={`pkg-card card-hover reveal stagger-${(idx % 3) + 1}`} style={styles.card}>
+            <div className="img-zoom" style={styles.cardImgWrap}>
+              <Image
+                src={pkg.image || "/images/placeholder.jpg"}
+                alt={pkg.name}
+                fill
+                style={{ objectFit: "cover" }}
+              />
+              <div style={styles.priceBadge}>
+                <div>&#8377;{formatPrice(pkg.price)}</div>
                 {pkg.originalPrice && (
-                  <div style={styles.discountBadge}>
-                    {discount(pkg.originalPrice, pkg.price)}% OFF
+                  <div style={styles.originalPrice}>
+                    &#8377;{formatPrice(pkg.originalPrice)}
                   </div>
                 )}
               </div>
+              {pkg.originalPrice && (
+                <div style={styles.discountBadge}>
+                  {discount(pkg.originalPrice, pkg.price)}% OFF
+                </div>
+              )}
+            </div>
 
-              <div style={styles.cardBody}>
-                <div style={styles.cardMeta}>
-                  <span style={styles.metaItem}>{pkg.duration}</span>
-                  <span style={styles.metaItem}>{pkg.destination}</span>
-                </div>
-                <h3 style={styles.cardTitle}>{pkg.name}</h3>
-                <ul style={styles.highlightsList}>
-                  {(pkg.highlights || []).slice(0, 4).map((h, i) => (
-                    <li key={i} style={styles.highlightItem}>{h}</li>
-                  ))}
-                </ul>
-                <div style={styles.cardActions}>
-                  <button
-                    className="pkg-btn"
-                    style={styles.btnView}
-                    onClick={(e) => {
-                      triggerRef.current = e.currentTarget;
-                      setSelectedPkg(pkg);
-                    }}
-                  >
-                    View Details
-                  </button>
-                  <a
-                    className="pkg-btn"
-                    href={`https://wa.me/916388360881?text=Hi! I'm interested in the ${encodeURIComponent(pkg.name)} package.`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ ...styles.btnBook, textDecoration: "none", textAlign: "center" }}
-                  >
-                    Book Now
-                  </a>
-                </div>
+            <div style={styles.cardBody}>
+              <div style={styles.cardMeta}>
+                <span style={styles.metaItem}>{pkg.duration}</span>
+                <span style={styles.metaItem}>{pkg.destination}</span>
+              </div>
+              <h3 style={styles.cardTitle}>{pkg.name}</h3>
+              <ul style={styles.highlightsList}>
+                {(pkg.highlights || []).slice(0, 4).map((h, i) => (
+                  <li key={i} style={styles.highlightItem}>{h}</li>
+                ))}
+              </ul>
+              <div style={styles.cardActions}>
+                <button
+                  className="pkg-btn"
+                  style={styles.btnView}
+                  onClick={(e) => {
+                    triggerRef.current = e.currentTarget;
+                    setSelectedPkg(pkg);
+                  }}
+                >
+                  View Details
+                </button>
+                <a
+                  className="pkg-btn"
+                  href={`https://wa.me/916388360881?text=Hi! I'm interested in the ${encodeURIComponent(pkg.name)} package.`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ ...styles.btnBook, textDecoration: "none", textAlign: "center" }}
+                >
+                  Book Now
+                </a>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
 
       {/* Detail Modal */}
       {selectedPkg && (
@@ -462,7 +445,7 @@ const Packages: React.FC = () => {
                 <span>{selectedPkg.duration}</span>
                 <span>{selectedPkg.destination}</span>
                 <span style={{ color: "#e67e22", fontWeight: 700 }}>
-                  &#8377;{selectedPkg.price?.toLocaleString()}
+                  &#8377;{formatPrice(selectedPkg.price)}
                 </span>
               </div>
               {selectedPkg.description && (

@@ -3,22 +3,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import type { Review } from "@/lib/types";
 
-const Reviews: React.FC = () => {
-  const [reviews, setReviews] = useState<Review[]>([]);
+/** Reviews are loaded on the server (F-02) and passed in already filtered for public visibility. */
+const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => {
+  const reviews = initialReviews;
   const [current, setCurrent] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [slideDir, setSlideDir] = useState<"right" | "left">("right");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    fetch("/api/reviews")
-      .then((r) => r.json())
-      .then((data) => {
-        setReviews(Array.isArray(data) ? data : data.reviews || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
 
   useEffect(() => {
     if (reviews.length <= 1) return;
@@ -164,21 +154,7 @@ const Reviews: React.FC = () => {
       justifyContent: "center",
       transition: "all 0.3s",
     },
-    loader: {
-      textAlign: "center",
-      padding: 60,
-      fontSize: 16,
-      color: "rgba(255,255,255,0.5)",
-    },
   };
-
-  if (loading) {
-    return (
-      <section id="reviews" style={styles.section}>
-        <div style={styles.loader}>Loading reviews...</div>
-      </section>
-    );
-  }
 
   if (reviews.length === 0) return null;
 

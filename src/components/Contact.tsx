@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import type { TourPackage } from "@/lib/types";
 
 type PackageOption = Pick<TourPackage, "id" | "name">;
@@ -24,22 +24,13 @@ const contactCards = [
   { icon: "map", label: "Address", value: "Varanasi, Uttar Pradesh, India", href: "#" },
 ];
 
-const Contact: React.FC = () => {
-  const [packages, setPackages] = useState<PackageOption[]>([]);
+/** Package options come from the server-rendered page (F-02), already filtered for public visibility. */
+const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackages }) => {
+  const packages = initialPackages;
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/packages")
-      .then((r) => r.json())
-      .then((data) => {
-        const pkgs: TourPackage[] = Array.isArray(data) ? data : [];
-        setPackages(pkgs.map((p) => ({ id: p.id, name: p.name })));
-      })
-      .catch(() => {});
-  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>

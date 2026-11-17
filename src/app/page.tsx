@@ -1,5 +1,3 @@
-"use client";
-import { useEffect } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
@@ -14,44 +12,35 @@ import Footer from "@/components/Footer";
 import WhatsApp from "@/components/WhatsApp";
 import BackToTop from "@/components/BackToTop";
 import ScrollProgress from "@/components/ScrollProgress";
+import RevealObserver from "@/components/RevealObserver";
+import { getBlogs, getFAQs, getGallery, getPackages, getReviews } from "@/lib/db";
+import { isPublicBlog, isPublicFAQ, isPublicGalleryImage, isPublicPackage, isPublicReview } from "@/lib/visibility";
+import { faqPageJsonLd, jsonLdString } from "@/lib/seo";
+import type { BlogPost, FAQ as FAQItem, GalleryImage, Review, TourPackage } from "@/lib/types";
 
-export default function HomePage() {
-  useEffect(() => {
-    // Scroll reveal observer
-    const REVEAL_SELECTOR = ".fade-in, .reveal, .reveal-left, .reveal-right, .reveal-scale";
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.classList.add("visible", "active");
-        }
-      }),
-      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
-    );
+// F-02: content is read from the DB on every request so admin edits appear
+// immediately (and the JSON backend reads a local file that changes at runtime).
+export const dynamic = "force-dynamic";
 
-    const observed = new WeakSet<Element>();
-    const observeReveal = (el: Element) => {
-      if (observed.has(el) || el.classList.contains("visible")) return;
-      observed.add(el);
-      observer.observe(el);
-    };
-    document.querySelectorAll(REVEAL_SELECTOR).forEach(observeReveal);
+async function loadPublic<T>(label: string, load: () => Promise<T[]>, isPublic: (item: T) => boolean): Promise<T[]> {
+  try {
+    const items = await load();
+    return Array.isArray(items) ? items.filter(isPublic) : [];
+  } catch (err) {
+    console.error(`[home] failed to load ${label}:`, err);
+    return [];
+  }
+}
 
-    // Sections that fetch data client-side (Packages, Gallery, Blog, Reviews)
-    // mount their reveal elements later — observe those as they are added.
-    const mutationObserver = new MutationObserver((mutations) => {
-      mutations.forEach((m) => m.addedNodes.forEach((node) => {
-        if (!(node instanceof Element)) return;
-        if (node.matches(REVEAL_SELECTOR)) observeReveal(node);
-        node.querySelectorAll(REVEAL_SELECTOR).forEach(observeReveal);
-      }));
-    });
-    mutationObserver.observe(document.body, { childList: true, subtree: true });
-
-    return () => {
-      observer.disconnect();
-      mutationObserver.disconnect();
-    };
-  }, []);
+export default async function HomePage() {
+  const [packages, gallery, reviews, blogs, faqs]: [TourPackage[], GalleryImage[], Review[], BlogPost[], FAQItem[]] =
+    await Promise.all([
+      loadPublic("packages", getPackages, isPublicPackage),
+      loadPublic("gallery", getGallery, isPublicGalleryImage),
+      loadPublic("reviews", getReviews, isPublicReview),
+      loadPublic("blogs", getBlogs, isPublicBlog),
+      loadPublic("faqs", getFAQs, isPublicFAQ),
+    ]);
 
   return (
     <>
@@ -61,20 +50,28 @@ export default function HomePage() {
       <WaveDivider fill="var(--bg2)" />
       <About />
       <WaveDivider fill="var(--bg)" />
-      <Packages />
+      <Packages initialPackages={packages} />
       <WaveDivider fill="var(--bg2)" />
-      <Gallery />
+      <Gallery initialImages={gallery} />
       <Counter />
       <WaveDivider fill="var(--bg)" />
-      <Reviews />
+      <Reviews initialReviews={reviews} />
       <WaveDivider fill="var(--bg2)" />
-      <Blog />
+      <Blog initialBlogs={blogs} />
       <WaveDivider fill="var(--bg)" />
-      <FAQ />
-      <Contact />
+      <FAQ initialFaqs={faqs} />
+      <Contact initialPackages={packages} />
       <Footer />
       <WhatsApp />
       <BackToTop />
+      {/* Last child so its effect runs after every section's mount effects, like the old page-level effect. */}
+      <RevealObserver />
+      {faqs.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdString(faqPageJsonLd(faqs)) }}
+        />
+      )}
     </>
   );
 }
