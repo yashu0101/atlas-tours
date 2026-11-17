@@ -187,30 +187,77 @@ import { SITE_CONFIG, DEFAULT_PACKAGES } from "./config";
 
 const DB_PATH = path.join(process.cwd(), "data", "db.json");
 
+// The JSON backend is for local development only: the filesystem is read-only or
+// ephemeral on serverless hosts and there is no cross-process locking. Warn loudly
+// (once per process) if it is used in production. Checked lazily, not at import,
+// so `next build` stays quiet.
+let warnedJsonInProd = false;
+function warnIfJsonInProduction() {
+  if (warnedJsonInProd || process.env.NODE_ENV !== "production") return;
+  warnedJsonInProd = true;
+  console.error(
+    "[db] WARNING: DATABASE_URL is not set, so the JSON file backend (data/db.json) is in use in PRODUCTION. " +
+    "Writes may be lost or fail on serverless/read-only filesystems and are not safe across instances. Set DATABASE_URL."
+  );
+}
+
 function readDB(): DB {
+  warnIfJsonInProduction();
+  let raw: string;
   try {
-    const raw = fs.readFileSync(DB_PATH, "utf-8");
-    const data = JSON.parse(raw);
-    if (!data.packages) data.packages = [];
-    if (!data.enquiries) data.enquiries = [];
-    if (!data.bookings) data.bookings = [];
-    if (!data.reviews) data.reviews = [];
-    if (!data.gallery) data.gallery = [];
-    if (!data.blogs) data.blogs = [];
-    if (!data.faqs) data.faqs = [];
-    if (!data.offers) data.offers = [];
-    return data;
-  } catch {
+    raw = fs.readFileSync(DB_PATH, "utf-8");
+  } catch (err) {
+    // Only a missing file is (re)seeded. Any other error must not overwrite existing data.
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
     const initial: DB = { packages: DEFAULT_PACKAGES, enquiries: [], bookings: [], reviews: [], gallery: [], blogs: [], faqs: [], offers: [], config: SITE_CONFIG };
     writeDB(initial);
     return initial;
   }
+  let data: DB;
+  try {
+    data = JSON.parse(raw);
+  } catch (err) {
+    throw new Error(`[db] ${DB_PATH} is not valid JSON; refusing to overwrite it. Fix or delete the file. (${(err as Error).message})`);
+  }
+  if (!data.packages) data.packages = [];
+  if (!data.enquiries) data.enquiries = [];
+  if (!data.bookings) data.bookings = [];
+  if (!data.reviews) data.reviews = [];
+  if (!data.gallery) data.gallery = [];
+  if (!data.blogs) data.blogs = [];
+  if (!data.faqs) data.faqs = [];
+  if (!data.offers) data.offers = [];
+  return data;
 }
 
+/** Synchronous sleep used only to back off between rename retries. */
+function sleepSync(ms: number) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+/**
+ * Atomic write: serialize to a temp file in the same directory, then rename over
+ * the target, so a crash mid-write never leaves a truncated db.json. On Windows the
+ * rename can briefly fail with EPERM/EBUSY while another handle has the file open,
+ * so it is retried a few times.
+ */
 function writeDB(data: DB): void {
+  warnIfJsonInProduction();
   const dir = path.dirname(DB_PATH);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), "utf-8");
+  const tmp = path.join(dir, `.db.json.${process.pid}.${crypto.randomUUID()}.tmp`);
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2), "utf-8");
+  for (let attempt = 1; ; attempt++) {
+    try {
+      fs.renameSync(tmp, DB_PATH);
+      return;
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (attempt < 5 && (code === "EPERM" || code === "EBUSY" || code === "EACCES")) { sleepSync(20 * attempt); continue; }
+      try { fs.unlinkSync(tmp); } catch { /* ignore */ }
+      throw err;
+    }
+  }
 }
 
 // JSON CRUD helpers
@@ -220,7 +267,11 @@ function jsonCRUD<T extends { id: string }>(key: keyof DB) {
     add: (item: T): T => { const db = readDB(); (db[key] as unknown as T[]).push(item); writeDB(db); return item; },
     update: (id: string, updates: Partial<T>): T | null => {
       const db = readDB(); const arr = db[key] as unknown as T[]; const idx = arr.findIndex(i => i.id === id);
-      if (idx === -1) return null; Object.assign(arr[idx], updates); writeDB(db); return arr[idx];
+      if (idx === -1) return null;
+      // Never let an update rewrite the primary key or creation time.
+      const { id: _id, createdAt: _createdAt, ...safe } = updates as Partial<T> & { createdAt?: string };
+      void _id; void _createdAt;
+      Object.assign(arr[idx], safe); writeDB(db); return arr[idx];
     },
     remove: (id: string): boolean => {
       const db = readDB(); const arr = db[key] as unknown as T[]; const idx = arr.findIndex(i => i.id === id);
@@ -242,7 +293,11 @@ const jsonOffs = jsonCRUD<Offer>("offers");
 // EXPORTED API
 // ============================================================
 export async function getPackages() { return IS_POSTGRES ? pgGetPackages() : jsonPkgs.getAll(); }
-export async function addPackage(p: Omit<TourPackage, "createdAt">) { return IS_POSTGRES ? pgAddPackage(p) : jsonPkgs.add({ ...p, createdAt: new Date().toISOString() }); }
+export async function addPackage(p: Omit<TourPackage, "id"|"createdAt">) {
+  // Ids are always generated server-side (B-10); any client-supplied id is overwritten.
+  const withId = { ...p, id: crypto.randomUUID() };
+  return IS_POSTGRES ? pgAddPackage(withId) : jsonPkgs.add({ ...withId, createdAt: new Date().toISOString() });
+}
 export async function updatePackage(id: string, u: Partial<TourPackage>) { return IS_POSTGRES ? pgUpdatePackage(id, u) : jsonPkgs.update(id, u); }
 export async function deletePackage(id: string) { return IS_POSTGRES ? pgDeletePackage(id) : jsonPkgs.remove(id); }
 
@@ -277,7 +332,8 @@ export async function addBlog(b: Omit<BlogPost, "id"|"createdAt">) { const full 
 export async function updateBlog(id: string, u: Partial<BlogPost>) { return IS_POSTGRES ? pgUpdateBlog(id, u) : jsonBlgs.update(id, u); }
 export async function deleteBlog(id: string) { return IS_POSTGRES ? pgDeleteBlog(id) : jsonBlgs.remove(id); }
 
-export async function getFAQs() { return IS_POSTGRES ? pgGetFAQs() : jsonFaqs.getAll(); }
+// Sorted by `order` in both backends (Postgres sorts by sort_order).
+export async function getFAQs() { return IS_POSTGRES ? pgGetFAQs() : [...jsonFaqs.getAll()].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)); }
 export async function addFAQ(f: Omit<FAQ, "id"|"createdAt">) { const full = { ...f, id: crypto.randomUUID(), createdAt: new Date().toISOString() }; return IS_POSTGRES ? pgAddFAQ(f) : jsonFaqs.add(full); }
 export async function updateFAQ(id: string, u: Partial<FAQ>) { return IS_POSTGRES ? pgUpdateFAQ(id, u) : jsonFaqs.update(id, u); }
 export async function deleteFAQ(id: string) { return IS_POSTGRES ? pgDeleteFAQ(id) : jsonFaqs.remove(id); }

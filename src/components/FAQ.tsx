@@ -1,12 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-
-interface FAQItem {
-  _id: string;
-  question: string;
-  answer: string;
-}
+import type { FAQ as FAQItem } from "@/lib/types";
 
 const FAQAccordionItem: React.FC<{
   faq: FAQItem;
@@ -85,11 +80,22 @@ const FAQAccordionItem: React.FC<{
 
   return (
     <div style={styles.item}>
-      <button style={styles.header} onClick={onToggle}>
+      <button
+        style={styles.header}
+        onClick={onToggle}
+        id={`faq-button-${faq.id}`}
+        aria-expanded={isOpen}
+        aria-controls={`faq-panel-${faq.id}`}
+      >
         <span style={styles.question}>{faq.question}</span>
-        <span style={styles.icon}>{isOpen ? "\u2212" : "+"}</span>
+        <span style={styles.icon} aria-hidden="true">{isOpen ? "\u2212" : "+"}</span>
       </button>
-      <div style={styles.contentWrap}>
+      <div
+        style={styles.contentWrap}
+        id={`faq-panel-${faq.id}`}
+        role="region"
+        aria-labelledby={`faq-button-${faq.id}`}
+      >
         <div ref={contentRef}>
           <p style={styles.answer}>{faq.answer}</p>
         </div>
@@ -98,20 +104,10 @@ const FAQAccordionItem: React.FC<{
   );
 };
 
-const FAQ: React.FC = () => {
-  const [faqs, setFaqs] = useState<FAQItem[]>([]);
-  const [loading, setLoading] = useState(true);
+/** FAQs are loaded on the server (F-02) and passed in already filtered for public visibility. */
+const FAQ: React.FC<{ initialFaqs: FAQItem[] }> = ({ initialFaqs }) => {
+  const faqs = initialFaqs;
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-
-  useEffect(() => {
-    fetch("/api/faqs")
-      .then((r) => r.json())
-      .then((data) => {
-        setFaqs(Array.isArray(data) ? data : data.faqs || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
@@ -151,12 +147,6 @@ const FAQ: React.FC = () => {
       maxWidth: 750,
       margin: "0 auto",
     },
-    loader: {
-      textAlign: "center",
-      padding: 60,
-      fontSize: 16,
-      color: "#888",
-    },
   };
 
   return (
@@ -169,20 +159,16 @@ const FAQ: React.FC = () => {
         </p>
       </div>
 
-      {loading ? (
-        <div style={styles.loader}>Loading FAQs...</div>
-      ) : (
-        <div style={styles.list}>
-          {faqs.map((faq, i) => (
-            <FAQAccordionItem
-              key={faq._id}
-              faq={faq}
-              isOpen={openIndex === i}
-              onToggle={() => setOpenIndex(openIndex === i ? null : i)}
-            />
-          ))}
-        </div>
-      )}
+      <div style={styles.list}>
+        {faqs.map((faq, i) => (
+          <FAQAccordionItem
+            key={faq.id}
+            faq={faq}
+            isOpen={openIndex === i}
+            onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+          />
+        ))}
+      </div>
     </section>
   );
 };

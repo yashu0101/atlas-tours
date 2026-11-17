@@ -188,7 +188,7 @@ const WhatsApp: React.FC = () => {
             <div style={styles.headerName}>Atlas Tours</div>
             <div style={styles.headerStatus}>Typically replies instantly</div>
           </div>
-          <button style={styles.closeBtn} onClick={() => setOpen(false)}>
+          <button style={styles.closeBtn} onClick={() => setOpen(false)} aria-label="Close WhatsApp chat">
             &#10005;
           </button>
         </div>
@@ -202,12 +202,13 @@ const WhatsApp: React.FC = () => {
           <input
             style={styles.input}
             placeholder="Type a message..."
+            aria-label="WhatsApp message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           />
-          <button style={styles.sendBtn} onClick={sendMessage}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff">
+          <button style={styles.sendBtn} onClick={sendMessage} aria-label="Send message on WhatsApp">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
               <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
             </svg>
           </button>

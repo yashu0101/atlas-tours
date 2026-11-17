@@ -1,21 +1,34 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getBookings, updateBooking, deleteBooking } from "@/lib/db";
-import { verifySession } from "@/lib/auth";
+import { Booking } from "@/lib/types";
+import { badRequest, notFound, oneOf, readJson, requireAdmin, requireId, withHandler } from "@/lib/api";
 
-export async function GET() {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+// Runtime copies of the status unions in types.ts; `satisfies` makes the compiler
+// flag any value added to or removed from the type but not here.
+const PAYMENT_STATUSES = Object.keys({ pending: 1, paid: 1, failed: 1, refunded: 1 } satisfies Record<Booking["paymentStatus"], 1>) as Booking["paymentStatus"][];
+const BOOKING_STATUSES = Object.keys({ pending: 1, confirmed: 1, completed: 1, cancelled: 1 } satisfies Record<Booking["bookingStatus"], 1>) as Booking["bookingStatus"][];
+
+export const GET = withHandler(async () => {
+  await requireAdmin();
   return NextResponse.json(await getBookings());
-}
+});
 
-export async function PATCH(req: NextRequest) {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id, ...updates } = await req.json();
+export const PATCH = withHandler(async (req) => {
+  await requireAdmin();
+  const body = await readJson(req);
+  const id = requireId(body);
+  const updates: Partial<Pick<Booking, "paymentStatus" | "bookingStatus">> = {};
+  if (body.paymentStatus !== undefined) updates.paymentStatus = oneOf(body.paymentStatus, PAYMENT_STATUSES, "paymentStatus");
+  if (body.bookingStatus !== undefined) updates.bookingStatus = oneOf(body.bookingStatus, BOOKING_STATUSES, "bookingStatus");
+  if (!updates.paymentStatus && !updates.bookingStatus) throw badRequest("Provide paymentStatus and/or bookingStatus");
   const result = await updateBooking(id, updates);
-  return result ? NextResponse.json(result) : NextResponse.json({ error: "Not found" }, { status: 404 });
-}
+  if (!result) throw notFound();
+  return NextResponse.json(result);
+});
 
-export async function DELETE(req: NextRequest) {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id } = await req.json();
-  return NextResponse.json({ success: await deleteBooking(id) });
-}
+export const DELETE = withHandler(async (req) => {
+  await requireAdmin();
+  const id = requireId(await readJson(req));
+  if (!(await deleteBooking(id))) throw notFound();
+  return NextResponse.json({ success: true });
+});

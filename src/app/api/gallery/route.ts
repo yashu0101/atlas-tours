@@ -1,21 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
 import { getGallery, addGalleryImage, updateGalleryImage, deleteGalleryImage } from "@/lib/db";
-import { verifySession } from "@/lib/auth";
+import { crudRoute } from "@/lib/crud-route";
+import { isPublicGalleryImage } from "@/lib/visibility";
 
-export async function GET() { return NextResponse.json(await getGallery()); }
+const route = crudRoute({
+  list: getGallery,
+  add: addGalleryImage,
+  update: updateGalleryImage,
+  remove: deleteGalleryImage,
+  isPublic: isPublicGalleryImage,
+  fields: { src: "string", caption: "string", category: "string", active: "boolean" },
+  required: ["src"],
+  defaults: { caption: "", category: "", active: true },
+});
 
-export async function POST(req: NextRequest) {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  return NextResponse.json(await addGalleryImage(await req.json()));
-}
-
-export async function PATCH(req: NextRequest) {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id, ...u } = await req.json();
-  const r = await updateGalleryImage(id, u); return r ? NextResponse.json(r) : NextResponse.json({ error: "Not found" }, { status: 404 });
-}
-
-export async function DELETE(req: NextRequest) {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id } = await req.json(); return NextResponse.json({ success: await deleteGalleryImage(id) });
-}
+export const GET = route.GET;
+export const POST = route.POST;
+export const PATCH = route.PATCH;
+export const DELETE = route.DELETE;

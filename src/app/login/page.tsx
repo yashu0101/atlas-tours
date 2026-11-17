@@ -12,9 +12,20 @@ export default function LoginPage() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true); setError("");
-    const res = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
-    if (res.ok) { router.push("/admin"); } else { setError("Invalid email or password"); }
-    setLoading(false);
+    try {
+      const res = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
+      if (res.ok) { router.push("/admin"); }
+      else if (res.status === 401) { setError("Invalid email or password"); }
+      else {
+        const body = await res.json().catch(() => null);
+        setError(body?.error || `Login failed (${res.status}). Please try again.`);
+      }
+    } catch (err) {
+      console.error("Login request failed", err);
+      setError("Could not reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

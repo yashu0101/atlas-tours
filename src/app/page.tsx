@@ -1,5 +1,3 @@
-"use client";
-import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
@@ -13,56 +11,67 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import WhatsApp from "@/components/WhatsApp";
 import BackToTop from "@/components/BackToTop";
+import ScrollProgress from "@/components/ScrollProgress";
+import RevealObserver from "@/components/RevealObserver";
+import { getBlogs, getFAQs, getGallery, getPackages, getReviews } from "@/lib/db";
+import { isPublicBlog, isPublicFAQ, isPublicGalleryImage, isPublicPackage, isPublicReview } from "@/lib/visibility";
+import { faqPageJsonLd, jsonLdString } from "@/lib/seo";
+import type { BlogPost, FAQ as FAQItem, GalleryImage, Review, TourPackage } from "@/lib/types";
 
-export default function HomePage() {
-  const [scrollProgress, setScrollProgress] = useState(0);
+// F-02: content is read from the DB on every request so admin edits appear
+// immediately (and the JSON backend reads a local file that changes at runtime).
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const p = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-      setScrollProgress(p);
-    };
-    window.addEventListener("scroll", handleScroll);
+async function loadPublic<T>(label: string, load: () => Promise<T[]>, isPublic: (item: T) => boolean): Promise<T[]> {
+  try {
+    const items = await load();
+    return Array.isArray(items) ? items.filter(isPublic) : [];
+  } catch (err) {
+    console.error(`[home] failed to load ${label}:`, err);
+    return [];
+  }
+}
 
-    // Scroll reveal observer
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.classList.add("visible", "active");
-        }
-      }),
-      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
-    );
-    document.querySelectorAll(".fade-in, .reveal, .reveal-left, .reveal-right, .reveal-scale").forEach((el) => observer.observe(el));
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      observer.disconnect();
-    };
-  }, []);
+export default async function HomePage() {
+  const [packages, gallery, reviews, blogs, faqs]: [TourPackage[], GalleryImage[], Review[], BlogPost[], FAQItem[]] =
+    await Promise.all([
+      loadPublic("packages", getPackages, isPublicPackage),
+      loadPublic("gallery", getGallery, isPublicGalleryImage),
+      loadPublic("reviews", getReviews, isPublicReview),
+      loadPublic("blogs", getBlogs, isPublicBlog),
+      loadPublic("faqs", getFAQs, isPublicFAQ),
+    ]);
 
   return (
     <>
-      <div className="scroll-progress" style={{ width: `${scrollProgress}%` }} />
+      <ScrollProgress />
       <Header />
       <Hero />
       <WaveDivider fill="var(--bg2)" />
       <About />
       <WaveDivider fill="var(--bg)" />
-      <Packages />
+      <Packages initialPackages={packages} />
       <WaveDivider fill="var(--bg2)" />
-      <Gallery />
+      <Gallery initialImages={gallery} />
       <Counter />
       <WaveDivider fill="var(--bg)" />
-      <Reviews />
+      <Reviews initialReviews={reviews} />
       <WaveDivider fill="var(--bg2)" />
-      <Blog />
+      <Blog initialBlogs={blogs} />
       <WaveDivider fill="var(--bg)" />
-      <FAQ />
-      <Contact />
+      <FAQ initialFaqs={faqs} />
+      <Contact initialPackages={packages} />
       <Footer />
       <WhatsApp />
       <BackToTop />
+      {/* Last child so its effect runs after every section's mount effects, like the old page-level effect. */}
+      <RevealObserver />
+      {faqs.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdString(faqPageJsonLd(faqs)) }}
+        />
+      )}
     </>
   );
 }
