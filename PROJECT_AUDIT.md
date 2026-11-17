@@ -269,7 +269,7 @@ Owns: `src/app/layout.tsx`, `next.config.ts`, `package.json`, `public/`, new `sr
 | ID | Sev | Status | Owner | Fixed in | Issue |
 |---|---|---|---|---|---|
 | F-01 | P1 | ✅ | Claude | 2852416 | Upgrade Next.js 16.4.3 → ≥16.4.6 (advisory; build halts) |
-| F-02 | P1 | ✅ | Claude | F-02 commit (pending) | Core content not server-rendered (not crawlable) |
+| F-02 | P1 | ✅ | Claude | 5caafc2 | Core content not server-rendered (not crawlable) |
 | F-03 | P1 | ✅ | Claude | 2852416 | Minimal metadata: no OG/Twitter/canonical/icons |
 | F-04 | P1 | ✅ | Claude | 2852416 | No JSON-LD (TravelAgency, FAQPage, Product/Offer, Review) |
 | F-05 | P1 | ✅ | Claude | 2852416 | Missing images: `hero-fallback.jpg`, `placeholder.jpg`, `package.jpg`; no favicon |
