@@ -142,7 +142,8 @@ const WhatsApp: React.FC = () => {
       border: "1px solid #e0e0e0",
       fontSize: 14,
       fontFamily: "'Poppins', sans-serif",
-      outline: "none",
+      // outline is removed via the .wa-input class (globals.css) so the global
+      // :focus-visible ring can still show for keyboard users (E-11).
     },
     sendBtn: {
       width: 40,
@@ -208,6 +209,7 @@ const WhatsApp: React.FC = () => {
         </div>
         <div style={styles.popupFooter}>
           <input
+            className="wa-input"
             style={styles.input}
             placeholder="Type a message..."
             aria-label="WhatsApp message"

@@ -1,4 +1,5 @@
 import { TourPackage, Enquiry, Booking, Review, GalleryImage, BlogPost, FAQ, Offer } from "./types";
+import { buildSeedDB, SEED_PACKAGES, SEED_REVIEWS, SEED_GALLERY, SEED_BLOGS, SEED_FAQS, SEED_OFFERS } from "./seed-data";
 
 const IS_POSTGRES = !!process.env.DATABASE_URL;
 
@@ -233,15 +234,53 @@ async function pgDeleteOffer(id: string): Promise<boolean> {
   const sql = getSQL(); const rows = await sql`DELETE FROM offers WHERE id=${id} RETURNING id`; return rows.length > 0;
 }
 
+// --- Seed content (B-11) ---
+export type SeedSummary = Record<"packages" | "reviews" | "gallery" | "blogs" | "faqs" | "offers", number>;
+
+/**
+ * Inserts the shared default content (`seed-data.ts`) into Postgres. Idempotent and
+ * non-destructive: each row is `INSERT … ON CONFLICT (id) DO NOTHING`, so an id that
+ * already exists (including one an admin has since edited) is left untouched, and
+ * nothing is ever updated or deleted. Bookings/enquiries are never seeded. Values are
+ * bound parameters via tagged templates. Returns how many rows were actually inserted
+ * per table. Tables must already exist (`initDB`).
+ */
+async function pgSeedContent(): Promise<SeedSummary> {
+  const sql = getSQL();
+  const count = async (inserts: Promise<Row[]>[]) => (await Promise.all(inserts)).reduce((n, rows) => n + rows.length, 0);
+  // Sequential per table so a failure reports a clear partial state; rows within a table run in parallel.
+  const packages = await count(SEED_PACKAGES.map(p => sql`INSERT INTO packages (id,name,destination,duration,price,original_price,image,description,highlights,itinerary,inclusions,category,hidden,created_at) VALUES (${p.id},${p.name},${p.destination},${p.duration},${p.price},${p.originalPrice ?? null},${p.image},${p.description},${JSON.stringify(p.highlights ?? [])},${JSON.stringify(p.itinerary ?? [])},${JSON.stringify(p.inclusions ?? [])},${p.category},${!!p.hidden},${p.createdAt}) ON CONFLICT (id) DO NOTHING RETURNING id`));
+  const reviews = await count(SEED_REVIEWS.map(r => sql`INSERT INTO reviews (id,name,rating,text,city,package_name,active,created_at) VALUES (${r.id},${r.name},${r.rating},${r.text},${r.city},${r.packageName ?? null},${r.active},${r.createdAt}) ON CONFLICT (id) DO NOTHING RETURNING id`));
+  const gallery = await count(SEED_GALLERY.map(g => sql`INSERT INTO gallery (id,src,caption,category,active,created_at) VALUES (${g.id},${g.src},${g.caption},${g.category},${g.active},${g.createdAt}) ON CONFLICT (id) DO NOTHING RETURNING id`));
+  const blogs = await count(SEED_BLOGS.map(b => sql`INSERT INTO blogs (id,title,excerpt,content,image,category,author,active,created_at) VALUES (${b.id},${b.title},${b.excerpt},${b.content},${b.image},${b.category},${b.author},${b.active},${b.createdAt}) ON CONFLICT (id) DO NOTHING RETURNING id`));
+  const faqs = await count(SEED_FAQS.map(f => sql`INSERT INTO faqs (id,question,question_hi,answer,answer_hi,active,sort_order,created_at) VALUES (${f.id},${f.question},${f.questionHi ?? null},${f.answer},${f.answerHi ?? null},${f.active},${f.order},${f.createdAt}) ON CONFLICT (id) DO NOTHING RETURNING id`));
+  const offers = await count(SEED_OFFERS.map(o => sql`INSERT INTO offers (id,title,description,discount,code,valid_from,valid_to,active,created_at) VALUES (${o.id},${o.title},${o.description},${o.discount},${o.code ?? null},${o.validFrom},${o.validTo},${o.active},${o.createdAt}) ON CONFLICT (id) DO NOTHING RETURNING id`));
+  return { packages, reviews, gallery, blogs, faqs, offers };
+}
+
+/** Postgres only — the JSON backend seeds itself when its file is missing. Throws in JSON mode. */
+export async function seedContent(): Promise<SeedSummary> {
+  if (!IS_POSTGRES) throw new Error("seedContent() requires DATABASE_URL; the JSON backend seeds itself when its file is missing.");
+  return pgSeedContent();
+}
+
 // ============================================================
 // JSON FILE — local dev
 // ============================================================
 import fs from "fs";
 import path from "path";
 import { DB } from "./types";
-import { SITE_CONFIG, DEFAULT_PACKAGES } from "./config";
 
-const DB_PATH = path.join(process.cwd(), "data", "db.json");
+/**
+ * JSON backend file. Defaults to `data/db.json`; set `JSON_DB_PATH` (absolute, or
+ * relative to the cwd) to use another file, e.g. a temp file in tests. If the file is
+ * missing it is created from the shared seed (`src/lib/seed-data.ts`). Resolved on every
+ * call so a test can set the env var after this module is imported.
+ */
+function dbPath(): string {
+  const override = process.env.JSON_DB_PATH;
+  return override ? path.resolve(override) : path.join(process.cwd(), "data", "db.json");
+}
 
 // The JSON backend is for local development only: the filesystem is read-only or
 // ephemeral on serverless hosts and there is no cross-process locking. Warn loudly
@@ -259,13 +298,14 @@ function warnIfJsonInProduction() {
 
 function readDB(): DB {
   warnIfJsonInProduction();
+  const file = dbPath();
   let raw: string;
   try {
-    raw = fs.readFileSync(DB_PATH, "utf-8");
+    raw = fs.readFileSync(file, "utf-8");
   } catch (err) {
     // Only a missing file is (re)seeded. Any other error must not overwrite existing data.
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
-    const initial: DB = { packages: DEFAULT_PACKAGES, enquiries: [], bookings: [], reviews: [], gallery: [], blogs: [], faqs: [], offers: [], config: SITE_CONFIG };
+    const initial = buildSeedDB();
     writeDB(initial);
     return initial;
   }
@@ -273,7 +313,7 @@ function readDB(): DB {
   try {
     data = JSON.parse(raw);
   } catch (err) {
-    throw new Error(`[db] ${DB_PATH} is not valid JSON; refusing to overwrite it. Fix or delete the file. (${(err as Error).message})`);
+    throw new Error(`[db] ${file} is not valid JSON; refusing to overwrite it. Fix or delete the file. (${(err as Error).message})`);
   }
   if (!data.packages) data.packages = [];
   if (!data.enquiries) data.enquiries = [];
@@ -299,13 +339,14 @@ function sleepSync(ms: number) {
  */
 function writeDB(data: DB): void {
   warnIfJsonInProduction();
-  const dir = path.dirname(DB_PATH);
+  const file = dbPath();
+  const dir = path.dirname(file);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  const tmp = path.join(dir, `.db.json.${process.pid}.${crypto.randomUUID()}.tmp`);
+  const tmp = path.join(dir, `.${path.basename(file)}.${process.pid}.${crypto.randomUUID()}.tmp`);
   fs.writeFileSync(tmp, JSON.stringify(data, null, 2), "utf-8");
   for (let attempt = 1; ; attempt++) {
     try {
-      fs.renameSync(tmp, DB_PATH);
+      fs.renameSync(tmp, file);
       return;
     } catch (err) {
       const code = (err as NodeJS.ErrnoException).code;
