@@ -1,11 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 
 const WhatsApp: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const phoneNumber = "916388360881";
+  const fabRef = useRef<HTMLButtonElement>(null);
+
+  // Closing from inside the popup would leave focus on an element that is about to
+  // become inert, so hand it back to the FAB (E-06).
+  const close = () => {
+    setOpen(false);
+    fabRef.current?.focus();
+  };
 
   const sendMessage = () => {
     const text = encodeURIComponent(
@@ -13,7 +21,7 @@ const WhatsApp: React.FC = () => {
     );
     window.open(`https://wa.me/${phoneNumber}?text=${text}`, "_blank");
     setMessage("");
-    setOpen(false);
+    close();
   };
 
   const styles: Record<string, React.CSSProperties> = {
@@ -176,11 +184,11 @@ const WhatsApp: React.FC = () => {
         .wa-fab:hover { transform: scale(1.1); }
       `}</style>
 
-      {/* Popup */}
-      <div style={styles.popup}>
+      {/* Popup: inert while collapsed so its controls are not focusable or exposed to AT (E-06) */}
+      <div id="whatsapp-popup" inert={!open} style={styles.popup}>
         <div style={styles.popupHeader}>
           <div style={styles.headerAvatar}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
             </svg>
           </div>
@@ -188,7 +196,7 @@ const WhatsApp: React.FC = () => {
             <div style={styles.headerName}>Atlas Tours</div>
             <div style={styles.headerStatus}>Typically replies instantly</div>
           </div>
-          <button style={styles.closeBtn} onClick={() => setOpen(false)} aria-label="Close WhatsApp chat">
+          <button style={styles.closeBtn} onClick={close} aria-label="Close WhatsApp chat">
             &#10005;
           </button>
         </div>
@@ -220,11 +228,14 @@ const WhatsApp: React.FC = () => {
         className="wa-fab"
         style={styles.fab}
         onClick={() => setOpen(!open)}
+        ref={fabRef}
         aria-label="Chat on WhatsApp"
+        aria-expanded={open}
+        aria-controls="whatsapp-popup"
       >
         {!open && <div style={styles.pulse} />}
         {!open && <span style={styles.notifDot}>1</span>}
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
           {open ? (
             <path d="M18 6L6 18M6 6l12 12" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" fill="none" />
           ) : (

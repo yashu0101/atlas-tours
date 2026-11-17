@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status & fix tracker
 
-**`PROJECT_AUDIT.md` is the source of truth for open issues and project status.** Every issue has an ID (`A-01`, `B-05`, …), severity, status and owner. When you fix something, update its row, the progress table and the changelog there. When you find something new, add it with the next free ID. All P0/P1 items are closed as of 2026-11-17; remaining work is P2/P3 and the feature backlog (workstream G).
+**`PROJECT_AUDIT.md` is the source of truth for open issues and project status.** Every issue has an ID (`A-01`, `B-05`, …), severity, status and owner. When you fix something, update its row, the progress table and the changelog there. When you find something new, add it with the next free ID. All P0/P1 items are closed and most P2s (see the file) as of 2026-11-17; remaining work is a few decisions-blocked P2s, P3s and the feature backlog (workstream G).
 
 ## Commands
 
@@ -12,10 +12,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev          # Next.js dev server (http://localhost:3000)
 npm run build        # production build
 npm start            # serve the production build
-npx tsc --noEmit     # type check — use this instead of `npm run lint`
+npx tsc --noEmit     # type check
+npm run lint         # ESLint (flat config)
 ```
 
-`npm run lint` is broken: ESLint 9 needs an `eslint.config.*` file and none exists (tracked as F-08). Rely on `tsc --noEmit`.
+`npm run lint` uses `eslint.config.mjs` (flat config). Run it alongside `npx tsc --noEmit`.
 
 There is no test runner. `tests/` exists but is empty and untracked (G-10).
 
@@ -39,6 +40,7 @@ In **development** every var is optional and the fallbacks below apply. In **pro
 | `ADMIN_PASSWORD` | `admin123` | required unless `ADMIN_PASSWORD_HASH` set | plaintext, compared in constant time |
 | `ADMIN_PASSWORD_HASH` | unset | optional, preferred | bcrypt hash; wins over `ADMIN_PASSWORD` |
 | `SEED_SECRET` | `atlas-seed-2024` | required to use `/api/seed` | guards `/api/seed` |
+| `SESSION_VERSION` | `"1"` | optional | embedded in session tokens; change it to log every admin out |
 | `NEXT_PUBLIC_SITE_URL` | `https://atlastours.in` | should be set (domain unconfirmed) | `metadataBase`, canonical, OG, sitemap, robots |
 
 ## Architecture
@@ -59,7 +61,7 @@ Two conventions cross this boundary and must be kept in sync by hand when adding
 
 IDs and `createdAt` are always generated server-side; JSON-backend updates strip `id`/`createdAt` from the patch. FAQs are sorted by `order` in both backends.
 
-Postgres updates use `COALESCE(${value ?? null}, column)`, so a partial `PATCH` only touches provided fields — but this also means **a field can never be cleared to NULL** (open issue B-07).
+Updates only touch keys **present** in the body. Postgres updates are built by `pgUpdate()` from a fixed per-entity field→column map (`PACKAGE_COLS` … `OFFER_COLS` in `db.ts`) with every value parameterised via `sql.query(text, params)` — never interpolate identifiers from input. The JSON backend applies the same maps. Fields declared `nullable(...)` in a route config (package `originalPrice`, review `packageName`, FAQ `questionHi`/`answerHi`, offer `code`) are **cleared by sending `null` or `""`**; `null` for any other field is a 400. The admin edit forms send `null` for emptied optional fields — `undefined` is dropped by `JSON.stringify` and changes nothing. Package array columns are parsed with `safeParseArray` (bad data → `[]`).
 
 Adding an entity means touching `types.ts`, `db-schema.ts`, the `pg*` block, the `jsonCRUD` registration, the exported wrappers, a visibility rule in `src/lib/visibility.ts` (if public), and a route config.
 
@@ -91,7 +93,16 @@ Empty scaffold folders exist under `src/app/api/` (`payments/*`, `notifications`
 
 ### Auth (`src/lib/auth.ts`)
 
-`verifyAdminCredentials(email, password)` (async) is the single login check: bcrypt when `ADMIN_PASSWORD_HASH` is set, otherwise a constant-time compare (`safeEqual`, SHA-256 + `timingSafeEqual`). The login route locks an IP out after 5 failures per 15 min (429). Success signs a 24h HS256 JWT (jose) into the httpOnly `admin_session` cookie (`sameSite: lax`, `secure` in production). `verifySession()` reads it from `next/headers` cookies. Sessions are not revocable before expiry (B-08).
+`verifyAdminCredentials(email, password)` (async) is the single login check: bcrypt when `ADMIN_PASSWORD_HASH` is set, otherwise a constant-time compare (`safeEqual`, SHA-256 + `timingSafeEqual`). The login route locks an IP out after 5 failures per 15 min (429). Success signs a 24h HS256 JWT (jose) with issuer `atlas-tours`, audience `atlas-tours-admin`, `role: "admin"` and `sv` = `SESSION_VERSION`, stored in the httpOnly `admin_session` cookie built by `sessionCookieOptions()` (`sameSite: strict`, `secure` in production; logout clears it with the same options). `verifySession()` rejects tokens with the wrong alg/issuer/audience/role/`sv`. Tokens are stateless: logout clears the browser cookie, but a copied token stays valid until expiry unless `SESSION_VERSION` is changed.
+
+Image URL fields (package `image`, gallery `src`, blog `image`) use the `"image"` field type: only `https:` URLs or site-relative paths starting with a single `/` are accepted.
+
+### Platform config
+
+- `next.config.ts` sends `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, HSTS (production) and a **report-only** CSP. Before switching the CSP to enforcing, check DevTools for violations on `/`, `/login`, `/admin`. A new external origin (image host, video CDN, embed) must be added to the CSP.
+- Poppins is self-hosted via `next/font/google` in `layout.tsx` (weights 300–900, CSS var `--font-poppins`); inline `fontFamily: "'Poppins', sans-serif"` still works. **Font Awesome and Google Fonts CDNs are no longer loaded** — use inline SVG icons.
+- `layout.tsx` has an inline pre-paint script that applies the stored theme (`localStorage["atlas-theme"]`) before hydration. `context.tsx` must keep its first render as `"en"`/`"light"` and read localStorage only in an effect (FAQ.tsx reads `lang` and would hit hydration mismatches otherwise). `<html lang>` stays `"en"` regardless of the toggle until content is translated (G-08).
+- `npm run lint` works (`eslint.config.mjs`, flat config from `eslint-config-next`). Remaining warnings are intentional `<img>` usage in the admin page.
 
 ### Frontend
 
@@ -101,11 +112,11 @@ Sections are `"use client"` components rendered in order with `<WaveDivider>` SV
 
 Scroll reveal lives in `src/components/RevealObserver.tsx` (renders nothing): an `IntersectionObserver` adds `visible`/`active` to any `.fade-in`, `.reveal`, `.reveal-left`, `.reveal-right`, `.reveal-scale` element, and a `MutationObserver` picks up elements mounted later. Components opt into animation purely by class name (plus `.stagger-N`, `.card-hover`, `.img-zoom` from `globals.css`). `globals.css` has a `prefers-reduced-motion` block that disables animations and shows reveal elements immediately; `Hero.tsx` also stops the video and typing loop for reduced motion. `ScrollProgress.tsx` updates the progress bar through a ref (no React state per scroll) — keep scroll listeners passive and avoid setState on every scroll event.
 
-Styling is **CSS custom properties + inline `React.CSSProperties` objects**, not Tailwind. `tailwindcss` is in `devDependencies` but unwired — dead weight (F-09). Theme and dark mode come from `:root` / `[data-theme="dark"]` variables in `src/app/globals.css`; a component that hardcodes a color will break dark mode (several still do — E-02). Font Awesome and Poppins load from CDNs in `src/app/layout.tsx`. **The client has asked for no visual/design changes** unless explicitly approved.
+Styling is **CSS custom properties + inline `React.CSSProperties` objects**, not Tailwind. `tailwindcss` is in `devDependencies` but unwired — dead weight (F-09). Theme and dark mode come from `:root` / `[data-theme="dark"]` variables in `src/app/globals.css`; a component that hardcodes a color will break dark mode (E-02 fixed this for the sections; when a dark override is needed and no variable matches, components use a local `var(--x, #original)` set only under `[data-theme="dark"] #section-id` in their own `<style>` block). Fonts are self-hosted via next/font (see Platform config). **The client has asked for no visual/design changes** unless explicitly approved.
 
 Shared types: import entity types from `src/lib/types.ts` (`TourPackage`, `Review`, `GalleryImage`, `BlogPost`, `FAQ`, `Offer`, …) — never redeclare them locally. Field names that previously drifted: reviews use `text` (not `message`), blogs use `createdAt` (not `date`), itinerary is `string[]`, ids are `id` (not `_id`).
 
-`src/lib/context.tsx` provides `useApp()` with `lang` (`"en" | "hi"`) and `theme`, persisted to `localStorage` and reflected onto `<html data-theme>` / `lang`. Translation is inline ternaries — there is no message catalog. Only `Header.tsx` consumes it; the rest of the site is English-only (G-08).
+`src/lib/context.tsx` provides `useApp()` with `lang` (`"en" | "hi"`) and `theme`, persisted to `localStorage`; theme is reflected onto `<html data-theme>` (lang is not reflected — see Platform config). Translation is inline ternaries — there is no message catalog. `Header.tsx` (nav labels) and `FAQ.tsx` (shows `questionHi`/`answerHi` when Hindi is selected and present) consume it; the rest of the site is English-only (G-08).
 
 SEO: `src/lib/seo.ts` holds site URL, title, description, OG image and the JSON-LD builders (`travelAgencyJsonLd`, `faqPageJsonLd`, `jsonLdString` which escapes `<`). `layout.tsx` sets `metadataBase`/OG/Twitter/canonical and the TravelAgency JSON-LD; `src/app/robots.ts` and `src/app/sitemap.ts` exist; the favicon is `src/app/icon.jpeg`.
 
@@ -113,6 +124,6 @@ Images are unoptimized (`next.config.ts`) since package/gallery URLs point at ar
 
 ### Known inconsistencies still open
 
-- `admin/page.tsx` (~900 lines) still redefines the entity interfaces locally instead of importing from `src/lib/types.ts` (A-04) and should be split into components (A-08).
+- `admin/page.tsx` (~900 lines) should be split into components (A-08). It now imports shared types.
 - Phone/email are hardcoded in several components and `Contact.tsx` shows a different email than `SITE_CONFIG` (C-09).
 - Offers are managed in the admin but never shown on the public site (G-05).

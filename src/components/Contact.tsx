@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { TourPackage } from "@/lib/types";
 
 type PackageOption = Pick<TourPackage, "id" | "name">;
@@ -31,6 +31,17 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState(false);
+  // Timer that hides the success message; cleared on unmount and when a new submit starts (D-04).
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearSuccessTimer = () => {
+    if (successTimerRef.current !== null) {
+      clearTimeout(successTimerRef.current);
+      successTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => clearSuccessTimer, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -40,6 +51,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    clearSuccessTimer();
     setSubmitting(true);
     setSubmitError(false);
     setSubmitted(false);
@@ -55,7 +67,10 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
       if (!res.ok) throw new Error(`Enquiry failed: ${res.status}`);
       setSubmitted(true);
       setFormData(EMPTY_FORM);
-      setTimeout(() => setSubmitted(false), 5000);
+      successTimerRef.current = setTimeout(() => {
+        successTimerRef.current = null;
+        setSubmitted(false);
+      }, 5000);
     } catch {
       // Keep formData so the user doesn't lose what they typed.
       setSubmitError(true);
@@ -99,7 +114,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
     badge: {
       display: "inline-block",
       background: "rgba(230,126,34,0.1)",
-      color: "#e67e22",
+      color: "var(--orange)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,
@@ -195,7 +210,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
     },
     cardLabel: {
       fontSize: 13,
-      color: "#888",
+      color: "var(--contact-muted, #888)",
       fontWeight: 500,
       marginBottom: 4,
     },
@@ -224,6 +239,8 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
       <style>{`
         .contact-input:focus { border-color: #e67e22 !important; box-shadow: 0 0 0 3px rgba(230,126,34,0.1) !important; }
         .contact-card-h:hover { border-color: rgba(230,126,34,0.3) !important; box-shadow: 0 4px 15px rgba(0,0,0,0.06) !important; }
+        /* E-02: dark-mode override. Light mode uses the inline fallback (colour unchanged). */
+        [data-theme="dark"] #contact { --contact-muted: var(--text2); }
         .submit-btn-h:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(230,126,34,0.45) !important; }
         @media (max-width: 868px) {
           .contact-container { grid-template-columns: 1fr !important; }

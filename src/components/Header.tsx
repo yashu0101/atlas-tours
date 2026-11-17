@@ -1,13 +1,27 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useApp } from "@/lib/context";
 
 const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
   const { theme, setTheme, lang, setLang } = useApp();
+
+  // E-06: Escape closes the open mobile menu and returns focus to the hamburger.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        hamburgerRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
 
   useEffect(() => {
     let last: boolean | null = null;
@@ -187,7 +201,6 @@ const Header: React.FC = () => {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
         .nav-link-header:hover { color: #f39c12 !important; }
         .nav-link-header::after {
           content: '';
@@ -265,7 +278,10 @@ const Header: React.FC = () => {
             className="hamburger-btn"
             style={styles.hamburger}
             onClick={() => setMenuOpen(!menuOpen)}
+            ref={hamburgerRef}
             aria-label="Menu"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
           >
             <span
               style={{
@@ -290,10 +306,10 @@ const Header: React.FC = () => {
       </header>
 
       {/* Mobile overlay */}
-      <div style={styles.overlay} onClick={() => setMenuOpen(false)} />
+      <div style={styles.overlay} onClick={() => setMenuOpen(false)} aria-hidden="true" />
 
-      {/* Mobile menu */}
-      <div style={styles.mobileMenu}>
+      {/* Mobile menu: inert while closed so the off-canvas links are neither focusable nor exposed to AT (E-06) */}
+      <div id="mobile-menu" inert={!menuOpen} style={styles.mobileMenu}>
         {navLinks.map((link) => (
           <a
             key={link.href}

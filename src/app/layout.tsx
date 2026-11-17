@@ -1,8 +1,22 @@
 import type { Metadata } from "next";
+import { Poppins } from "next/font/google";
 import { AppProvider } from "@/lib/context";
 import { SITE_CONFIG } from "@/lib/config";
 import { SITE_URL, SITE_TITLE, SITE_DESCRIPTION, OG_IMAGE, travelAgencyJsonLd, jsonLdString } from "@/lib/seo";
 import "./globals.css";
+
+// Self-hosted by next/font (F-07). Weights cover every fontWeight used in src/ plus 900.
+// The generated @font-face family is exposed as --font-poppins; globals.css maps body to it.
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  display: "swap",
+  variable: "--font-poppins",
+});
+
+// Runs before first paint so dark-theme users don't see a light flash (D-05).
+// Key/values must match src/lib/context.tsx ("atlas-theme": "light" | "dark").
+const themeScript = `try{var t=localStorage.getItem("atlas-theme");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t}catch(e){}`;
 
 // Favicon / apple-touch-icon come from src/app/icon.jpeg and apple-icon.jpeg (file convention).
 export const metadata: Metadata = {
@@ -35,12 +49,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={poppins.variable} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>
         <script

@@ -1,5 +1,6 @@
 import { getFAQs, addFAQ, updateFAQ, deleteFAQ } from "@/lib/db";
 import { crudRoute } from "@/lib/crud-route";
+import { nullable } from "@/lib/api";
 import { isPublicFAQ } from "@/lib/visibility";
 
 const route = crudRoute({
@@ -8,7 +9,7 @@ const route = crudRoute({
   update: updateFAQ,
   remove: deleteFAQ,
   isPublic: isPublicFAQ,
-  fields: { question: "text", questionHi: "text", answer: "text", answerHi: "text", active: "boolean", order: "number" },
+  fields: { question: "text", questionHi: nullable("text"), answer: "text", answerHi: nullable("text"), active: "boolean", order: "number" },
   required: ["question", "answer"],
   defaults: { active: true, order: 0 },
 });

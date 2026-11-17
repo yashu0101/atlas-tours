@@ -8,7 +8,7 @@ const route = crudRoute({
   update: updateGalleryImage,
   remove: deleteGalleryImage,
   isPublic: isPublicGalleryImage,
-  fields: { src: "string", caption: "string", category: "string", active: "boolean" },
+  fields: { src: "image", caption: "string", category: "string", active: "boolean" },
   required: ["src"],
   defaults: { caption: "", category: "", active: true },
 });

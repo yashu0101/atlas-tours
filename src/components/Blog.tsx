@@ -34,7 +34,7 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
     badge: {
       display: "inline-block",
       background: "rgba(230,126,34,0.1)",
-      color: "#e67e22",
+      color: "var(--orange)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,
@@ -97,7 +97,7 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
     },
     date: {
       fontSize: 13,
-      color: "#aaa",
+      color: "var(--blog-muted, #aaa)",
       marginBottom: 8,
     },
     title: {
@@ -125,7 +125,7 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
     readMore: {
       background: "none",
       border: "none",
-      color: "#e67e22",
+      color: "var(--orange)",
       fontSize: 14,
       fontWeight: 600,
       cursor: "pointer",
@@ -143,7 +143,9 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
     <section id="blog" style={styles.section}>
       <style>{`
         .blog-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(0,0,0,0.12) !important; }
-        .blog-read-more:hover { color: #1a3a6b !important; }
+        .blog-read-more:hover { color: var(--primary) !important; }
+        /* E-02: dark-mode override. Light mode uses the inline fallback (colour unchanged). */
+        [data-theme="dark"] #blog { --blog-muted: var(--text2); }
         @media (max-width: 768px) {
           .blog-grid { grid-template-columns: 1fr !important; }
         }

@@ -2,39 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-interface TourPackage {
-  id: string; name: string; destination: string; duration: string; price: number; originalPrice?: number;
-  image: string; description: string; highlights: string[]; itinerary: string[]; inclusions: string[];
-  category: "spiritual" | "cultural" | "adventure" | "heritage"; hidden?: boolean; createdAt: string;
-}
-interface Booking {
-  id: string; name: string; phone: string; email: string; city: string; packageId: string; packageName: string;
-  travelers: number; travelDate: string; amount: number; paymentStatus: string; bookingStatus: string; createdAt: string;
-}
-interface Enquiry {
-  id: string; name: string; phone: string; email: string; packageId?: string; travelers: number;
-  travelDate: string; message: string; status: string; createdAt: string;
-}
-interface Review {
-  id: string; name: string; rating: number; text: string; city: string; packageName?: string;
-  active: boolean; createdAt: string;
-}
-interface GalleryImage {
-  id: string; src: string; caption: string; category: string; active: boolean; createdAt: string;
-}
-interface BlogPost {
-  id: string; title: string; excerpt: string; content: string; image: string; category: string;
-  author: string; active: boolean; createdAt: string;
-}
-interface FAQ {
-  id: string; question: string; questionHi?: string; answer: string; answerHi?: string;
-  active: boolean; order: number; createdAt: string;
-}
-interface Offer {
-  id: string; title: string; description: string; discount: number; code?: string;
-  validFrom: string; validTo: string; active: boolean; createdAt: string;
-}
+import type { TourPackage, Booking, Enquiry, Review, GalleryImage, BlogPost, FAQ, Offer } from "@/lib/types";
+
+// PATCH body: any subset of fields, where an optional field may also be `null` to clear it
+// (an omitted/undefined field is left unchanged by the API).
+type OptionalKeys<T> = { [K in keyof T]-?: undefined extends T[K] ? K : never }[keyof T];
+type Patch<T> = { [K in keyof T]?: K extends OptionalKeys<T> ? T[K] | null : T[K] };
+
+// Option values for the status <select>s; `satisfies` keeps them in step with the unions in types.ts.
+const PAYMENT_STATUSES = ["pending", "paid", "failed", "refunded"] as const satisfies readonly Booking["paymentStatus"][];
+const BOOKING_STATUSES = ["pending", "confirmed", "completed", "cancelled"] as const satisfies readonly Booking["bookingStatus"][];
+const ENQUIRY_STATUSES = ["new", "contacted", "confirmed", "cancelled"] as const satisfies readonly Enquiry["status"][];
+const isOneOf = <T extends string>(list: readonly T[], value: string): value is T => list.some(v => v === value);
+
+// Newest first, without mutating state (Postgres returns newest-first, the JSON store oldest-first).
+const newestFirst = <T extends { createdAt: string }>(items: T[]) =>
+  [...items].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
 
 type Tab = "dashboard" | "packages" | "bookings" | "enquiries" | "reviews" | "gallery" | "blogs" | "faqs" | "offers";
 
@@ -126,8 +111,8 @@ export default function AdminPage() {
   };
 
   // Booking CRUD
-  const updateBookingStatus = async (id: string, field: string, value: string) => {
-    const updated = await sendEntity<Booking>("/api/bookings", "PATCH", { id, [field]: value }, "booking");
+  const updateBookingStatus = async (id: string, updates: Partial<Pick<Booking, "paymentStatus" | "bookingStatus">>) => {
+    const updated = await sendEntity<Booking>("/api/bookings", "PATCH", { id, ...updates }, "booking");
     if (!updated) return;
     setBookings(prev => prev.map(b => b.id === id ? updated : b));
   };
@@ -138,7 +123,7 @@ export default function AdminPage() {
   };
 
   // Enquiry CRUD
-  const updateEnquiryStatus = async (id: string, status: string) => {
+  const updateEnquiryStatus = async (id: string, status: Enquiry["status"]) => {
     const updated = await sendEntity<Enquiry>("/api/enquiries", "PATCH", { id, status }, "enquiry");
     if (!updated) return;
     setEnquiries(prev => prev.map(e => e.id === id ? updated : e));
@@ -155,7 +140,7 @@ export default function AdminPage() {
     if (!created) return;
     setPackages(prev => [...prev, created]); setNewPkg(false);
   };
-  const savePkgFn = async (id: string, updates: Partial<TourPackage>) => {
+  const savePkgFn = async (id: string, updates: Patch<Omit<TourPackage, "id" | "createdAt">>) => {
     const updated = await sendEntity<TourPackage>("/api/packages", "PATCH", { id, ...updates }, "package");
     if (!updated) return;
     setPackages(prev => prev.map(p => p.id === id ? updated : p)); setEditPkg(null);
@@ -172,7 +157,7 @@ export default function AdminPage() {
     if (!created) return;
     setReviews(prev => [...prev, created]); setNewReview(false);
   };
-  const saveReviewFn = async (id: string, updates: Partial<Review>) => {
+  const saveReviewFn = async (id: string, updates: Patch<Omit<Review, "id" | "createdAt">>) => {
     const updated = await sendEntity<Review>("/api/reviews", "PATCH", { id, ...updates }, "review");
     if (!updated) return;
     setReviews(prev => prev.map(r => r.id === id ? updated : r)); setEditReview(null);
@@ -189,7 +174,7 @@ export default function AdminPage() {
     if (!created) return;
     setGallery(prev => [...prev, created]); setNewGallery(false);
   };
-  const saveGalleryFn = async (id: string, updates: Partial<GalleryImage>) => {
+  const saveGalleryFn = async (id: string, updates: Patch<Omit<GalleryImage, "id" | "createdAt">>) => {
     const updated = await sendEntity<GalleryImage>("/api/gallery", "PATCH", { id, ...updates }, "image");
     if (!updated) return;
     setGallery(prev => prev.map(g => g.id === id ? updated : g)); setEditGallery(null);
@@ -206,7 +191,7 @@ export default function AdminPage() {
     if (!created) return;
     setBlogs(prev => [...prev, created]); setNewBlog(false);
   };
-  const saveBlogFn = async (id: string, updates: Partial<BlogPost>) => {
+  const saveBlogFn = async (id: string, updates: Patch<Omit<BlogPost, "id" | "createdAt">>) => {
     const updated = await sendEntity<BlogPost>("/api/blogs", "PATCH", { id, ...updates }, "blog post");
     if (!updated) return;
     setBlogs(prev => prev.map(b => b.id === id ? updated : b)); setEditBlog(null);
@@ -223,7 +208,7 @@ export default function AdminPage() {
     if (!created) return;
     setFaqs(prev => [...prev, created]); setNewFaq(false);
   };
-  const saveFaqFn = async (id: string, updates: Partial<FAQ>) => {
+  const saveFaqFn = async (id: string, updates: Patch<Omit<FAQ, "id" | "createdAt">>) => {
     const updated = await sendEntity<FAQ>("/api/faqs", "PATCH", { id, ...updates }, "FAQ");
     if (!updated) return;
     setFaqs(prev => prev.map(f => f.id === id ? updated : f)); setEditFaq(null);
@@ -240,7 +225,7 @@ export default function AdminPage() {
     if (!created) return;
     setOffers(prev => [...prev, created]); setNewOffer(false);
   };
-  const saveOfferFn = async (id: string, updates: Partial<Offer>) => {
+  const saveOfferFn = async (id: string, updates: Patch<Omit<Offer, "id" | "createdAt">>) => {
     const updated = await sendEntity<Offer>("/api/offers", "PATCH", { id, ...updates }, "offer");
     if (!updated) return;
     setOffers(prev => prev.map(o => o.id === id ? updated : o)); setEditOffer(null);
@@ -254,8 +239,6 @@ export default function AdminPage() {
   if (loading) return <div style={{ display: "grid", placeItems: "center", height: "100vh", background: "#0f1422", color: "#E67E22", fontFamily: "Poppins, sans-serif", fontSize: "1.2rem" }}>Loading...</div>;
 
   const totalRevenue = bookings.filter(b => b.paymentStatus === "paid").reduce((s, b) => s + b.amount, 0);
-  const confirmedBookings = bookings.filter(b => b.bookingStatus === "confirmed").length;
-  const newEnquiries = enquiries.filter(e => e.status === "new").length;
   const activeOffers = offers.filter(o => o.active).length;
   const activePackages = packages.filter(p => !p.hidden).length;
 
@@ -330,7 +313,7 @@ export default function AdminPage() {
       <div className="adm-header">
         <h1>ATLAS TOUR & TRAVELS - Admin</h1>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <a href="/" style={{ color: "#8a8070", textDecoration: "none", fontSize: ".85rem" }}>View Site</a>
+          <Link href="/" style={{ color: "#8a8070", textDecoration: "none", fontSize: ".85rem" }}>View Site</Link>
           <button className="adm-btn" onClick={logout}>Logout</button>
         </div>
       </div>
@@ -360,7 +343,7 @@ export default function AdminPage() {
                 <table className="adm-table">
                   <thead><tr><th>Guest</th><th>Package</th><th>Travel Date</th><th>Amount</th><th>Status</th></tr></thead>
                   <tbody>
-                    {bookings.slice(-5).reverse().map(b => (
+                    {newestFirst(bookings).slice(0, 5).map(b => (
                       <tr key={b.id}>
                         <td>{b.name}</td>
                         <td>{b.packageName}</td>
@@ -380,7 +363,7 @@ export default function AdminPage() {
                 <table className="adm-table">
                   <thead><tr><th>Name</th><th>Travelers</th><th>Travel Date</th><th>Status</th></tr></thead>
                   <tbody>
-                    {enquiries.slice(-5).reverse().map(e => (
+                    {newestFirst(enquiries).slice(0, 5).map(e => (
                       <tr key={e.id}>
                         <td>{e.name}</td>
                         <td>{e.travelers}</td>
@@ -408,7 +391,7 @@ export default function AdminPage() {
                 <div className="modal-content">
                   <PackageForm
                     pkg={editPkg || undefined}
-                    onSave={(data) => editPkg ? savePkgFn(editPkg.id, data) : createPkgFn(data)}
+                    onSave={(data) => editPkg ? savePkgFn(editPkg.id, { ...data, originalPrice: data.originalPrice ?? null }) : createPkgFn(data)}
                     onCancel={() => { setNewPkg(false); setEditPkg(null); }}
                   />
                 </div>
@@ -452,12 +435,12 @@ export default function AdminPage() {
                     <td>{b.travelers}</td>
                     <td>{"\u20B9"}{b.amount?.toLocaleString()}</td>
                     <td>
-                      <select className="adm-sel" value={b.paymentStatus} onChange={e => updateBookingStatus(b.id, "paymentStatus", e.target.value)}>
+                      <select className="adm-sel" value={b.paymentStatus} onChange={e => { const v = e.target.value; if (isOneOf(PAYMENT_STATUSES, v)) updateBookingStatus(b.id, { paymentStatus: v }); }}>
                         <option value="pending">Pending</option><option value="paid">Paid</option><option value="failed">Failed</option><option value="refunded">Refunded</option>
                       </select>
                     </td>
                     <td>
-                      <select className="adm-sel" value={b.bookingStatus} onChange={e => updateBookingStatus(b.id, "bookingStatus", e.target.value)}>
+                      <select className="adm-sel" value={b.bookingStatus} onChange={e => { const v = e.target.value; if (isOneOf(BOOKING_STATUSES, v)) updateBookingStatus(b.id, { bookingStatus: v }); }}>
                         <option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option>
                       </select>
                     </td>
@@ -485,7 +468,7 @@ export default function AdminPage() {
                     <td>{e.travelDate}</td>
                     <td style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.message || "--"}</td>
                     <td>
-                      <select className="adm-sel" value={e.status} onChange={ev => updateEnquiryStatus(e.id, ev.target.value)}>
+                      <select className="adm-sel" value={e.status} onChange={ev => { const v = ev.target.value; if (isOneOf(ENQUIRY_STATUSES, v)) updateEnquiryStatus(e.id, v); }}>
                         <option value="new">New</option><option value="contacted">Contacted</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option>
                       </select>
                     </td>
@@ -510,7 +493,7 @@ export default function AdminPage() {
                 <div className="modal-content">
                   <ReviewForm
                     review={editReview || undefined}
-                    onSave={(data) => editReview ? saveReviewFn(editReview.id, data) : createReviewFn(data)}
+                    onSave={(data) => editReview ? saveReviewFn(editReview.id, { ...data, packageName: data.packageName || null }) : createReviewFn(data)}
                     onCancel={() => { setNewReview(false); setEditReview(null); }}
                   />
                 </div>
@@ -630,13 +613,13 @@ export default function AdminPage() {
                 <div className="modal-content">
                   <FaqForm
                     faq={editFaq || undefined}
-                    onSave={(data) => editFaq ? saveFaqFn(editFaq.id, data) : createFaqFn(data)}
+                    onSave={(data) => editFaq ? saveFaqFn(editFaq.id, { ...data, questionHi: data.questionHi ?? null, answerHi: data.answerHi ?? null }) : createFaqFn(data)}
                     onCancel={() => { setNewFaq(false); setEditFaq(null); }}
                   />
                 </div>
               </div>
             )}
-            {faqs.sort((a, b) => a.order - b.order).map(f => (
+            {[...faqs].sort((a, b) => a.order - b.order).map(f => (
               <div key={f.id} className="adm-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
                 <div style={{ flex: 1 }}>
                   <h3 style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -670,7 +653,7 @@ export default function AdminPage() {
                 <div className="modal-content">
                   <OfferForm
                     offer={editOffer || undefined}
-                    onSave={(data) => editOffer ? saveOfferFn(editOffer.id, data) : createOfferFn(data)}
+                    onSave={(data) => editOffer ? saveOfferFn(editOffer.id, { ...data, code: data.code ?? null }) : createOfferFn(data)}
                     onCancel={() => { setNewOffer(false); setEditOffer(null); }}
                   />
                 </div>

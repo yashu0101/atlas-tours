@@ -84,7 +84,7 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
     badge: {
       display: "inline-block",
       background: "rgba(230,126,34,0.1)",
-      color: "#e67e22",
+      color: "var(--orange)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,

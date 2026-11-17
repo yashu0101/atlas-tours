@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import type { Review } from "@/lib/types";
 
 /** Reviews are loaded on the server (F-02) and passed in already filtered for public visibility. */
@@ -8,31 +8,40 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
   const reviews = initialReviews;
   const [current, setCurrent] = useState(0);
   const [slideDir, setSlideDir] = useState<"right" | "left">("right");
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // E-08 (WCAG 2.2.2): auto-advance pauses while the carousel is hovered or holds keyboard
+  // focus, and never runs under prefers-reduced-motion.
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const rotating = reviews.length > 1 && !hovered && !focused && !reducedMotion;
 
   useEffect(() => {
-    if (reviews.length <= 1) return;
-    intervalRef.current = setInterval(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  // One timeout per slide: any change of slide (auto or manual) restarts the 5s countdown,
+  // and pausing clears it.
+  useEffect(() => {
+    if (!rotating) return;
+    const t = setTimeout(() => {
+      setSlideDir("right");
       setCurrent((p) => (p + 1) % reviews.length);
     }, 5000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [reviews.length]);
+    return () => clearTimeout(t);
+  }, [rotating, current, reviews.length]);
 
   const goTo = (i: number, dir: "right" | "left" = "right") => {
     setSlideDir(dir);
     setCurrent(i);
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => {
-      setSlideDir("right");
-      setCurrent((p) => (p + 1) % reviews.length);
-    }, 5000);
   };
 
   const renderStars = (n: number) =>
     Array.from({ length: 5 }, (_, i) => (
-      <span key={i} style={{ color: i < n ? "#f39c12" : "#ddd", fontSize: 20 }}>
+      <span key={i} aria-hidden="true" style={{ color: i < n ? "#f39c12" : "#ddd", fontSize: 20 }}>
         &#9733;
       </span>
     ));
@@ -173,16 +182,39 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
         </p>
       </div>
 
-      <div style={styles.carousel}>
-        <div key={current} className={slideDir === "right" ? "slide-in-right" : "slide-in-left"} style={styles.card}>
-          <div style={styles.avatar}>
-            {review.name?.charAt(0).toUpperCase()}
-          </div>
-          <div style={styles.stars}>{renderStars(review.rating)}</div>
-          <p style={styles.message}>&ldquo;{review.text}&rdquo;</p>
-          <div style={styles.name}>{review.name}</div>
-          <div style={styles.meta}>
-            {[review.city, review.packageName].filter(Boolean).join(" | ")}
+      <div
+        style={styles.carousel}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label="Customer reviews"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onFocus={() => setFocused(true)}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
+        }}
+      >
+        {/* Stable live region (the slide itself remounts via key); silent while auto-rotating. */}
+        <div aria-live={rotating ? "off" : "polite"} aria-atomic="true">
+          <div
+            key={current}
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`${current + 1} of ${reviews.length}`}
+            className={slideDir === "right" ? "slide-in-right" : "slide-in-left"}
+            style={styles.card}
+          >
+            <div style={styles.avatar} aria-hidden="true">
+              {review.name?.charAt(0).toUpperCase()}
+            </div>
+            <div style={styles.stars} role="img" aria-label={`${review.rating} out of 5 stars`}>
+              {renderStars(review.rating)}
+            </div>
+            <p style={styles.message}>&ldquo;{review.text}&rdquo;</p>
+            <div style={styles.name}>{review.name}</div>
+            <div style={styles.meta}>
+              {[review.city, review.packageName].filter(Boolean).join(" | ")}
+            </div>
           </div>
         </div>
 
@@ -191,15 +223,17 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
             className="review-arrow"
             style={styles.arrow}
             onClick={() => goTo((current - 1 + reviews.length) % reviews.length, "left")}
+            aria-label="Previous review"
           >
-            &#8249;
+            <span aria-hidden="true">&#8249;</span>
           </button>
           <button
             className="review-arrow"
             style={styles.arrow}
             onClick={() => goTo((current + 1) % reviews.length)}
+            aria-label="Next review"
           >
-            &#8250;
+            <span aria-hidden="true">&#8250;</span>
           </button>
         </div>
 
@@ -214,6 +248,7 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
               }}
               onClick={() => goTo(i)}
               aria-label={`Go to review ${i + 1}`}
+              aria-current={i === current ? "true" : undefined}
             />
           ))}
         </div>

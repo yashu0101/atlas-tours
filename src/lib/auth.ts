@@ -81,12 +81,35 @@ export function safeEqual(a: unknown, b: unknown): boolean {
   return timingSafeEqual(ha, hb) && a.length === b.length;
 }
 
+// B-08: tokens are bound to this app (iss/aud) and to the admin role.
+const JWT_ISSUER = "atlas-tours";
+const JWT_AUDIENCE = "atlas-tours-admin";
+const SESSION_MAX_AGE_SECONDS = 24 * 60 * 60;
+
+/**
+ * Session revocation (B-08): every token embeds the current `SESSION_VERSION`
+ * env var (default "1") as the `sv` claim, and `verifySession` rejects tokens whose
+ * `sv` differs. To log every admin out (e.g. after a leaked cookie or password
+ * change), bump SESSION_VERSION (e.g. "1" -> "2") and redeploy/restart.
+ * Rotating JWT_SECRET has the same effect.
+ */
+function sessionVersion(): string {
+  return process.env.SESSION_VERSION || "1";
+}
+
+/** Cookie flags shared by login (set) and logout (clear) so the browser treats them as the same cookie. */
+export function sessionCookieOptions(maxAge: number = SESSION_MAX_AGE_SECONDS) {
+  return { httpOnly: true, secure: isProduction(), sameSite: "strict" as const, path: "/", maxAge };
+}
+
 export async function createSession(email: string) {
   const secret = getJwtSecret();
   if (!secret) throw new Error("Cannot create session: JWT_SECRET is not configured");
-  return new SignJWT({ email, role: "admin" })
+  return new SignJWT({ email, role: "admin", sv: sessionVersion() })
     .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("24h")
+    .setIssuer(JWT_ISSUER)
+    .setAudience(JWT_AUDIENCE)
+    .setExpirationTime(`${SESSION_MAX_AGE_SECONDS}s`)
     .setIssuedAt()
     .sign(secret);
 }
@@ -98,8 +121,16 @@ export async function verifySession(): Promise<{ authenticated: boolean; email?:
     const cookieStore = await cookies();
     const token = cookieStore.get(COOKIE_NAME)?.value;
     if (!token) return { authenticated: false };
-    const { payload } = await jwtVerify(token, secret);
-    return { authenticated: true, email: payload.email as string };
+    const { payload } = await jwtVerify(token, secret, {
+      algorithms: ["HS256"],
+      issuer: JWT_ISSUER,
+      audience: JWT_AUDIENCE,
+      requiredClaims: ["exp", "iat"],
+    });
+    if (payload.role !== "admin" || payload.sv !== sessionVersion() || typeof payload.email !== "string") {
+      return { authenticated: false };
+    }
+    return { authenticated: true, email: payload.email };
   } catch {
     return { authenticated: false };
   }

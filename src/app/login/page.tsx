@@ -33,7 +33,10 @@ export default function LoginPage() {
       <form onSubmit={handleLogin} style={{ background: "rgba(255,255,255,0.05)", backdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", padding: "48px 40px", width: "100%", maxWidth: "420px", color: "#fff" }}>
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
           <div style={{ width: "60px", height: "60px", background: "linear-gradient(135deg, #e67e22, #f39c12)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: "24px" }}>
-            <i className="fas fa-lock" />
+            {/* Font Awesome 6 "lock" (solid) glyph, inlined so the full FA stylesheet isn't needed (F-07). */}
+            <svg aria-hidden="true" viewBox="0 0 448 512" width="0.875em" height="1em" fill="currentColor" style={{ display: "inline-block", verticalAlign: "-0.125em" }}>
+              <path d="M144 144v48H304V144c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192V144C80 64.5 144.5 0 224 0s144 64.5 144 144v48h16c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64H80z" />
+            </svg>
           </div>
           <h1 style={{ fontSize: "24px", fontWeight: 700 }}>Admin Login</h1>
           <p style={{ opacity: 0.6, fontSize: "14px", marginTop: "4px" }}>Atlas Tour & Travels</p>

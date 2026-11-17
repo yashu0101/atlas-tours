@@ -37,6 +37,9 @@ const Hero: React.FC = () => {
       width: 4 + Math.random() * 6,
       height: 4 + Math.random() * 6,
     }));
+    // Intentional mount-only setState: random values must not be generated during
+    // render or the server and client markup would differ (hydration mismatch).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDots(generated);
   }, []);
 
@@ -44,6 +47,9 @@ const Hero: React.FC = () => {
     const reduce =
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Intentional mount-only setState: matchMedia is browser-only, so the
+    // preference can't be known during the server render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setReducedMotion(reduce);
     if (reduce) {
       const video = videoRef.current;

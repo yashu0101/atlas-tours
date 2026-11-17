@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { COOKIE_NAME } from "@/lib/auth";
+import { COOKIE_NAME, sessionCookieOptions } from "@/lib/auth";
 
 export async function POST() {
   const res = NextResponse.json({ success: true });
-  res.cookies.set(COOKIE_NAME, "", { httpOnly: true, maxAge: 0, path: "/" });
+  // Same flags as login (B-08) so the browser matches and clears the same cookie.
+  res.cookies.set(COOKIE_NAME, "", sessionCookieOptions(0));
   return res;
 }
