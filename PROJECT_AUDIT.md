@@ -2,7 +2,7 @@
 
 > **Single source of truth** for project status and the fix backlog.
 > Audit date: **2026-11-17** · Audited commit: `dd7e91d` · Rating at audit: **4.5 / 10**
-> Last updated: **2026-11-17** · Branches: `audit-fixes` (PR #1, P0+P1) → `p2-fixes` (P2) · Current rating: **7.5 / 10** · **49 / 66 done · 7 blocked on client decisions · 10 open (all P3)**
+> Last updated: **2026-11-17** · Branches: `audit-fixes` (PR #1, P0+P1) → `p2-fixes` (PR #2, P2) · Current rating: **7.5 / 10** · **49 / 66 done · 7 blocked on client decisions · 10 open (all P3)**
 
 ---
 
@@ -143,10 +143,10 @@ Convention to follow (per CLAUDE.md): **PATCH/DELETE send `{ id }` in the JSON b
 | A-01 | P0 | ✅ | Claude | 6d1f665 | Every admin DELETE fails (500) |
 | A-02 | P0 | ✅ | Claude | 6d1f665 | Create/edit/toggle crash the UI after saving |
 | A-03 | P1 | ✅ | Claude | 2852416 | No error handling on initial load / login |
-| A-04 | P2 | ✅ | Claude | p2-fixes (uncommitted) | Local interfaces duplicate `types.ts` |
-| A-05 | P2 | ✅ | Claude | p2-fixes (uncommitted) | Optimistic UI removes rows even on failure |
-| A-06 | P2 | ✅ | Claude | p2-fixes (uncommitted) | "Recent" lists show oldest on Postgres |
-| A-07 | P3 | ✅ | Claude | p2-fixes (uncommitted) | `faqs.sort` mutates state in place |
+| A-04 | P2 | ✅ | Claude | b20bb86 (PR #2) | Local interfaces duplicate `types.ts` |
+| A-05 | P2 | ✅ | Claude | b20bb86 (PR #2) | Optimistic UI removes rows even on failure |
+| A-06 | P2 | ✅ | Claude | b20bb86 (PR #2) | "Recent" lists show oldest on Postgres |
+| A-07 | P3 | ✅ | Claude | b20bb86 (PR #2) | `faqs.sort` mutates state in place |
 | A-08 | P3 | ⬜ | | | 871-line monolith; split into per-entity components |
 
 - **A-01** — `admin/page.tsx:97,108,125,142,159,176,193,210` send `fetch('/api/x?id=…', {method:'DELETE'})` with no body; every route does `await req.json()` → throws. **Fix:** send `body: JSON.stringify({ id })` + `Content-Type: application/json`. **Verify:** delete a package, reload, it stays gone.
@@ -170,12 +170,12 @@ Owns: `src/lib/db.ts`, `src/lib/auth.ts`, `src/lib/db-schema.ts`, `src/lib/confi
 | B-04 | P1 | ✅ | Claude | 2852416 | Public `/api/book` & `/api/enquiry` unvalidated, abusable |
 | B-05 | P1 | ✅ | Claude | 2852416 | Hidden/inactive content served publicly |
 | B-06 | P1 | ✅ | Claude | 2852416 | JSON backend: lost writes, wipes data on parse error, fails on serverless |
-| B-07 | P2 | ✅ | Claude | p2-fixes (uncommitted) | COALESCE updates can't clear a field; backends behave differently |
-| B-08 | P2 | ✅ | Claude | p2-fixes (uncommitted) | Session not revocable; `role` not checked; logout cookie flags differ |
-| B-09 | P2 | ✅ | Claude | p2-fixes (uncommitted) | No security headers / CSP; remote URLs not restricted to https |
+| B-07 | P2 | ✅ | Claude | b20bb86 (PR #2) | COALESCE updates can't clear a field; backends behave differently |
+| B-08 | P2 | ✅ | Claude | b20bb86 (PR #2) | Session not revocable; `role` not checked; logout cookie flags differ |
+| B-09 | P2 | ✅ | Claude | b20bb86 (PR #2) | No security headers / CSP; remote URLs not restricted to https |
 | B-10 | P2 | ✅ | Claude | 2852416 | Client-supplied `id` on POST → PK collisions |
 | B-11 | P3 | ⬜ | | | `/api/seed` weak default secret; creates tables but no seed data |
-| B-12 | P3 | ✅ | Claude | p2-fixes (uncommitted) | Unguarded `JSON.parse` on package array columns |
+| B-12 | P3 | ✅ | Claude | b20bb86 (PR #2) | Unguarded `JSON.parse` on package array columns |
 
 - **B-01** — `auth.ts:5` (`atlas-tours-default-secret`), `auth.ts:31-32` (`admin@atlastours.com`/`admin123`), `login/page.tsx:33` placeholder leaks email. Anyone can log in or forge a JWT if env vars are missing. **Fix:** throw at startup when `NODE_ENV==='production'` and `JWT_SECRET`/`ADMIN_PASSWORD`/`SEED_SECRET` unset; require ≥32-byte secret; remove email placeholder.
 - **B-02** — `api/auth/login/route.ts:7` uses `!==`; `bcryptjs` installed but unused. **Fix:** `ADMIN_PASSWORD_HASH` + `bcrypt.compare`; rate-limit per IP.
@@ -202,7 +202,7 @@ Rule: **delete local interfaces, import from `src/lib/types.ts`.** That alone fi
 | C-03 | P0 | ✅ | Claude | 6d1f665 | Review text always blank |
 | C-04 | P1 | ✅ | Claude | 2852416 | Blog "Read More" expands every card |
 | C-05 | P2 | ✅ | Claude | 2852416 | Blog date never shows |
-| C-06 | P2 | ✅ | Claude | p2-fixes (uncommitted) | FAQ ignores Hindi fields; JSON backend ignores `order` |
+| C-06 | P2 | ✅ | Claude | b20bb86 (PR #2) | FAQ ignores Hindi fields; JSON backend ignores `order` |
 | C-07 | P0 | ✅ | Claude | 6d1f665 | Contact form shows success on failure |
 | C-08 | P1 | ✅ | Claude | 2852416 | Contact sends `package` (name) not `packageId`; `travelers` may be `""` |
 | C-09 | P2 | ⏸ | client | needs decision: which email (info@atlastours.in vs gmail) | Contact info / phone hardcoded in 5+ places, inconsistent |
@@ -225,8 +225,8 @@ Owns: `src/app/page.tsx`, `src/app/globals.css`, `src/lib/context.tsx`, `Hero.ts
 | D-01 | P0 | ✅ | Claude | 6d1f665 | Fetched cards stay at `opacity:0` forever |
 | D-02 | P1 | ✅ | Claude | 2852416 | Whole page re-renders on every scroll event |
 | D-03 | P1 | ✅ | Claude | 2852416 | No `prefers-reduced-motion` support |
-| D-04 | P2 | ✅ | Claude | 2852416 + p2-fixes | `Math.random()` in render; effects without cleanup |
-| D-05 | P2 | ✅ | Claude | p2-fixes (uncommitted) | Dark-theme flash on load; `lang="hi"` set on English content |
+| D-04 | P2 | ✅ | Claude | 2852416 + b20bb86 | `Math.random()` in render; effects without cleanup |
+| D-05 | P2 | ✅ | Claude | b20bb86 (PR #2) | Dark-theme flash on load; `lang="hi"` set on English content |
 
 - **D-01** — `page.tsx:28-36` observes `.reveal`/`.fade-in` once on mount; Packages (`:341`), Gallery (`:207`), Blog (`:181`), Reviews header (`:201`) mount after fetch and are never observed (`globals.css:130`). Likely introduced in `dd7e91d`. **Fix:** add a `MutationObserver` that observes new reveal elements, or a `useReveal()` hook per component. **Verify:** all packages/gallery/blog/reviews visible after scroll.
 - **D-02** — `page.tsx:18-25` `scrollProgress` state in root; listener not passive/throttled. **Fix:** move progress bar into its own component, update via ref + `requestAnimationFrame`, `{passive:true}`.
@@ -240,17 +240,17 @@ Owns: all `src/components/*` style/markup, `src/app/login/page.tsx` (after A)
 | ID | Sev | Status | Owner | Fixed in | Issue |
 |---|---|---|---|---|---|
 | E-01 | P1 | ✅ | Claude | 2852416 | Contact inputs: near-black text on dark bg |
-| E-02 | P2 | ✅ | Claude | p2-fixes (uncommitted) | Hardcoded colors break dark mode |
+| E-02 | P2 | ✅ | Claude | b20bb86 (PR #2) | Hardcoded colors break dark mode |
 | E-03 | P1 | ✅ | Claude | 2852416 | Gallery tiles not keyboard accessible |
 | E-04 | P1 | ✅ | Claude | 2852416 | Modals lack dialog semantics, focus trap, Esc |
 | E-05 | P1 | ✅ | Claude | 2852416 | Form labels not associated with inputs |
-| E-06 | P2 | ✅ | Claude | p2-fixes (uncommitted) | Off-canvas menu & WhatsApp popup focusable when hidden; no `aria-expanded` |
-| E-07 | P2 | ✅ | Claude | 2852416 + p2-fixes | Icon-only buttons lack accessible names |
-| E-08 | P2 | ✅ | Claude | p2-fixes (uncommitted) | Reviews carousel auto-advance with no pause / `aria-live` |
+| E-06 | P2 | ✅ | Claude | b20bb86 (PR #2) | Off-canvas menu & WhatsApp popup focusable when hidden; no `aria-expanded` |
+| E-07 | P2 | ✅ | Claude | 2852416 + b20bb86 | Icon-only buttons lack accessible names |
+| E-08 | P2 | ✅ | Claude | b20bb86 (PR #2) | Reviews carousel auto-advance with no pause / `aria-live` |
 | E-09 | P2 | ✅ | Claude | 2852416 | FAQ buttons lack `aria-expanded`/`aria-controls` |
 | E-10 | P2 | ⏸ | client | needs design approval (visual change) | Contrast failures |
 | E-11 | P3 | ⬜ | | | No `:focus-visible` styles / skip link; login `outline:none` |
-| E-12 | P3 | ✅ | Claude | p2-fixes (uncommitted) | Star ratings & hero `<h1>` not meaningful to screen readers |
+| E-12 | P3 | ✅ | Claude | b20bb86 (PR #2) | Star ratings & hero `<h1>` not meaningful to screen readers |
 
 - **E-01** — `Contact.tsx:65-76` set `color: var(--text)`.
 - **E-02** — `Packages.tsx:153,267,282`, `FAQ.tsx:63,68`, `Blog.tsx:160`; greys `#888/#aaa` in Packages/Blog/Contact/FAQ/Gallery; oranges should be `var(--orange)`.
@@ -276,8 +276,8 @@ Owns: `src/app/layout.tsx`, `next.config.ts`, `package.json`, `public/`, new `sr
 | F-04 | P1 | ✅ | Claude | 2852416 | No JSON-LD (TravelAgency, FAQPage, Product/Offer, Review) |
 | F-05 | P1 | ✅ | Claude | 2852416 | Missing images: `hero-fallback.jpg`, `placeholder.jpg`, `package.jpg`; no favicon |
 | F-06 | P2 | ✅ | Claude | 2852416 | No `sitemap.ts` / `robots.ts` |
-| F-07 | P2 | ✅ | Claude | p2-fixes (uncommitted) | Poppins loaded twice; full Font Awesome for one icon |
-| F-08 | P2 | ✅ | Claude | p2-fixes (uncommitted) | Lint broken — add `eslint.config.mjs` |
+| F-07 | P2 | ✅ | Claude | b20bb86 (PR #2) | Poppins loaded twice; full Font Awesome for one icon |
+| F-08 | P2 | ✅ | Claude | b20bb86 (PR #2) | Lint broken — add `eslint.config.mjs` |
 | F-09 | P3 | ⬜ | | | Remove dead deps (`tailwindcss`, `@tailwindcss/turbopack`), use or remove `bcryptjs` (see B-02) |
 | F-10 | P3 | ⬜ | | | Remove ~15 empty route folders or implement (see G) |
 
