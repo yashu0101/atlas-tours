@@ -49,7 +49,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={poppins.variable} suppressHydrationWarning>
+    // data-scroll-behavior tells Next.js that globals.css sets `scroll-behavior: smooth` on <html>,
+    // so it can switch smooth scrolling off during route transitions (e.g. opening /packages/[id])
+    // while hash links on the home page keep scrolling smoothly.
+    <html lang="en" className={poppins.variable} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
