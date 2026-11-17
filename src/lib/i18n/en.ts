@@ -173,6 +173,8 @@ export const en = {
     previousAria: "Previous review",
     nextAria: "Next review",
     goToAria: "Go to review {n}",
+    pauseAria: "Pause automatic review rotation",
+    playAria: "Resume automatic review rotation",
   },
   blog: {
     badge: "Our Blog",

@@ -43,10 +43,10 @@ export const SEED_FAQS: readonly FAQ[] = [
   { id: "f5", question: "Can I customize my tour package?", questionHi: "क्या मैं अपना टूर पैकेज कस्टमाइज कर सकता हूं?", answer: "Absolutely! Contact us with your requirements and we'll create a custom itinerary that fits your budget and preferences.", answerHi: "बिल्कुल! अपनी आवश्यकताओं के साथ हमसे संपर्क करें और हम आपके बजट के अनुसार कस्टम यात्रा कार्यक्रम बनाएंगे।", active: true, order: 5, createdAt: EPOCH },
 ];
 
-export const SEED_OFFERS: readonly Offer[] = [
-  { id: "o1", title: "Early Bird Discount", description: "Book 30 days in advance and get 15% off on any package!", discount: 15, code: "EARLY15", validFrom: "2024-01-01", validTo: "2025-12-31", active: true, createdAt: EPOCH },
-  { id: "o2", title: "Group Special", description: "Group of 5+ travelers get flat 20% discount on total booking.", discount: 20, code: "GROUP20", validFrom: "2024-01-01", validTo: "2025-12-31", active: true, createdAt: EPOCH },
-];
+// Q-5: no seed offers. Offers are real discounts the business must honour, so they are
+// entered by the owner in Admin → Offers; the public Offers section appears only once an
+// active, unexpired offer exists. (The two 2024 sample offers were removed on 2026-11-18.)
+export const SEED_OFFERS: readonly Offer[] = [];
 
 export const SEED_CONFIG: SiteConfig = SITE_CONFIG;
 
