@@ -44,7 +44,7 @@ export default function LoginPage() {
         {error && <div style={{ background: "rgba(231,76,60,0.2)", border: "1px solid rgba(231,76,60,0.3)", borderRadius: "10px", padding: "10px 14px", marginBottom: "16px", fontSize: "13px", color: "#f3a69e" }}>{error}</div>}
         <div style={{ marginBottom: "16px" }}>
           <label style={{ fontSize: "13px", opacity: 0.7, display: "block", marginBottom: "6px" }}>Email</label>
-          <input type="email" className="login-input" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: "100%", padding: "12px 16px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.42)", borderRadius: "10px", color: "#fff", fontSize: "14px", boxSizing: "border-box" }} placeholder="admin@atlastours.com" />
+          <input type="email" className="login-input" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: "100%", padding: "12px 16px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.42)", borderRadius: "10px", color: "#fff", fontSize: "14px", boxSizing: "border-box" }} placeholder="you@example.com" />
         </div>
         <div style={{ marginBottom: "24px" }}>
           <label style={{ fontSize: "13px", opacity: 0.7, display: "block", marginBottom: "6px" }}>Password</label>

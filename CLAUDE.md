@@ -19,7 +19,7 @@ npx vitest run tests/unit/api.test.ts   # a single test file
 npm run test:e2e     # Playwright (tests/e2e) — starts its own dev server on :3150
 ```
 
-Before finishing a change, run `npx tsc --noEmit`, `npm run lint` and `npm test`; run `npm run test:e2e` when touching pages, components or the admin UI.
+Before finishing a change, run `npx tsc --noEmit`, `npm run lint` and `npm test`; run `npm run test:e2e` when touching pages, components or the admin UI. If your own `npm run dev` is already running, `next dev` refuses a second instance in the same project — build and run the suite against `next start` instead, with test-only `JWT_SECRET` (≥32 chars), `ADMIN_EMAIL`, `ADMIN_PASSWORD` set, because production mode fails closed without them.
 
 **Tests never touch `data/db.json`.** `vitest.config.mts` forces `DATABASE_URL=""`; DB-backed tests use `tests/helpers/temp-db.ts`, which points `JSON_DB_PATH` at a fresh temp file seeded from `src/lib/seed-data.ts`. Route tests call handlers directly with `new NextRequest(...)` and mock `next/headers` cookies (see `tests/routes/packages.test.ts`). Playwright's `webServer` also uses a temp `JSON_DB_PATH`. Vitest is pinned to 4.x because 5.x requires `@types/node` ≥ 22.
 
@@ -110,7 +110,7 @@ Edit paths send `null` for emptied nullable fields (conversion lives in each `*T
 
 ### Seed data (`src/lib/seed-data.ts`)
 
-Single source for default content (3 packages, 3 reviews, 6 gallery images, 3 blogs, 5 FAQs, 2 offers — fixed ids and 2024 dates). Used by the JSON backend when its file is missing and by `/api/seed` for Postgres. `data/db.json` matches it; keep them in sync if the seed changes. The two seed offers expired on 2025-12-31.
+Single source for default content (3 packages, 3 reviews, 6 gallery images, 3 blogs, 5 FAQs, **no offers** — fixed ids and 2024 dates; offers are real discounts entered by the owner in the admin, Q-5). Used by the JSON backend when its file is missing and by `/api/seed` for Postgres. `data/db.json` matches it; keep them in sync if the seed changes.
 
 ### Auth (`src/lib/auth.ts`)
 

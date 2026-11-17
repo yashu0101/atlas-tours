@@ -178,6 +178,8 @@ export const en = {
     previousAria: "Previous review",
     nextAria: "Next review",
     goToAria: "Go to review {n}",
+    pauseAria: "Pause automatic review rotation",
+    playAria: "Resume automatic review rotation",
     /** N-5: link under the carousel to /reviews/new. */
     writeReview: "Travelled with us? Write a review",
   },
