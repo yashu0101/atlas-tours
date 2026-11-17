@@ -14,6 +14,7 @@ import WhatsApp from "@/components/WhatsApp";
 import BackToTop from "@/components/BackToTop";
 import ScrollProgress from "@/components/ScrollProgress";
 import RevealObserver from "@/components/RevealObserver";
+import CompareBar from "@/components/CompareBar";
 import { getBlogs, getFAQs, getGallery, getOffers, getPackages, getReviews } from "@/lib/db";
 import { isPublicBlog, isPublicFAQ, isPublicGalleryImage, isPublicOffer, isPublicPackage, isPublicReview } from "@/lib/visibility";
 import { faqPageJsonLd, jsonLdString } from "@/lib/seo";
@@ -81,6 +82,7 @@ export default async function HomePage() {
         <Contact initialPackages={packages} />
       </main>
       <Footer />
+      <CompareBar />
       <WhatsApp />
       <BackToTop />
       {/* Last child so its effect runs after every section's mount effects, like the old page-level effect. */}

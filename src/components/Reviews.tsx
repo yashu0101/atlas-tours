@@ -255,6 +255,13 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
           ))}
         </div>
       </div>
+
+      {/* N-5: entry point to the public review form. */}
+      <p style={{ textAlign: "center", marginTop: 28, fontSize: 14 }}>
+        <a href="/reviews/new" style={{ color: "var(--gold-text)", fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 3 }}>
+          {t("reviews.writeReview")}
+        </a>
+      </p>
     </section>
   );
 };

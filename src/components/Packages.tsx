@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import SmartImage from "@/components/SmartImage";
+import { CompareToggle, SaveToggle } from "@/components/PackageToggles";
 import Link from "next/link";
 import type { TourPackage } from "@/lib/types";
 import { useApp } from "@/lib/context";
@@ -148,6 +149,15 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
       color: "var(--orange-text)",
       fontSize: 13,
       fontWeight: 600,
+    },
+    // N-7: details link + Compare toggle on one row; keeps the link's 14px gap above the buttons.
+    detailsRow: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      flexWrap: "wrap",
+      gap: 8,
+      marginBottom: 14,
     },
     grid: {
       maxWidth: 1200,
@@ -453,12 +463,14 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
           // changes when the filter changes (React would otherwise drop the observer-added `active`).
           <div key={pkg.id} className={`pkg-card card-hover reveal stagger-${(packages.indexOf(pkg) % 3) + 1}`} style={styles.card}>
             <div className="img-zoom" style={styles.cardImgWrap}>
-              <Image
+              <SmartImage
                 src={pkg.image || "/images/placeholder.jpg"}
                 alt={pkg.name}
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 380px"
                 style={{ objectFit: "cover" }}
               />
+              <SaveToggle id={pkg.id} name={pkg.name} />
               <div style={styles.priceBadge}>
                 <div>&#8377;{formatPrice(pkg.price)}</div>
                 {pkg.originalPrice && (
@@ -485,14 +497,17 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
                   <li key={i} style={styles.highlightItem}>{h}</li>
                 ))}
               </ul>
-              <Link
-                href={packagePath(pkg.id)}
-                className="pkg-details-link"
-                style={styles.detailsLink}
-                aria-label={t("packages.detailsLinkAria", { name: pkg.name })}
-              >
-                {t("packages.detailsLink")}
-              </Link>
+              <div style={styles.detailsRow}>
+                <Link
+                  href={packagePath(pkg.id)}
+                  className="pkg-details-link"
+                  style={{ ...styles.detailsLink, marginBottom: 0 }}
+                  aria-label={t("packages.detailsLinkAria", { name: pkg.name })}
+                >
+                  {t("packages.detailsLink")}
+                </Link>
+                <CompareToggle id={pkg.id} name={pkg.name} />
+              </div>
               <div style={styles.cardActions}>
                 <button
                   className="pkg-btn"
@@ -531,10 +546,11 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
             onClick={(e) => e.stopPropagation()}
           >
             <div style={styles.modalHeader}>
-              <Image
+              <SmartImage
                 src={selectedPkg.image || "/images/placeholder.jpg"}
                 alt={selectedPkg.name}
                 fill
+                sizes="(max-width: 748px) 100vw, 700px"
                 style={{ objectFit: "cover" }}
               />
               <button

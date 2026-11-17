@@ -1,7 +1,9 @@
 import React, { cache } from "react";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
+import SmartImage from "@/components/SmartImage";
+import CompareBar from "@/components/CompareBar";
+import { CompareToggle, SaveToggle } from "@/components/PackageToggles";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -188,6 +190,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: "rgba(255,255,255,0.9)",
   },
   metaItem: { display: "inline-flex", alignItems: "center", gap: 6 },
+  heroActions: { display: "flex", flexWrap: "wrap", gap: 12, marginTop: 20 },
   heroPrice: {
     display: "inline-flex",
     alignItems: "baseline",
@@ -369,11 +372,12 @@ export default async function PackageDetailPage({ params }: Params) {
       <main id="main-content" tabIndex={-1}>
         <article id="package-detail">
           <header style={styles.hero}>
-            <Image
+            <SmartImage
               src={pkg.image || "/images/placeholder.jpg"}
               alt=""
               fill
               priority
+              sizes="100vw"
               style={{ objectFit: "cover" }}
             />
             <div style={styles.heroOverlay} aria-hidden="true" />
@@ -405,6 +409,11 @@ export default async function PackageDetailPage({ params }: Params) {
                 {hasDiscount && (
                   <span style={styles.discountBadge}>{t("common.percentOff", { percent: discountPercent(pkg.originalPrice!, pkg.price) })}</span>
                 )}
+              </div>
+              {/* N-7: save / compare (client components; state lives in localStorage). */}
+              <div style={styles.heroActions}>
+                <SaveToggle id={pkg.id} name={pkg.name} variant="hero" />
+                <CompareToggle id={pkg.id} name={pkg.name} variant="hero" />
               </div>
             </div>
           </header>
@@ -487,6 +496,7 @@ export default async function PackageDetailPage({ params }: Params) {
         </article>
       </main>
       <Footer />
+      <CompareBar />
       <WhatsApp />
       <BackToTop />
       <RevealObserver />

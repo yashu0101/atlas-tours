@@ -45,7 +45,13 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  images: { unoptimized: true },
+  // N-9: the optimiser (/_next/image, same origin, so CSP img-src 'self' covers it) only runs for
+  // local images and images.unsplash.com. Admins can paste any https: image URL; those are
+  // rendered `unoptimized` by src/components/SmartImage.tsx (rule: src/lib/images.ts). Never add
+  // an open `**` pattern — it would make this server a public image proxy.
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com", pathname: "/**" }],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

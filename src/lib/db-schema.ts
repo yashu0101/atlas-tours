@@ -7,4 +7,8 @@ export async function initDB(sql: ReturnType<typeof import("@neondatabase/server
   await sql`CREATE TABLE IF NOT EXISTS blogs (id TEXT PRIMARY KEY,title TEXT NOT NULL,excerpt TEXT,content TEXT,image TEXT,category TEXT,author TEXT,active BOOLEAN DEFAULT true,created_at TEXT)`;
   await sql`CREATE TABLE IF NOT EXISTS faqs (id TEXT PRIMARY KEY,question TEXT NOT NULL,question_hi TEXT,answer TEXT NOT NULL,answer_hi TEXT,active BOOLEAN DEFAULT true,sort_order INTEGER DEFAULT 0,created_at TEXT)`;
   await sql`CREATE TABLE IF NOT EXISTS offers (id TEXT PRIMARY KEY,title TEXT NOT NULL,description TEXT,discount INTEGER,code TEXT,valid_from TEXT,valid_to TEXT,active BOOLEAN DEFAULT true,created_at TEXT)`;
+  // Columns added after the first release: CREATE TABLE IF NOT EXISTS never adds columns to an
+  // existing table, so each is also added idempotently here (Postgres ≥ 9.6).
+  await sql`ALTER TABLE enquiries ADD COLUMN IF NOT EXISTS kind TEXT`; // N-6
+  await sql`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS source TEXT`; // N-5
 }

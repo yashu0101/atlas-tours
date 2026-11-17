@@ -28,6 +28,15 @@ Last updated: 2026-11-18
 | G-02 | Notify the owner on every new enquiry/booking | Choose **email** (e.g. Resend/SMTP: sender address, recipient address) and/or **WhatsApp** (WhatsApp Business API account) |
 | G-04 | Upload images from the admin instead of pasting URLs | Choose a storage provider (**Vercel Blob** if hosted on Vercel, or **Cloudinary**) and create the account |
 | G-09 | Online payments | A **Razorpay** account (KYC done), API keys, and a decision: full payment or advance/deposit? Refund policy text |
+| N-2 | Website analytics (visits, form conversions) | Choose **Vercel Analytics** (if hosted on Vercel) or **Plausible** (paid, privacy-friendly) or Google Analytics (needs a cookie notice); create the account |
+| N-10 | Booking confirmation sent to the customer by email or WhatsApp | Same provider decision as G-02, plus the message wording |
+
+## New features that need a decision (not built yet)
+
+| # | Feature | What we need from the client |
+|---|---|---|
+| N-3 | Departure dates and seats per package; the booking date picker only offers real departures | Do tours run on fixed departure dates or any day? Is there a seat/group-size limit per departure? |
+| N-8 | Several admin logins with roles and an audit trail | Who needs access (owner, staff)? What may staff do (e.g. bookings only, no content edits or deletes)? |
 
 ## Design and content approval
 
@@ -41,3 +50,4 @@ Last updated: 2026-11-18
 | G-06 | Package filter/search and gallery category tabs: review the new UI |
 | G-08 | Full Hindi translation: please send the Hindi text for every section (the site has a translation file ready for it) |
 | G-03 / G-07 | Package and blog detail pages: review the new pages |
+| N-4…N-9 | **Built, please review:** booking status page (`/track`, reference + phone), customer reviews (`/reviews/new`, shown only after you approve them in the admin), "Plan my trip" / callback form (`/plan-trip`), wishlist (`/wishlist`) and package comparison (`/compare`) with a heart and a "Compare" button on each package card, new footer links, and the hero video now plays automatically only on larger screens with a good connection (otherwise a "Play video" button) |

@@ -100,9 +100,9 @@ async function pgUpdate(table: string, cols: ColumnMap, id: string, u: object): 
 
 // --- Row mappers (snake_case -> camelCase); NULL optional columns become undefined ---
 const rowToPackage = (r: Row) => ({ id: r.id, name: r.name, destination: r.destination, duration: r.duration, price: r.price, originalPrice: r.original_price ?? undefined, image: r.image, description: r.description, highlights: safeParseArray(r.highlights, "packages.highlights"), itinerary: safeParseArray(r.itinerary, "packages.itinerary"), inclusions: safeParseArray(r.inclusions, "packages.inclusions"), category: r.category, hidden: r.hidden, createdAt: r.created_at }) as TourPackage;
-const rowToEnquiry = (r: Row) => ({ id: r.id, name: r.name, phone: r.phone, email: r.email, packageId: r.package_id, travelers: r.travelers, travelDate: r.travel_date, message: r.message, status: r.status, createdAt: r.created_at }) as Enquiry;
+const rowToEnquiry = (r: Row) => ({ id: r.id, name: r.name, phone: r.phone, email: r.email, packageId: r.package_id, travelers: r.travelers, travelDate: r.travel_date, message: r.message, status: r.status, kind: r.kind ?? undefined, createdAt: r.created_at }) as Enquiry;
 const rowToBooking = (r: Row) => ({ id: r.id, name: r.name, phone: r.phone, email: r.email, city: r.city, packageId: r.package_id, packageName: r.package_name, travelers: r.travelers, travelDate: r.travel_date, amount: r.amount, paymentStatus: r.payment_status, bookingStatus: r.booking_status, createdAt: r.created_at }) as Booking;
-const rowToReview = (r: Row) => ({ id: r.id, name: r.name, rating: r.rating, text: r.text, city: r.city, packageName: r.package_name ?? undefined, active: r.active, createdAt: r.created_at }) as Review;
+const rowToReview = (r: Row) => ({ id: r.id, name: r.name, rating: r.rating, text: r.text, city: r.city, packageName: r.package_name ?? undefined, active: r.active, source: r.source ?? undefined, createdAt: r.created_at }) as Review;
 const rowToGallery = (r: Row) => ({ id: r.id, src: r.src, caption: r.caption, category: r.category, active: r.active, createdAt: r.created_at }) as GalleryImage;
 const rowToBlog = (r: Row) => ({ id: r.id, title: r.title, excerpt: r.excerpt, content: r.content, image: r.image, category: r.category, author: r.author, active: r.active, createdAt: r.created_at }) as BlogPost;
 const rowToFAQ = (r: Row) => ({ id: r.id, question: r.question, questionHi: r.question_hi ?? undefined, answer: r.answer, answerHi: r.answer_hi ?? undefined, active: r.active, order: r.sort_order, createdAt: r.created_at }) as FAQ;
@@ -135,7 +135,7 @@ async function pgGetEnquiries(): Promise<Enquiry[]> {
 }
 async function pgAddEnquiry(e: Omit<Enquiry, "id"|"createdAt"|"status">): Promise<Enquiry> {
   const sql = getSQL(); const id = crypto.randomUUID(); const now = new Date().toISOString();
-  await sql`INSERT INTO enquiries (id,name,phone,email,package_id,travelers,travel_date,message,status,created_at) VALUES (${id},${e.name},${e.phone},${e.email},${e.packageId||null},${e.travelers},${e.travelDate},${e.message},'new',${now})`;
+  await sql`INSERT INTO enquiries (id,name,phone,email,package_id,travelers,travel_date,message,status,kind,created_at) VALUES (${id},${e.name},${e.phone},${e.email},${e.packageId||null},${e.travelers},${e.travelDate},${e.message},'new',${e.kind ?? null},${now})`;
   return { ...e, id, createdAt: now, status: "new" };
 }
 const pgUpdateEnquiryStatus = async (id: string, status: Enquiry["status"]) => mapOne(rowToEnquiry)(await pgUpdate("enquiries", ENQUIRY_COLS, id, { status }));
@@ -155,6 +155,12 @@ async function pgAddBooking(b: Omit<Booking, "id"|"createdAt"|"paymentStatus"|"b
   return { ...b, id, createdAt: now, paymentStatus: "pending", bookingStatus: "pending" };
 }
 const pgUpdateBooking = async (id: string, u: Partial<Pick<Booking, "paymentStatus"|"bookingStatus">>) => mapOne(rowToBooking)(await pgUpdate("bookings", BOOKING_COLS, id, u));
+/** N-4: bookings whose id starts with `prefix` (validated as lowercase hex by the exported wrapper). */
+async function pgFindBookingsByIdPrefix(prefix: string): Promise<Booking[]> {
+  const sql = getSQL();
+  const rows: Row[] = await sql`SELECT * FROM bookings WHERE id LIKE ${prefix + "%"} ORDER BY created_at DESC`;
+  return rows.map(rowToBooking);
+}
 async function pgDeleteBooking(id: string): Promise<boolean> {
   const sql = getSQL(); const rows = await sql`DELETE FROM bookings WHERE id=${id} RETURNING id`; return rows.length > 0;
 }
@@ -166,7 +172,7 @@ async function pgGetReviews(): Promise<Review[]> {
 }
 async function pgAddReview(rev: Omit<Review, "id"|"createdAt">): Promise<Review> {
   const sql = getSQL(); const id = crypto.randomUUID(); const now = new Date().toISOString();
-  await sql`INSERT INTO reviews (id,name,rating,text,city,package_name,active,created_at) VALUES (${id},${rev.name},${rev.rating},${rev.text},${rev.city},${rev.packageName ?? null},${rev.active},${now})`;
+  await sql`INSERT INTO reviews (id,name,rating,text,city,package_name,active,source,created_at) VALUES (${id},${rev.name},${rev.rating},${rev.text},${rev.city},${rev.packageName ?? null},${rev.active},${rev.source ?? null},${now})`;
   return { ...rev, id, createdAt: now };
 }
 const pgUpdateReview = async (id: string, u: Patch<Review>) => mapOne(rowToReview)(await pgUpdate("reviews", REVIEW_COLS, id, u));
@@ -423,6 +429,15 @@ export async function getBookings() { return IS_POSTGRES ? pgGetBookings() : jso
 export async function addBooking(b: Omit<Booking, "id"|"createdAt"|"paymentStatus"|"bookingStatus">) {
   const full = { ...b, id: crypto.randomUUID(), createdAt: new Date().toISOString(), paymentStatus: "pending" as const, bookingStatus: "pending" as const };
   return IS_POSTGRES ? pgAddBooking(b) : jsonBooks.add(full);
+}
+/**
+ * N-4: bookings whose id starts with `prefix`. The customer-facing booking reference is the
+ * first 8 hex characters of the id, upper-cased (BookingForm). `prefix` must be lowercase
+ * hex/dashes — it feeds a LIKE pattern, so anything else (`%`, `_`) returns [].
+ */
+export async function findBookingsByIdPrefix(prefix: string) {
+  if (!/^[0-9a-f-]+$/.test(prefix)) return [];
+  return IS_POSTGRES ? pgFindBookingsByIdPrefix(prefix) : jsonBooks.getAll().filter(b => b.id.startsWith(prefix));
 }
 export async function updateBooking(id: string, u: Partial<Pick<Booking, "paymentStatus"|"bookingStatus">>) { return IS_POSTGRES ? pgUpdateBooking(id, u) : jsonBooks.update(id, u); }
 export async function deleteBooking(id: string) { return IS_POSTGRES ? pgDeleteBooking(id) : jsonBooks.remove(id); }

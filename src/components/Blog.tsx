@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
+import SmartImage from "@/components/SmartImage";
 import Link from "next/link";
 import type { BlogPost } from "@/lib/types";
 import { useT } from "@/lib/i18n/use-t";
@@ -175,10 +175,11 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
           return (
             <div key={blog.id} className="blog-card card-hover reveal" style={styles.card}>
               <div className="img-zoom" style={styles.imgWrap}>
-                <Image
+                <SmartImage
                   src={blog.image || "/images/placeholder.jpg"}
                   alt={blog.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 380px"
                   style={{ objectFit: "cover" }}
                 />
                 {blog.category && (

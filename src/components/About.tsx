@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
+import SmartImage from "@/components/SmartImage";
 import { useT } from "@/lib/i18n/use-t";
 
 const features = [
@@ -165,11 +165,12 @@ const About: React.FC = () => {
       <div style={styles.container}>
         <div className="reveal-left" style={styles.imageCol}>
           <div className="img-zoom" style={styles.imgWrap}>
-            <Image
+            <SmartImage
               src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=500&q=75"
               alt={t("about.imageAlt")}
               width={500}
               height={600}
+              sizes="(max-width: 920px) 100vw, 570px"
               style={{ width: "100%", height: "auto", display: "block" }}
             />
           </div>

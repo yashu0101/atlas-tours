@@ -106,7 +106,7 @@ export default function AdminPage() {
       </div>
 
       <div className="adm-body">
-        {tab === "dashboard" && <Dashboard packages={packages} bookings={bookings} enquiries={enquiries} offers={offers} />}
+        {tab === "dashboard" && <Dashboard packages={packages} bookings={bookings} enquiries={enquiries} offers={offers} reviews={reviews} />}
         {tab === "packages" && <PackagesTab {...packagesTab} />}
         {tab === "bookings" && <BookingsTab bookings={bookings} onUpdate={bookingCrud.update} onRemove={bookingCrud.remove} />}
         {tab === "enquiries" && <EnquiriesTab enquiries={enquiries} onUpdateStatus={(id, status) => enquiryCrud.update(id, { status })} onRemove={enquiryCrud.remove} />}
