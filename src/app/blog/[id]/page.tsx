@@ -1,7 +1,7 @@
 import type React from "react";
 import { cache } from "react";
 import type { Metadata } from "next";
-import Image from "next/image";
+import SmartImage from "@/components/SmartImage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
@@ -177,7 +177,7 @@ export default async function BlogPostPage({ params }: Params) {
           </header>
 
           <div style={styles.imgWrap}>
-            <Image
+            <SmartImage
               src={post.image || "/images/placeholder.jpg"}
               alt={post.title}
               fill

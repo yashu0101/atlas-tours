@@ -50,7 +50,31 @@ export default function AdminStyles() {
         .pkg-info h4{margin:0 0 4px;color:#EDE6DA;font-size:.95rem}
         .pkg-info p{margin:0;font-size:.82rem;color:#8a8070}
         .pkg-actions{display:flex;gap:6px;flex-shrink:0}
+        .adm-btn:disabled{opacity:.45;cursor:not-allowed;border-color:#323a50;color:#8a8070}
+        .adm-btn.primary:disabled{background:#E67E22;color:#fff;border-color:#E67E22}
+        .adm-filters{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;background:#1a2035;border:1px solid #252d42;border-radius:8px;padding:16px;margin-bottom:16px}
+        .adm-field{display:flex;flex-direction:column;gap:4px;font-size:.75rem;color:#8a8070;text-transform:uppercase;letter-spacing:.06em}
+        .adm-search{flex:1 1 260px}
+        .adm-input{background:#0f1422;color:#EDE6DA;border:1px solid #323a50;padding:7px 10px;border-radius:4px;font:inherit;font-size:.85rem;text-transform:none;letter-spacing:normal;color-scheme:dark;box-sizing:border-box}
+        .adm-input:focus{outline:none;border-color:#E67E22}
+        .adm-pager{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;font-size:.85rem;color:#8a8070}
+        .adm-ref{font-family:ui-monospace,Consolas,monospace;font-size:.82rem;color:#E2C68E;letter-spacing:.04em}
+        .adm-detail-row td{background:#151b2e}
+        .adm-message{white-space:pre-wrap;word-break:break-word;font-size:.85rem;line-height:1.6;color:#EDE6DA;max-width:900px}
+        .badge-kind-contact{background:rgba(140,140,140,.15);color:#ccc;border:1px solid rgba(140,140,140,.3)}
+        .badge-kind-trip-plan{background:rgba(91,154,201,.15);color:#7db8df;border:1px solid rgba(91,154,201,.3)}
+        .badge-kind-callback{background:rgba(230,126,34,.15);color:#E67E22;border:1px solid rgba(230,126,34,.3)}
+        .badge-customer{background:rgba(160,110,220,.15);color:#c4a3ef;border:1px solid rgba(160,110,220,.3)}
+        .adm-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+        .adm-chip{padding:6px 14px;border:1px solid #323a50;background:none;color:#ADA394;border-radius:16px;cursor:pointer;font:inherit;font-size:.8rem;transition:all .2s}
+        .adm-chip:hover{border-color:#E67E22;color:#E67E22}
+        .adm-chip.active{background:rgba(230,126,34,.12);border-color:#E67E22;color:#E67E22}
+        .adm-chip-count{display:inline-block;min-width:20px;margin-left:4px;padding:0 6px;border-radius:10px;background:#252d42;color:#EDE6DA;font-size:.72rem;text-align:center}
         @media(max-width:700px){
+          .adm-filters{padding:12px;gap:10px}
+          .adm-field{flex:1 1 calc(50% - 10px);min-width:0}
+          .adm-search{flex-basis:100%}
+          .adm-input{width:100%}
           .adm-tabs{overflow-x:auto;white-space:nowrap}
           .adm-body{padding:16px}
           .adm-table{font-size:.78rem}

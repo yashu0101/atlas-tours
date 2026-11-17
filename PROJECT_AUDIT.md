@@ -2,7 +2,7 @@
 
 > **Single source of truth** for project status and the fix backlog.
 > Audit date: **2026-11-17** · Audited commit: `dd7e91d` · Rating at audit: **4.5 / 10**
-> Last updated: **2026-11-18** · PRs #1–#5 merged into `dev` (`ba4cd92`); `master` not yet updated · Current rating: **8.5 / 10** · **62 / 66 done · 4 blocked on client decisions · 0 open**
+> Last updated: **2026-11-18** · PRs #1–#5 merged into `dev` (`ba4cd92`); N-round in PR #6 (`n-features` @ `66ef8ef`) · `master` not yet updated · Current rating: **8.5 / 10** · **68 / 77 done · 8 blocked on client decisions · 1 open (F-11)**
 
 ---
 
@@ -31,7 +31,8 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 | E — Dark mode & accessibility | all `src/components/*` | 12 | 12 | ✅ |
 | F — SEO, config, assets, tooling | `layout.tsx`, `next.config.ts`, `package.json`, `public/`, `eslint.config.mjs` | 10 | 10 | ✅ |
 | G — Missing features | new files, `tests/` | 10 | 6 | ⏸ G-02, G-04, G-08 (Hindi copy), G-09 blocked |
-| **Total** | | **66** | **62** | 4 blocked · 0 open |
+| N — New features (2026-11-18 proposal) | new pages/routes, `src/app/admin/**`, `next.config.ts` | 10 | 6 | ✅ N-1, N-4…N-7, N-9 (PR #6) · ⏸ N-2, N-3, N-8, N-10 |
+| **Total** | | **77** | **68** | 8 blocked · 1 open (F-11) |
 
 **By severity:** P0 ✅ 6/6 · P1 ✅ 21/21 · P2 ✅ 24/26 (2 ⏸: G-02, G-04) · P3 ✅ 11/13 (2 ⏸: G-08 copy, G-09).
 
@@ -293,6 +294,7 @@ Owns: `src/app/layout.tsx`, `next.config.ts`, `package.json`, `public/`, new `sr
 | F-08 | P2 | ✅ | Claude | b20bb86 (PR #2) | Lint broken — add `eslint.config.mjs` |
 | F-09 | P3 | ✅ | Claude | 45792b5 (PR #3) | Remove dead deps (`tailwindcss`, `@tailwindcss/turbopack`), use or remove `bcryptjs` (see B-02) |
 | F-10 | P3 | ✅ | Claude | 45792b5 (PR #3) | Remove ~15 empty route folders or implement (see G) |
+| F-11 | P3 | ⬜ | — | — | Seed image for "Sacred Odisha Pilgrimage" (`photo-1621427642877-68e20cf5f770`, `src/lib/config.ts`/`seed-data`, `data/db.json`) returns **404 from Unsplash** — the card shows a broken image. Found by the N-9 e2e run (optimiser log). Replace with a working photo (content choice) |
 
 - **F-01** — `npm i next@16.4.6 eslint-config-next@16.4.6`, rebuild.
 - **F-02** — fetch packages/reviews/faqs/blogs/gallery in a server component (`page.tsx` → server wrapper passing props to client sections). Coordinate with D (owns `page.tsx`) — do after D-01/D-02.
@@ -315,6 +317,23 @@ Owns: `src/app/layout.tsx`, `next.config.ts`, `package.json`, `public/`, new `sr
 | G-08 | P3 | ⏸ | client | catalog done (`src/lib/i18n/`, 5d45b93 PR #4); needs 170 Hindi strings — `docs/hindi-strings-needed.md` | Full Hindi translation (message catalog instead of inline ternaries) |
 | G-09 | P3 | ⏸ | client | needs Razorpay account + decision (CLIENT_QUESTIONS.md) | Payments (Razorpay) — `api/payments/*` folders are empty |
 | G-10 | P3 | ✅ | Claude | 45792b5 (PR #3) | Test setup (Vitest + Playwright smoke test of home page & admin CRUD) |
+
+### Workstream N — New features (proposed 2026-11-18)
+
+Built with the user's go-ahead: commit `66ef8ef`, PR #6 into `dev` (open). Visible changes need the client's review (CLIENT_QUESTIONS.md → N-4…N-9).
+
+| ID | Sev | Status | Owner | Fixed in | Feature |
+|---|---|---|---|---|---|
+| N-1 | P2 | ✅ | Claude (N-round) | 66ef8ef (PR #6) — `admin/_lib/table.ts`; Bookings/Enquiries: search, status/type filters, IST received-date range, newest first, 25/page, CSV export of all filtered rows (BOM, RFC 4180, formula-injection guard), booking reference column, enquiry type + full message | Admin search, filters, pagination, CSV export for bookings and enquiries |
+| N-2 | P3 | ⏸ | client | needs provider choice + account (CLIENT_QUESTIONS.md) | Website analytics (Vercel Analytics / Plausible) |
+| N-3 | P3 | ⏸ | client | needs departure/seat model (CLIENT_QUESTIONS.md) | Departure dates and availability on packages; date picker in booking form |
+| N-4 | P3 | ✅ | Claude (N-round) | 66ef8ef (PR #6) — `POST /api/booking-status` (reference + phone, same 404 for either mismatch, status fields only, 10 lookups/15 min/IP), `/track` page (noindex, `?ref=` prefill), "Track this booking" link after booking; `src/lib/booking-ref.ts` | Booking status page for customers |
+| N-5 | P3 | ✅ | Claude (N-round) | 66ef8ef (PR #6) — `POST /api/review` saves `active:false, source:"customer"`; `/reviews/new` page; admin Reviews: Customer / Awaiting approval badges, Approve, filter chips; dashboard card; new column `reviews.source` | Customer-submitted reviews with admin approval |
+| N-6 | P3 | ✅ | Claude (N-round) | 66ef8ef (PR #6) — `POST /api/trip-request` → Enquiry with `kind` "trip-plan"/"callback" and a labelled message (`src/lib/trip-request.ts`); `/plan-trip` page (`?mode=callback`); links from Contact + footer; new column `enquiries.kind` | Custom trip requests and callback slots |
+| N-7 | P3 | ✅ | Claude (N-round) | 66ef8ef (PR #6) — localStorage store (`src/lib/wishlist*.ts`), heart + Compare toggles on cards and detail page, floating compare bar (bottom-left), `/wishlist`, `/compare?ids=` (max 3, noindex) | Wishlist and package comparison |
+| N-8 | P3 | ⏸ | client | needs roles/permissions decision (CLIENT_QUESTIONS.md) | Multiple admin users with roles + audit trail |
+| N-9 | P3 | ✅ | Claude (N-round) | 66ef8ef (PR #6) — `next/image` optimisation for local + `images.unsplash.com` only (`SmartImage`, `src/lib/images.ts`; other hosts stay unoptimised — no open proxy); public `<img>`s converted; hero video `preload="none"`, autoplays only ≥768px without Data Saver / 2g-3g / reduced motion, else poster + "Play video" | Image and video performance |
+| N-10 | P3 | ⏸ | client | blocked on G-02 provider (CLIENT_QUESTIONS.md) | Booking confirmation to customers by email/WhatsApp |
 
 ---
 
@@ -365,3 +384,5 @@ Done: ~~Day 1: D-01 · A-01 · A-02 · C-01…C-05 · C-07 · B-01~~ · ~~Day 2:
 | 2026-11-18 | Claude | **Merged PR #4 into `dev`** (merge commit `3ebe2e9`, merge commit not squash; all 3 Vercel checks passed beforehand; `dev` tree verified identical to `p4-fixes`; `master` untouched at `dd7e91d`). Header, §1 merge status and §2 snapshot now point at `dev`. Status unchanged: 62/66 done, 4 ⏸ (G-02, G-04, G-08 Hindi copy, G-09). |
 | 2026-11-18 | Claude, branch `q-fixes` | **Q-4, Q-5, Q-6 done (user decisions).** Q-4: login email placeholder → `you@example.com`. Q-6: visible pause/play button in the reviews carousel (inline SVG, existing arrow style, i18n keys `reviews.pauseAria`/`reviews.playAria`, hidden under reduced motion). The new e2e test caught a real bug: after a mouse click, focus stayed on the button and the focus-pause kept the carousel stopped, so play did nothing — fixed by counting only keyboard (`:focus-visible`) focus and clearing the focus pause when play is pressed. Q-5 (user chose "remove the samples"): `SEED_OFFERS` is now empty and `data/db.json` has no offers; the Offers section shows only once the owner adds a real offer. `docs/hindi-strings-needed.md` regenerated (172 of 181 untranslated). Verified: `tsc` ✅, `lint` 0 errors ✅, `npm test` 217/217 ✅, `build` ✅, Playwright 16/16 ✅ (new `tests/e2e/reviews.spec.ts`: rotation, pause/play, reduced motion, placeholder) — run against `next start` because the user's dev server held the dev lock. Remaining Q items: Q-1, Q-2, Q-3, Q-7, Q-8. |
 | 2026-11-18 | Claude | **Merged PR #5 (`q-fixes`) into `dev`** (merge commit `ba4cd92`; 3 Vercel checks passed; `dev` tree verified identical to `q-fixes`; `master` untouched). Q-4/Q-5/Q-6 rows now reference `de31c8f`. |
+| 2026-11-18 | Claude (lead + 3 parallel subagents), branch `n-features` in worktree `../atlas-tours-n-features`, commit `66ef8ef`, PR #6 | **N-round: new Workstream N (10 proposed features) logged; 6 built (N-1, N-4, N-5, N-6, N-7, N-9), 4 ⏸ on client decisions (N-2 analytics provider, N-3 departure/seat model, N-8 roles, N-10 after G-02).** Worked in a separate git worktree because another session had uncommitted Q-fixes in the main folder. **Backend (lead):** `Enquiry.kind`, `Review.source` (+ `ALTER TABLE … ADD COLUMN IF NOT EXISTS` in `db-schema.ts`; Postgres path not executed — extends V-1), `findBookingsByIdPrefix`, public routes `/api/booking-status`, `/api/review`, `/api/trip-request`, sitemap lists `/plan-trip` and `/reviews/new`, footer links. **Admin (agent):** N-1 + review moderation. **Public pages (agent):** `/track`, `/reviews/new`, `/plan-trip`, `FormPageShell`, entry links in Reviews/Contact/BookingForm; i18n sections `track`, `reviewForm`, `tripRequest`. **N-7/N-9 (agent):** wishlist/compare, SmartImage, hero video gating. Lead fixed a wishlist e2e race with `admin.spec.ts` (which hides the Rajasthan package). Found F-11 (broken seed image). Verified: `tsc` ✅, `lint` 0 errors ✅, `npm test` 294/294 ✅, `npm run build` ✅, `npm run test:e2e` 25/25 ✅. **Not browser-verified by a person:** all new UI, dark mode of new pages, mobile layout, hero on slow connections/Safari, CSV in Excel. Hindi doc regenerated (new strings untranslated, G-08). |
+| 2026-11-18 | Claude | **Merged `dev` (PR #5) into `n-features` to resolve PR #6 conflicts.** Conflicts: `en.ts` (kept both `reviews.pauseAria`/`playAria` and `reviews.writeReview`), `docs/hindi-strings-needed.md` (regenerated), this file (header now lists PRs #1–#5 merged + PR #6). `Reviews.tsx`, `CLAUDE.md`, `CLIENT_QUESTIONS.md` merged cleanly. Re-verified after the merge (see PR #6). |

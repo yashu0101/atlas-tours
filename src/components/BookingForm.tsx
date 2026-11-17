@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import {
   EMPTY_BOOKING_FORM,
   MAX_TRAVELERS,
@@ -13,6 +14,7 @@ import {
 } from "@/app/packages/package-utils";
 import { useApp } from "@/lib/context";
 import { useT } from "@/lib/i18n/use-t";
+import { bookingReference } from "@/lib/booking-ref";
 
 interface BookingFormProps {
   packageId: string;
@@ -60,7 +62,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price
       const id = body && typeof body === "object" && typeof (body as { id?: unknown }).id === "string"
         ? (body as { id: string }).id
         : undefined;
-      setStatus({ kind: "success", reference: id ? id.slice(0, 8).toUpperCase() : undefined });
+      setStatus({ kind: "success", reference: id ? bookingReference(id) : undefined });
       setForm(EMPTY_BOOKING_FORM);
     } catch {
       setStatus({ kind: "error", message: bookingErrorMessage(0, null) });
@@ -236,6 +238,17 @@ const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price
             {t("booking.success", {
               reference: status.reference ? t("booking.successReference", { reference: status.reference }) : "",
             })}
+            {status.reference && (
+              <>
+                {" "}
+                <Link
+                  href={`/track?ref=${encodeURIComponent(status.reference)}`}
+                  style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: 3 }}
+                >
+                  {t("booking.trackLink")}
+                </Link>
+              </>
+            )}
           </div>
         )}
       </div>

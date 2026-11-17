@@ -25,8 +25,16 @@ export interface Enquiry {
   travelDate: string;
   message: string;
   status: "new" | "contacted" | "confirmed" | "cancelled";
+  /**
+   * Which public form created it (N-6). Missing on enquiries saved before N-6 and on
+   * Postgres rows from before the column existed — treat missing as "contact".
+   */
+  kind?: EnquiryKind;
   createdAt: string;
 }
+
+/** contact = Contact section form; trip-plan = "Plan my trip" form; callback = callback-slot request (N-6). */
+export type EnquiryKind = "contact" | "trip-plan" | "callback";
 
 export interface Booking {
   id: string;
@@ -52,6 +60,11 @@ export interface Review {
   city: string;
   packageName?: string;
   active: boolean;
+  /**
+   * N-5: "customer" = submitted through the public review form (saved inactive until an
+   * admin approves it). Missing = added by the admin (including every review from before N-5).
+   */
+  source?: "admin" | "customer";
   createdAt: string;
 }
 

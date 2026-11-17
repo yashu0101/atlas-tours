@@ -30,6 +30,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 1,
     },
+    // N-5 / N-6 public forms. /track, /wishlist and /compare are per-visitor pages (noindex).
+    ...["/plan-trip", "/reviews/new"].map((path) => ({
+      url: `${SITE_URL}${path}`,
+      changeFrequency: "yearly" as const,
+      priority: 0.5,
+    })),
     ...packages.map((p) => ({
       url: `${SITE_URL}/packages/${encodeURIComponent(p.id)}`,
       changeFrequency: "monthly" as const,

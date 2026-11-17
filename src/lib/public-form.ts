@@ -28,6 +28,23 @@ export function isHoneypotTripped(body: Body): boolean {
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+/** "YYYY-MM-DD" that is also a real calendar date. */
+export function isDateKey(s: string): boolean {
+  return DATE_RE.test(s) && !Number.isNaN(Date.parse(s));
+}
+
+/** N-5: length limits of the public review text (also used by the review form). */
+export const REVIEW_TEXT_MIN = 20;
+export const REVIEW_TEXT_MAX = 1000;
+
+/**
+ * N-4: phone numbers compared by digits only, last 10 digits (an Indian mobile number), so
+ * "+91 98765 43210", "098765-43210" and "9876543210" all match.
+ */
+export function phoneKey(s: string): string {
+  return s.replace(/\D/g, "").slice(-10);
+}
+
 /** Validated, trimmed and length-capped contact fields common to both forms. */
 export function contactFields(body: Body) {
   const name = str(body, "name", 100, true);
@@ -36,7 +53,7 @@ export function contactFields(body: Body) {
   const email = str(body, "email", 200);
   if (email && !isEmail(email)) throw badRequest("email is not a valid email address");
   const travelDate = str(body, "travelDate", 10);
-  if (travelDate && (!DATE_RE.test(travelDate) || Number.isNaN(Date.parse(travelDate)))) {
+  if (travelDate && !isDateKey(travelDate)) {
     throw badRequest("travelDate must be YYYY-MM-DD");
   }
   const travelers = positiveInt(body.travelers, "travelers", 1, 100);

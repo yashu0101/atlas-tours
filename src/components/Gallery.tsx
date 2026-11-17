@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import Image from "next/image";
+import SmartImage from "@/components/SmartImage";
 import type { GalleryImage } from "@/lib/types";
 import { useT } from "@/lib/i18n/use-t";
 
@@ -314,11 +314,12 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
               }
             }}
           >
-            <Image
+            <SmartImage
               src={img.src}
               alt={img.caption || t("gallery.imageFallback")}
               width={400}
               height={300 + (i % 3) * 80}
+              sizes="(max-width: 720px) 100vw, (max-width: 1100px) 50vw, 390px"
               style={{ width: "100%", height: "auto", display: "block" }}
             />
             <div className="gallery-overlay" style={styles.imgOverlay}>
@@ -353,11 +354,14 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
             &#8249;
           </button>
           <div style={styles.lbImgWrap} onClick={(e) => e.stopPropagation()}>
-            <Image
+            {/* N-9: deliberately unoptimised. This image sizes itself from the file (width/height
+                "auto"), so a resized/DPR srcset would change how large it appears. */}
+            <SmartImage
               src={images[lightboxIndex].src}
               alt={images[lightboxIndex].caption || ""}
               width={1000}
               height={700}
+              unoptimized
               style={{
                 maxWidth: "85vw",
                 maxHeight: "85vh",

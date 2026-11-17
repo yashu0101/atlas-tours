@@ -23,6 +23,7 @@ export const POST = withHandler(async (req) => {
   }
 
   const enquiry = await addEnquiry({
+    kind: "contact",
     name: contact.name,
     phone: contact.phone,
     email: contact.email,

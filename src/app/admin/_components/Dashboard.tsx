@@ -1,15 +1,15 @@
-import type { TourPackage, Booking, Enquiry, Offer } from "@/lib/types";
+import type { TourPackage, Booking, Enquiry, Offer, Review } from "@/lib/types";
 
-// Newest first, without mutating state (Postgres returns newest-first, the JSON store oldest-first).
-const newestFirst = <T extends { createdAt: string }>(items: T[]) =>
-  [...items].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+// newestFirst: Postgres returns newest-first, the JSON store oldest-first.
+import { isAwaitingApproval, newestFirst } from "../_lib/table";
 
-export default function Dashboard({ packages, bookings, enquiries, offers }: {
-  packages: TourPackage[]; bookings: Booking[]; enquiries: Enquiry[]; offers: Offer[];
+export default function Dashboard({ packages, bookings, enquiries, offers, reviews }: {
+  packages: TourPackage[]; bookings: Booking[]; enquiries: Enquiry[]; offers: Offer[]; reviews: Review[];
 }) {
   const totalRevenue = bookings.filter(b => b.paymentStatus === "paid").reduce((s, b) => s + b.amount, 0);
   const activeOffers = offers.filter(o => o.active).length;
   const activePackages = packages.filter(p => !p.hidden).length;
+  const awaitingReviews = reviews.filter(isAwaitingApproval).length;
 
   return (
     <>
@@ -19,6 +19,7 @@ export default function Dashboard({ packages, bookings, enquiries, offers }: {
         <div className="stat-card"><div className="num">{activePackages}</div><div className="lbl">Active Packages</div></div>
         <div className="stat-card"><div className="num">{activeOffers}</div><div className="lbl">Active Offers</div></div>
         <div className="stat-card"><div className="num">{totalRevenue > 0 ? `₹${totalRevenue.toLocaleString()}` : "--"}</div><div className="lbl">Revenue (Paid)</div></div>
+        <div className="stat-card"><div className="num">{awaitingReviews}</div><div className="lbl">Reviews awaiting approval</div></div>
       </div>
       <div className="adm-card">
         <h3>Recent Bookings</h3>

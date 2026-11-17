@@ -86,8 +86,13 @@ Contract, shared by all eight entity routes:
 Public, unauthenticated write endpoints (`src/lib/public-form.ts`) — do not confuse with the admin `/api/bookings` and `/api/enquiries`:
 
 - `POST /api/enquiry` — used by the Contact form. Whitelisted, length-capped fields; `travelers` coerced to int 1–100; accepts `packageId` (or legacy `package` id/name, mapped).
-- `POST /api/book` — **not used by any UI yet**. `packageName` and `amount` are looked up server-side; `amount = price × travelers` (assumes per-person pricing — unconfirmed with the client).
-- Both: honeypot field `website` (non-empty → 200, nothing saved) and a rate limit of 5 requests/min per IP.
+- `POST /api/book` — used by `BookingForm` on `/packages/[id]`. `packageName` and `amount` are looked up server-side; `amount = price × travelers` (assumes per-person pricing — unconfirmed with the client). The customer reference is `bookingReference(id)` (first 8 hex chars, upper-case, `src/lib/booking-ref.ts`).
+- `POST /api/review` (N-5) — customer review, saved `active: false, source: "customer"` until approved in the admin Reviews tab. Returns `{ success: true }` only.
+- `POST /api/trip-request` (N-6) — "Plan my trip" / callback form; saved as an `Enquiry` with `kind` `"trip-plan"`/`"callback"` and the answers as labelled lines in `message` (`src/lib/trip-request.ts`). Contact-form enquiries get `kind: "contact"`; missing `kind` means contact.
+- All three: honeypot field `website` (non-empty → 200, nothing saved) and a rate limit of 5 requests/min per IP.
+- `POST /api/booking-status` (N-4) — lookup by reference + phone (last 10 digits); identical 404 for a wrong reference or phone; returns status fields only; 10 lookups / 15 min per IP.
+
+`Enquiry.kind` and `Review.source` were added after launch: `db-schema.ts` adds their Postgres columns with `ALTER TABLE … ADD COLUMN IF NOT EXISTS`, so re-run `/api/seed` (idempotent) after deploying.
 
 Rate limiting (`src/lib/rate-limit.ts`) is **in-memory and per instance** — it resets on restart/cold start and isn't shared across serverless instances. Client IP comes from `x-forwarded-for`.
 
@@ -137,11 +142,13 @@ Shared types: import entity types from `src/lib/types.ts` (`TourPackage`, `Revie
 
 SEO: `src/lib/seo.ts` holds site URL, title, description, OG image and the JSON-LD builders (`travelAgencyJsonLd`, `faqPageJsonLd`, `jsonLdString` which escapes `<`). `layout.tsx` sets `metadataBase`/OG/Twitter/canonical and the TravelAgency JSON-LD; `src/app/robots.ts` and `src/app/sitemap.ts` exist; the favicon is `src/app/icon.jpeg`.
 
-Images are unoptimized (`next.config.ts`) since package/gallery URLs point at arbitrary remote hosts (Unsplash by default). Local fallbacks live in `public/images/` (`hero-fallback.jpg`, `placeholder.jpg`, `package.jpg`, `atlas-logo.jpeg`).
+Images (N-9): public components render images through `src/components/SmartImage.tsx` (`next/image`). The optimiser runs only for local files and `images.unsplash.com` (`images.remotePatterns` in `next.config.ts`, mirrored by `isOptimizableImage` in `src/lib/images.ts`); any other admin-pasted host is rendered `unoptimized`. Never add an open `**` remote pattern (public image proxy). Admin `<img>`s are unchanged. The hero video has `preload="none"` and autoplays only on ≥768px without reduced motion, Data Saver or a 2g/3g connection (`shouldAutoplayVideo`). Local fallbacks live in `public/images/` (`hero-fallback.jpg`, `placeholder.jpg`, `package.jpg`, `atlas-logo.jpeg`).
 
 ### Contact info, routes and colours (P4)
 
 - **Contact details come only from `SITE_CONFIG` / `PHONE_DISPLAY` in `src/lib/config.ts`** — `tests/unit/site-config.test.ts` fails if a component hardcodes the phone or email. The email `info@atlastours.in` is provisional (C-09, see `CLIENT_QUESTIONS.md`).
 - Detail routes: `/packages/[id]` (with `BookingForm` → `/api/book`) and `/blog/[id]`, both server components that `notFound()` on hidden/inactive items and reuse the home chrome. `Header`/`Footer` turn section links into `/#x` off the home page via `usePathname()`. The sitemap lists both.
+- Form pages (N-4…N-6): `/track` (noindex), `/reviews/new`, `/plan-trip` — shared chrome in `FormPageShell.tsx`, shared form styles in `public-form-ui.tsx`; linked from the footer, Reviews, Contact and the booking success message.
+- Wishlist/compare (N-7): ids in `localStorage` (`atlas-wishlist`, `atlas-compare`, max 3) via `src/lib/wishlist.ts` (`useSyncExternalStore`, empty server snapshot); `/wishlist` and `/compare?ids=` are noindex; `CompareBar` sits bottom-left (WhatsApp is bottom-right).
 - Offers render on the home page (`Offers.tsx`) only when visible: `active !== false` and `validTo` (inclusive, IST date) not passed (`isOfferPublicAt` in `visibility.ts`).
 - Text colours: use `--orange-text` / `--gold-text` for orange/gold *text*, `--on-accent` for text on orange/gold *fills*, `--success-text` / `--error-text` for status messages and `--input-border` for form borders. `tests/unit/contrast.test.ts` checks WCAG AA for the variable pairs in both themes.

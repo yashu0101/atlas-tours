@@ -393,6 +393,12 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
               {t("contact.error", { phone: contactCards[0].value })}
             </div>
           )}
+          {/* N-6: entry points to /plan-trip. */}
+          <p style={{ textAlign: "center", marginTop: 16, fontSize: 14, color: "var(--text2)" }}>
+            <a href="/plan-trip" style={{ color: "var(--orange-text)", fontWeight: 600 }}>{t("contact.planTripLink")}</a>
+            <span aria-hidden="true"> &middot; </span>
+            <a href="/plan-trip?mode=callback" style={{ color: "var(--orange-text)", fontWeight: 600 }}>{t("contact.callbackLink")}</a>
+          </p>
         </form>
 
         <div style={styles.infoSide}>

@@ -3,6 +3,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import { SITE_CONFIG } from "@/lib/config";
 import { useT } from "@/lib/i18n/use-t";
+import { shouldAutoplayVideo } from "@/lib/images";
+
+const HERO_VIDEO_SRC = "https://assets.mixkit.co/videos/4064/4064-720.mp4";
+
+/**
+ * N-9 video states. "idle" on the server and the first client render (no source attached, so
+ * nothing downloads); then "auto" (desktop, fast connection, motion OK) or "manual" (poster +
+ * Play button). "playing" after the visitor pressed Play.
+ */
+type VideoState = "idle" | "auto" | "manual" | "playing";
+
+type NetworkInformationLike = { saveData?: boolean; effectiveType?: string };
 
 const typingKeys = ["hero.typing1", "hero.typing2", "hero.typing3"] as const;
 
@@ -24,6 +36,8 @@ const Hero: React.FC = () => {
   >([]);
   // null until mounted (SSR-safe); true when the user prefers reduced motion.
   const [reducedMotion, setReducedMotion] = useState<boolean | null>(null);
+  const [videoState, setVideoState] = useState<VideoState>("idle");
+  const loadVideo = videoState === "auto" || videoState === "playing";
 
   useEffect(() => {
     // Generated once on mount (not during render) so SSR/client markup match
@@ -50,14 +64,30 @@ const Hero: React.FC = () => {
     // preference can't be known during the server render.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setReducedMotion(reduce);
-    if (reduce) {
-      const video = videoRef.current;
-      if (video) {
-        video.autoplay = false;
-        video.pause();
-      }
-    }
+    const connection = (navigator as Navigator & { connection?: NetworkInformationLike }).connection;
+    const auto = shouldAutoplayVideo({
+      viewportWidth: window.innerWidth,
+      reducedMotion: reduce,
+      saveData: connection?.saveData,
+      effectiveType: connection?.effectiveType,
+    });
+    setVideoState(auto ? "auto" : "manual");
   }, []);
+
+  // Start playback once a source is attached (autoplay) or the visitor pressed Play.
+  // If the browser refuses autoplay, fall back to the poster + Play button.
+  useEffect(() => {
+    if (videoState !== "auto" && videoState !== "playing") return;
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = true;
+    const p = video.play();
+    if (p && typeof p.catch === "function") {
+      p.catch(() => {
+        if (videoState === "auto") setVideoState("manual");
+      });
+    }
+  }, [videoState]);
 
   useEffect(() => {
     if (reducedMotion !== false) return; // not mounted yet, or reduced motion: no typing loop
@@ -238,6 +268,26 @@ const Hero: React.FC = () => {
       letterSpacing: 2,
       textTransform: "uppercase",
     },
+    // N-9: bottom-left so it never sits under the fixed WhatsApp button (bottom-right).
+    playBtn: {
+      position: "absolute",
+      bottom: 30,
+      left: 24,
+      zIndex: 3,
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 8,
+      padding: "8px 16px",
+      borderRadius: 30,
+      border: "2px solid rgba(255,255,255,0.5)",
+      background: "rgba(255,255,255,0.1)",
+      color: "#fff",
+      fontSize: 13,
+      fontWeight: 600,
+      cursor: "pointer",
+      fontFamily: "'Poppins', sans-serif",
+      transition: "all 0.3s",
+    },
     scrollMouse: {
       width: 26,
       height: 40,
@@ -267,24 +317,25 @@ const Hero: React.FC = () => {
         }
         .hero-btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(230,126,34,0.6) !important; }
         .hero-btn-secondary:hover { background: rgba(255,255,255,0.15) !important; border-color: #fff !important; }
+        .hero-play-btn:hover { background: rgba(255,255,255,0.2) !important; border-color: #fff !important; }
         @keyframes blink-cursor { 0%, 100% { border-color: #f39c12; } 50% { border-color: transparent; } }
       `}</style>
 
+      {/* N-9: preload="none" and no src until it will actually play, so small screens and
+          slow/data-saver connections only download the poster. */}
       <video
         ref={videoRef}
         className="kenburns"
         style={styles.video}
-        autoPlay
+        src={loadVideo ? HERO_VIDEO_SRC : undefined}
+        autoPlay={loadVideo}
+        preload="none"
         muted
         loop
         playsInline
         poster="/images/hero-fallback.jpg"
-      >
-        <source
-          src="https://assets.mixkit.co/videos/4064/4064-720.mp4"
-          type="video/mp4"
-        />
-      </video>
+        aria-hidden="true"
+      />
 
       <div style={styles.overlay} />
 
@@ -337,6 +388,21 @@ const Hero: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {videoState === "manual" && (
+        <button
+          type="button"
+          className="hero-play-btn"
+          style={styles.playBtn}
+          onClick={() => setVideoState("playing")}
+          aria-label={t("hero.playVideoAria")}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M7 4.5v15a1 1 0 001.5.86l12.5-7.5a1 1 0 000-1.72L8.5 3.64A1 1 0 007 4.5z" />
+          </svg>
+          {t("hero.playVideo")}
+        </button>
+      )}
 
       <div style={styles.scrollIndicator}>
         <span>{t("hero.scroll")}</span>

@@ -66,5 +66,9 @@ describe("sitemap", () => {
     expect(urls.some((u) => u.endsWith("/packages/hidden"))).toBe(false);
     expect(urls.some((u) => u.endsWith("/blog/b-live"))).toBe(true);
     expect(urls.some((u) => u.endsWith("/blog/b-off"))).toBe(false);
+    // N-5/N-6 form pages are listed; per-visitor pages (N-4/N-7) are not.
+    expect(urls.some((u) => u.endsWith("/plan-trip"))).toBe(true);
+    expect(urls.some((u) => u.endsWith("/reviews/new"))).toBe(true);
+    expect(urls.some((u) => /\/(track|wishlist|compare)$/.test(u))).toBe(false);
   });
 });

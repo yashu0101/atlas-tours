@@ -16,6 +16,14 @@ const quickLinks = [
   { label: "header.nav.contact", href: "#contact" },
 ] as const;
 
+// N-4…N-7 pages: real routes, so they are used as-is on every page.
+const pageLinks = [
+  { label: "footer.planTrip", href: "/plan-trip" },
+  { label: "footer.trackBooking", href: "/track" },
+  { label: "footer.wishlist", href: "/wishlist" },
+  { label: "footer.writeReview", href: "/reviews/new" },
+] as const;
+
 const services = [
   "footer.serviceSpiritual",
   "footer.serviceCultural",
@@ -227,6 +235,13 @@ const Footer: React.FC = () => {
                 </a>
               </li>
             ))}
+            {pageLinks.map((l) => (
+              <li key={l.href}>
+                <a href={l.href} className="footer-link" style={styles.link}>
+                  {t(l.label)}
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -239,7 +254,7 @@ const Footer: React.FC = () => {
           <ul style={styles.linkList}>
             {services.map((s) => (
               <li key={s}>
-                <a href={sectionHref("#packages")} className="footer-link" style={styles.link}>
+                <a href={s === "footer.serviceCustom" ? "/plan-trip" : sectionHref("#packages")} className="footer-link" style={styles.link}>
                   {t(s)}
                 </a>
               </li>
