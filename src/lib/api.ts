@@ -116,14 +116,48 @@ export function positiveInt(value: unknown, key: string, fallback: number, max: 
 // Entity field specs (admin CMS writes)
 // ------------------------------------------------------------
 
-export type FieldType = "string" | "text" | "number" | "boolean" | "string[]" | readonly string[];
+/**
+ * - `"image"`: a URL that may be rendered as an image src. Only `https:` URLs or
+ *   site-relative paths starting with a single `/` are accepted (B-09); `""` means
+ *   "no image". Anything else (`http:`, `javascript:`, `data:`, `//host`, …) is a 400.
+ */
+export type BaseFieldType = "string" | "text" | "number" | "boolean" | "string[]" | "image" | readonly string[];
+
+/**
+ * A field that may be cleared (B-07). On write, `null` — or `""` for string-like
+ * types (`string`, `text`, `image`, and `number`, since HTML inputs yield `""`) —
+ * becomes `null`, which tells the db layer to clear the stored value (SQL NULL in
+ * Postgres; the key is deleted in the JSON backend). Non-nullable fields reject `null`.
+ */
+export type NullableField = { readonly nullable: BaseFieldType };
+export type FieldType = BaseFieldType | NullableField;
 export type FieldSpec = Record<string, FieldType>;
+
+export const nullable = (type: BaseFieldType): NullableField => ({ nullable: type });
 
 const STRING_MAX = 2_000;
 const TEXT_MAX = 100_000;
 const ARRAY_MAX_ITEMS = 100;
 
-function coerceField(key: string, type: FieldType, v: unknown): unknown {
+/** True for `https:` URLs and site-relative paths (`/x`, not `//x` or `/\x`). */
+export function isSafeImageUrl(s: string): boolean {
+  if (s.startsWith("/")) {
+    // `//host` and `/\host` are protocol-relative in browsers; control chars/whitespace are never valid.
+    if (s.startsWith("//") || s.startsWith("/\\") || s.includes("\\") || /\s/.test(s)) return false;
+    for (let i = 0; i < s.length; i++) {
+      const c = s.charCodeAt(i);
+      if (c < 0x20 || c === 0x7f) return false;
+    }
+    return true;
+  }
+  try {
+    return new URL(s).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function coerceField(key: string, type: BaseFieldType, v: unknown): unknown {
   if (Array.isArray(type)) return oneOf(v, type as readonly string[], key);
   switch (type) {
     case "string":
@@ -132,6 +166,13 @@ function coerceField(key: string, type: FieldType, v: unknown): unknown {
       const max = type === "text" ? TEXT_MAX : STRING_MAX;
       if (v.length > max) throw badRequest(`${key} must be at most ${max} characters`);
       return v;
+    }
+    case "image": {
+      if (typeof v !== "string") throw badRequest(`${key} must be a string`);
+      const s = v.trim();
+      if (s.length > STRING_MAX) throw badRequest(`${key} must be at most ${STRING_MAX} characters`);
+      if (s && !isSafeImageUrl(s)) throw badRequest(`${key} must be an https:// URL or a site-relative path starting with /`);
+      return s;
     }
     case "number": {
       const n = typeof v === "number" ? v : typeof v === "string" && v.trim() ? Number(v) : NaN;
@@ -152,13 +193,23 @@ function coerceField(key: string, type: FieldType, v: unknown): unknown {
 
 /**
  * Whitelists and type-checks `body` against `spec`. Unknown keys (including
- * client-supplied `id` / `createdAt`) are dropped; `null`/`undefined` are treated as absent.
+ * client-supplied `id` / `createdAt`) are dropped and absent (`undefined`) keys are
+ * omitted, so a PATCH only touches the fields actually sent (B-07).
+ *
+ * Nullable fields map `null` / `""` to `null` (= clear). Non-nullable fields reject `null`.
  */
 export function pickFields(body: Body, spec: FieldSpec): Body {
   const out: Body = {};
-  for (const [key, type] of Object.entries(spec)) {
+  for (const [key, fieldType] of Object.entries(spec)) {
     const v = body[key];
-    if (v === undefined || v === null) continue;
+    if (v === undefined) continue;
+    const isNullable = typeof fieldType === "object" && !Array.isArray(fieldType) && "nullable" in fieldType;
+    const type: BaseFieldType = isNullable ? (fieldType as NullableField).nullable : (fieldType as BaseFieldType);
+    if (isNullable && (v === null || (typeof v === "string" && !v.trim() && !Array.isArray(type) && type !== "boolean" && type !== "string[]"))) {
+      out[key] = null;
+      continue;
+    }
+    if (v === null) throw badRequest(`${key} cannot be null`);
     out[key] = coerceField(key, type, v);
   }
   return out;
@@ -167,6 +218,6 @@ export function pickFields(body: Body, spec: FieldSpec): Body {
 export function requireFields(data: Body, keys: readonly string[]): void {
   for (const k of keys) {
     const v = data[k];
-    if (v === undefined || (typeof v === "string" && !v.trim())) throw badRequest(`${k} is required`);
+    if (v === undefined || v === null || (typeof v === "string" && !v.trim())) throw badRequest(`${k} is required`);
   }
 }

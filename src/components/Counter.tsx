@@ -38,6 +38,7 @@ const AnimatedNumber: React.FC<{ target: number; triggered: boolean }> = ({
   useEffect(() => {
     if (!triggered) return;
     let startTime = 0;
+    let frame = 0;
     const duration = 2200;
     const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
@@ -45,10 +46,12 @@ const AnimatedNumber: React.FC<{ target: number; triggered: boolean }> = ({
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
       setValue(Math.floor(easeOutCubic(progress) * target));
-      if (progress < 1) requestAnimationFrame(animate);
+      if (progress < 1) frame = requestAnimationFrame(animate);
     };
 
-    requestAnimationFrame(animate);
+    frame = requestAnimationFrame(animate);
+    // D-04: stop the loop if the component unmounts mid-animation.
+    return () => cancelAnimationFrame(frame);
   }, [triggered, target]);
 
   return <>{value}</>;
@@ -159,7 +162,7 @@ const Counter: React.FC = () => {
           .counter-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
-      <div style={styles.bgDecor} />
+      <div style={styles.bgDecor} aria-hidden="true" />
       <div className="counter-grid" style={styles.container}>
         {counters.map((c, i) => (
           <div key={i} className={`counter-card reveal-scale stagger-${i + 1}`} style={styles.card}>
@@ -173,6 +176,7 @@ const Counter: React.FC = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                aria-hidden="true"
               >
                 <path d={c.icon} />
               </svg>

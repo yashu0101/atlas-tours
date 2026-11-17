@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSession, verifyAdminCredentials, COOKIE_NAME } from "@/lib/auth";
+import { createSession, verifyAdminCredentials, sessionCookieOptions, COOKIE_NAME } from "@/lib/auth";
 import { HttpError, readJson, withHandler } from "@/lib/api";
 import { clientIp, isRateLimited, recordHit, resetLimit } from "@/lib/rate-limit";
 
@@ -20,6 +20,6 @@ export const POST = withHandler(async (req) => {
 
   const token = await createSession(email as string); // verified to be the admin email above
   const res = NextResponse.json({ success: true, email });
-  res.cookies.set(COOKIE_NAME, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge: 86400, path: "/" });
+  res.cookies.set(COOKIE_NAME, token, sessionCookieOptions());
   return res;
 });

@@ -73,7 +73,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
     badge: {
       display: "inline-block",
       background: "rgba(230,126,34,0.1)",
-      color: "#e67e22",
+      color: "var(--orange)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,
@@ -151,7 +151,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
       gap: 16,
       marginBottom: 12,
       fontSize: 13,
-      color: "#888",
+      color: "var(--pkg-muted, #888)",
     },
     metaItem: {
       display: "flex",
@@ -173,7 +173,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
       gap: 6,
     },
     highlightItem: {
-      background: "rgba(26,58,107,0.06)",
+      background: "var(--pkg-chip-bg, rgba(26,58,107,0.06))",
       color: "var(--primary)",
       padding: "4px 12px",
       borderRadius: 6,
@@ -277,7 +277,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
       gap: 20,
       marginBottom: 20,
       fontSize: 14,
-      color: "#888",
+      color: "var(--pkg-muted, #888)",
     },
     modalDesc: {
       fontSize: 15,
@@ -287,7 +287,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
     },
     itineraryDay: {
       padding: "16px 0",
-      borderBottom: "1px solid #eee",
+      borderBottom: "1px solid var(--pkg-divider, #eee)",
     },
     dayNum: {
       display: "inline-block",
@@ -302,7 +302,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
     dayTitle: {
       fontSize: 15,
       fontWeight: 600,
-      color: "#1a3a6b",
+      color: "var(--primary)",
     },
     dayDesc: {
       fontSize: 14,
@@ -337,6 +337,12 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
       <style>{`
         .pkg-card:hover { transform: translateY(-8px); box-shadow: 0 16px 50px rgba(0,0,0,0.12) !important; }
         .pkg-btn:hover { transform: translateY(-2px); }
+        /* E-02: dark-mode overrides. Light mode uses the inline fallbacks (colours unchanged). */
+        [data-theme="dark"] #packages {
+          --pkg-muted: var(--text2);
+          --pkg-chip-bg: rgba(91,143,217,0.12);
+          --pkg-divider: var(--bg3);
+        }
         @media (max-width: 768px) {
           .pkg-grid { grid-template-columns: 1fr !important; }
         }
@@ -352,7 +358,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
 
       <div className="pkg-grid" style={{ ...styles.grid, gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}>
         {packages.map((pkg, idx) => (
-          <div key={pkg.id}className={`pkg-card card-hover reveal stagger-${(idx % 3) + 1}`} style={styles.card}>
+          <div key={pkg.id} className={`pkg-card card-hover reveal stagger-${(idx % 3) + 1}`} style={styles.card}>
             <div className="img-zoom" style={styles.cardImgWrap}>
               <Image
                 src={pkg.image || "/images/placeholder.jpg"}
@@ -444,7 +450,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
               <div style={styles.modalMeta}>
                 <span>{selectedPkg.duration}</span>
                 <span>{selectedPkg.destination}</span>
-                <span style={{ color: "#e67e22", fontWeight: 700 }}>
+                <span style={{ color: "var(--orange)", fontWeight: 700 }}>
                   &#8377;{formatPrice(selectedPkg.price)}
                 </span>
               </div>

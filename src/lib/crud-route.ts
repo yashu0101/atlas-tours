@@ -10,6 +10,8 @@ import { Body, FieldSpec, notFound, pickFields, readJson, requireAdmin, requireF
  * - POST/PATCH/DELETE require an admin session; the id travels in the JSON body.
  * - Writes are whitelisted against `fields`; ids are always generated server-side (B-10).
  * - Unknown ids on PATCH/DELETE are a 404 (B-03).
+ * - PATCH only touches keys present in the body; a nullable field sent as `null`
+ *   (or `""`) is cleared, and a `required` field cannot be blanked (B-07).
  */
 export function crudRoute<T>(opts: {
   list: () => Promise<T[]>;
@@ -28,7 +30,9 @@ export function crudRoute<T>(opts: {
 
   const POST = withHandler(async (req) => {
     await requireAdmin();
-    const data = { ...opts.defaults, ...pickFields(await readJson(req), opts.fields) };
+    const data: Body = { ...opts.defaults, ...pickFields(await readJson(req), opts.fields) };
+    // A cleared optional field on create simply means "not set".
+    for (const k of Object.keys(data)) if (data[k] === null) delete data[k];
     requireFields(data, opts.required);
     return NextResponse.json(await opts.add(data as never));
   });
@@ -37,7 +41,9 @@ export function crudRoute<T>(opts: {
     await requireAdmin();
     const body = await readJson(req);
     const id = requireId(body);
-    const updated = await opts.update(id, pickFields(body, opts.fields) as never);
+    const data = pickFields(body, opts.fields);
+    requireFields(data, opts.required.filter((k) => k in data));
+    const updated = await opts.update(id, data as never);
     if (!updated) throw notFound();
     return NextResponse.json(updated);
   });

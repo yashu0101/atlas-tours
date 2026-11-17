@@ -1,5 +1,6 @@
 import { getPackages, addPackage, updatePackage, deletePackage } from "@/lib/db";
 import { crudRoute } from "@/lib/crud-route";
+import { nullable } from "@/lib/api";
 import { isPublicPackage } from "@/lib/visibility";
 
 const route = crudRoute({
@@ -9,8 +10,8 @@ const route = crudRoute({
   remove: deletePackage,
   isPublic: isPublicPackage,
   fields: {
-    name: "string", destination: "string", duration: "string", price: "number", originalPrice: "number",
-    image: "string", description: "text", highlights: "string[]", itinerary: "string[]", inclusions: "string[]",
+    name: "string", destination: "string", duration: "string", price: "number", originalPrice: nullable("number"),
+    image: "image", description: "text", highlights: "string[]", itinerary: "string[]", inclusions: "string[]",
     category: ["spiritual", "cultural", "adventure", "heritage"], hidden: "boolean",
   },
   required: ["name", "price"],
