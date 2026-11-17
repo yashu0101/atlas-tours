@@ -2,7 +2,7 @@
 
 > **Single source of truth** for project status and the fix backlog.
 > Audit date: **2026-11-17** · Audited commit: `dd7e91d` · Rating at audit: **4.5 / 10**
-> Last updated: **2026-11-18** · Branches: `audit-fixes` (PR #1, P0+P1) → `p2-fixes` (PR #2, P2) → `p3-fixes` (P3) · Current rating: **8 / 10** · **55 / 66 done · 11 blocked on client decisions · 0 open**
+> Last updated: **2026-11-18** · Branches: `audit-fixes` (PR #1, P0+P1) → `p2-fixes` (PR #2, P2) → `p3-fixes` (PR #3, P3) · Current rating: **8 / 10** · **55 / 66 done · 11 blocked on client decisions · 0 open**
 
 ---
 
@@ -151,7 +151,7 @@ Convention to follow (per CLAUDE.md): **PATCH/DELETE send `{ id }` in the JSON b
 | A-05 | P2 | ✅ | Claude | b20bb86 (PR #2) | Optimistic UI removes rows even on failure |
 | A-06 | P2 | ✅ | Claude | b20bb86 (PR #2) | "Recent" lists show oldest on Postgres |
 | A-07 | P3 | ✅ | Claude | b20bb86 (PR #2) | `faqs.sort` mutates state in place |
-| A-08 | P3 | ✅ | Claude | p3-fixes | 871-line monolith; split into per-entity components |
+| A-08 | P3 | ✅ | Claude | 45792b5 (PR #3) | 871-line monolith; split into per-entity components |
 
 - **A-01** — `admin/page.tsx:97,108,125,142,159,176,193,210` send `fetch('/api/x?id=…', {method:'DELETE'})` with no body; every route does `await req.json()` → throws. **Fix:** send `body: JSON.stringify({ id })` + `Content-Type: application/json`. **Verify:** delete a package, reload, it stays gone.
 - **A-02** — `admin/page.tsx:116,121,133,138,150,155,167,172,184,189,201,206` read `data.package`, `data.review`, `data.image`, `data.blog`, `data.faq`, `data.offer`; API returns entity at top level → `undefined` inserted into state → crash on next render. **Fix:** use `data` directly. **Verify:** create, edit, hide/show each entity with no crash.
@@ -178,7 +178,7 @@ Owns: `src/lib/db.ts`, `src/lib/auth.ts`, `src/lib/db-schema.ts`, `src/lib/confi
 | B-08 | P2 | ✅ | Claude | b20bb86 (PR #2) | Session not revocable; `role` not checked; logout cookie flags differ |
 | B-09 | P2 | ✅ | Claude | b20bb86 (PR #2) | No security headers / CSP; remote URLs not restricted to https |
 | B-10 | P2 | ✅ | Claude | 2852416 | Client-supplied `id` on POST → PK collisions |
-| B-11 | P3 | ✅ | Claude | p3-fixes | `/api/seed` weak default secret; creates tables but no seed data |
+| B-11 | P3 | ✅ | Claude | 45792b5 (PR #3) | `/api/seed` weak default secret; creates tables but no seed data |
 | B-12 | P3 | ✅ | Claude | b20bb86 (PR #2) | Unguarded `JSON.parse` on package array columns |
 
 - **B-01** — `auth.ts:5` (`atlas-tours-default-secret`), `auth.ts:31-32` (`admin@atlastours.com`/`admin123`), `login/page.tsx:33` placeholder leaks email. Anyone can log in or forge a JWT if env vars are missing. **Fix:** throw at startup when `NODE_ENV==='production'` and `JWT_SECRET`/`ADMIN_PASSWORD`/`SEED_SECRET` unset; require ≥32-byte secret; remove email placeholder.
@@ -253,7 +253,7 @@ Owns: all `src/components/*` style/markup, `src/app/login/page.tsx` (after A)
 | E-08 | P2 | ✅ | Claude | b20bb86 (PR #2) | Reviews carousel auto-advance with no pause / `aria-live` |
 | E-09 | P2 | ✅ | Claude | 2852416 | FAQ buttons lack `aria-expanded`/`aria-controls` |
 | E-10 | P2 | ⏸ | client | needs design approval (visual change) | Contrast failures |
-| E-11 | P3 | ✅ | Claude | p3-fixes | No `:focus-visible` styles / skip link; login `outline:none` |
+| E-11 | P3 | ✅ | Claude | 45792b5 (PR #3) | No `:focus-visible` styles / skip link; login `outline:none` |
 | E-12 | P3 | ✅ | Claude | b20bb86 (PR #2) | Star ratings & hero `<h1>` not meaningful to screen readers |
 
 - **E-01** — `Contact.tsx:65-76` set `color: var(--text)`.
@@ -282,8 +282,8 @@ Owns: `src/app/layout.tsx`, `next.config.ts`, `package.json`, `public/`, new `sr
 | F-06 | P2 | ✅ | Claude | 2852416 | No `sitemap.ts` / `robots.ts` |
 | F-07 | P2 | ✅ | Claude | b20bb86 (PR #2) | Poppins loaded twice; full Font Awesome for one icon |
 | F-08 | P2 | ✅ | Claude | b20bb86 (PR #2) | Lint broken — add `eslint.config.mjs` |
-| F-09 | P3 | ✅ | Claude | p3-fixes | Remove dead deps (`tailwindcss`, `@tailwindcss/turbopack`), use or remove `bcryptjs` (see B-02) |
-| F-10 | P3 | ✅ | Claude | p3-fixes | Remove ~15 empty route folders or implement (see G) |
+| F-09 | P3 | ✅ | Claude | 45792b5 (PR #3) | Remove dead deps (`tailwindcss`, `@tailwindcss/turbopack`), use or remove `bcryptjs` (see B-02) |
+| F-10 | P3 | ✅ | Claude | 45792b5 (PR #3) | Remove ~15 empty route folders or implement (see G) |
 
 - **F-01** — `npm i next@16.4.6 eslint-config-next@16.4.6`, rebuild.
 - **F-02** — fetch packages/reviews/faqs/blogs/gallery in a server component (`page.tsx` → server wrapper passing props to client sections). Coordinate with D (owns `page.tsx`) — do after D-01/D-02.
@@ -305,7 +305,7 @@ Owns: `src/app/layout.tsx`, `next.config.ts`, `package.json`, `public/`, new `sr
 | G-07 | P3 | ⏸ | client | needs approval: new pages | Blog detail pages |
 | G-08 | P3 | ⏸ | client | needs Hindi copy from the client | Full Hindi translation (message catalog instead of inline ternaries) |
 | G-09 | P3 | ⏸ | client | needs Razorpay account + decision | Payments (Razorpay) — `api/payments/*` folders are empty |
-| G-10 | P3 | ✅ | Claude | p3-fixes | Test setup (Vitest + Playwright smoke test of home page & admin CRUD) |
+| G-10 | P3 | ✅ | Claude | 45792b5 (PR #3) | Test setup (Vitest + Playwright smoke test of home page & admin CRUD) |
 
 ---
 
