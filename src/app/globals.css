@@ -44,6 +44,8 @@
 
 /* ===== GLOBAL RESET ===== */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+/* Paired with data-scroll-behavior="smooth" on <html> in layout.tsx — Next.js needs it to
+   disable smooth scrolling during route transitions. Keep both or remove both. */
 html { scroll-behavior: smooth; }
 body {
   font-family: var(--font-poppins, 'Poppins'), sans-serif;
