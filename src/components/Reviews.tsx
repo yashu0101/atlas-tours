@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import type { Review } from "@/lib/types";
+import { useT } from "@/lib/i18n/use-t";
 
 /** Reviews are loaded on the server (F-02) and passed in already filtered for public visibility. */
 const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => {
   const reviews = initialReviews;
+  const t = useT();
   const [current, setCurrent] = useState(0);
   const [slideDir, setSlideDir] = useState<"right" | "left">("right");
   // E-08 (WCAG 2.2.2): auto-advance pauses while the carousel is hovered or holds keyboard
@@ -27,11 +29,11 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
   // and pausing clears it.
   useEffect(() => {
     if (!rotating) return;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       setSlideDir("right");
       setCurrent((p) => (p + 1) % reviews.length);
     }, 5000);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [rotating, current, reviews.length]);
 
   const goTo = (i: number, dir: "right" | "left" = "right") => {
@@ -60,7 +62,7 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
     badge: {
       display: "inline-block",
       background: "rgba(243,156,18,0.2)",
-      color: "#f39c12",
+      color: "var(--gold-text)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,
@@ -106,7 +108,7 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
       fontSize: 28,
       fontWeight: 700,
       margin: "0 auto 16px",
-      color: "#fff",
+      color: "var(--on-accent)",
     },
     stars: {
       marginBottom: 16,
@@ -121,12 +123,12 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
     name: {
       fontSize: 18,
       fontWeight: 700,
-      color: "#f39c12",
+      color: "var(--gold-text)",
       marginBottom: 4,
     },
     meta: {
       fontSize: 13,
-      color: "rgba(255,255,255,0.5)",
+      color: "rgba(255,255,255,0.7)",
     },
     dots: {
       display: "flex",
@@ -175,10 +177,10 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
         .review-arrow:hover { background: rgba(243,156,18,0.3) !important; border-color: #f39c12 !important; }
       `}</style>
       <div className="reveal" style={styles.header}>
-        <span style={styles.badge}>Testimonials</span>
-        <h2 style={styles.heading}>What Our Travellers Say</h2>
+        <span style={styles.badge}>{t("reviews.badge")}</span>
+        <h2 style={styles.heading}>{t("reviews.heading")}</h2>
         <p style={styles.subheading}>
-          Real experiences from our happy customers.
+          {t("reviews.subheading")}
         </p>
       </div>
 
@@ -186,7 +188,7 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
         style={styles.carousel}
         role="region"
         aria-roledescription="carousel"
-        aria-label="Customer reviews"
+        aria-label={t("reviews.carouselAria")}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onFocus={() => setFocused(true)}
@@ -200,14 +202,14 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
             key={current}
             role="group"
             aria-roledescription="slide"
-            aria-label={`${current + 1} of ${reviews.length}`}
+            aria-label={t("reviews.slideAria", { current: current + 1, total: reviews.length })}
             className={slideDir === "right" ? "slide-in-right" : "slide-in-left"}
             style={styles.card}
           >
             <div style={styles.avatar} aria-hidden="true">
               {review.name?.charAt(0).toUpperCase()}
             </div>
-            <div style={styles.stars} role="img" aria-label={`${review.rating} out of 5 stars`}>
+            <div style={styles.stars} role="img" aria-label={t("reviews.starsAria", { rating: review.rating })}>
               {renderStars(review.rating)}
             </div>
             <p style={styles.message}>&ldquo;{review.text}&rdquo;</p>
@@ -223,7 +225,7 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
             className="review-arrow"
             style={styles.arrow}
             onClick={() => goTo((current - 1 + reviews.length) % reviews.length, "left")}
-            aria-label="Previous review"
+            aria-label={t("reviews.previousAria")}
           >
             <span aria-hidden="true">&#8249;</span>
           </button>
@@ -231,7 +233,7 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
             className="review-arrow"
             style={styles.arrow}
             onClick={() => goTo((current + 1) % reviews.length)}
-            aria-label="Next review"
+            aria-label={t("reviews.nextAria")}
           >
             <span aria-hidden="true">&#8250;</span>
           </button>
@@ -243,11 +245,11 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
               key={i}
               style={{
                 ...styles.dot,
-                background: i === current ? "#f39c12" : "rgba(255,255,255,0.25)",
+                background: i === current ? "#f39c12" : "rgba(255,255,255,0.4)",
                 transform: i === current ? "scale(1.3)" : "scale(1)",
               }}
               onClick={() => goTo(i)}
-              aria-label={`Go to review ${i + 1}`}
+              aria-label={t("reviews.goToAria", { n: i + 1 })}
               aria-current={i === current ? "true" : undefined}
             />
           ))}

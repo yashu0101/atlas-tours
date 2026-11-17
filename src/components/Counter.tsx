@@ -1,30 +1,31 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useT } from "@/lib/i18n/use-t";
 
 const counters = [
   {
     num: 500,
     suffix: "+",
-    label: "Happy Travelers",
+    label: "counter.happyTravelers" as const,
     icon: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75",
   },
   {
     num: 50,
     suffix: "+",
-    label: "Destinations",
+    label: "counter.destinations" as const,
     icon: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0zM12 13a3 3 0 100-6 3 3 0 000 6z",
   },
   {
     num: 10,
     suffix: "+",
-    label: "Years Experience",
+    label: "counter.yearsExperience" as const,
     icon: "M12 15l-2 5-3-2-3 3V4a1 1 0 011-1h10a1 1 0 011 1v17l-3-3-3 2z",
   },
   {
     num: 1000,
     suffix: "+",
-    label: "Trips Completed",
+    label: "counter.tripsCompleted" as const,
     icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4",
   },
 ];
@@ -58,6 +59,7 @@ const AnimatedNumber: React.FC<{ target: number; triggered: boolean }> = ({
 };
 
 const Counter: React.FC = () => {
+  const t = useT();
   const sectionRef = useRef<HTMLDivElement>(null);
   const [triggered, setTriggered] = useState(false);
 
@@ -132,7 +134,7 @@ const Counter: React.FC = () => {
     },
     label: {
       fontSize: 14,
-      color: "rgba(255,255,255,0.55)",
+      color: "rgba(255,255,255,0.7)",
       textTransform: "uppercase",
       letterSpacing: 1.5,
       fontWeight: 500,
@@ -185,7 +187,7 @@ const Counter: React.FC = () => {
               <AnimatedNumber target={c.num} triggered={triggered} />
               {c.suffix}
             </div>
-            <div style={styles.label}>{c.label}</div>
+            <div style={styles.label}>{t(c.label)}</div>
           </div>
         ))}
       </div>

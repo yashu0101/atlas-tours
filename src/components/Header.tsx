@@ -2,13 +2,20 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useApp } from "@/lib/context";
+import { useT } from "@/lib/i18n/use-t";
+import { SITE_CONFIG } from "@/lib/config";
 
 const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
   const { theme, setTheme, lang, setLang } = useApp();
+  const t = useT();
+  // Section links are bare hashes on the home page; on sub-routes (e.g. /packages/[id]) they point back to "/".
+  const onHome = usePathname() === "/";
+  const sectionHref = (hash: string) => (onHome ? hash : `/${hash}`);
 
   // E-06: Escape closes the open mobile menu and returns focus to the hamburger.
   useEffect(() => {
@@ -38,13 +45,13 @@ const Header: React.FC = () => {
   }, []);
 
   const navLinks = [
-    { label: lang === "en" ? "Home" : "\u0939\u094B\u092E", href: "#home" },
-    { label: lang === "en" ? "About" : "\u0939\u092E\u093E\u0930\u0947 \u092C\u093E\u0930\u0947 \u092E\u0947\u0902", href: "#about" },
-    { label: lang === "en" ? "Packages" : "\u092A\u0948\u0915\u0947\u091C", href: "#packages" },
-    { label: lang === "en" ? "Gallery" : "\u0917\u0948\u0932\u0930\u0940", href: "#gallery" },
-    { label: lang === "en" ? "Blog" : "\u092C\u094D\u0932\u0949\u0917", href: "#blog" },
-    { label: lang === "en" ? "FAQ" : "\u0938\u0935\u093E\u0932", href: "#faq" },
-    { label: lang === "en" ? "Contact" : "\u0938\u0902\u092A\u0930\u094D\u0915", href: "#contact" },
+    { label: t("header.nav.home"), href: sectionHref("#home") },
+    { label: t("header.nav.about"), href: sectionHref("#about") },
+    { label: t("header.nav.packages"), href: sectionHref("#packages") },
+    { label: t("header.nav.gallery"), href: sectionHref("#gallery") },
+    { label: t("header.nav.blog"), href: sectionHref("#blog") },
+    { label: t("header.nav.faq"), href: sectionHref("#faq") },
+    { label: t("header.nav.contact"), href: sectionHref("#contact") },
   ];
 
   const styles: Record<string, React.CSSProperties> = {
@@ -130,7 +137,7 @@ const Header: React.FC = () => {
       border: "none",
       borderRadius: 24,
       padding: "8px 20px",
-      color: "#fff",
+      color: "var(--on-accent)",
       fontSize: 14,
       fontWeight: 600,
       cursor: "pointer",
@@ -224,7 +231,7 @@ const Header: React.FC = () => {
 
       <header style={styles.header}>
         <div style={styles.container}>
-          <a href="#home" style={styles.logoWrap}>
+          <a href={sectionHref("#home")} style={styles.logoWrap}>
             <Image
               src="/images/atlas-logo.jpeg"
               alt="Atlas Tours"
@@ -258,19 +265,19 @@ const Header: React.FC = () => {
               className="toggle-btn-h"
               style={styles.toggleBtn}
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              aria-label="Toggle dark mode"
+              aria-label={t("header.themeToggleAria")}
             >
-              {theme === "dark" ? "\u2600\uFE0F Light" : "\uD83C\uDF19 Dark"}
+              {theme === "dark" ? t("header.themeLight") : t("header.themeDark")}
             </button>
             <button
               className="toggle-btn-h"
               style={styles.toggleBtn}
               onClick={() => setLang(lang === "en" ? "hi" : "en")}
             >
-              {lang === "en" ? "\u0939\u093F\u0902\u0926\u0940" : "EN"}
+              {t("header.langToggle")}
             </button>
-            <a href="tel:+916388360881" style={styles.callBtn}>
-              {lang === "en" ? "Call Now" : "\u0915\u0949\u0932 \u0915\u0930\u0947\u0902"}
+            <a href={`tel:${SITE_CONFIG.phone}`} style={styles.callBtn}>
+              {t("header.callNow")}
             </a>
           </div>
 
@@ -279,7 +286,7 @@ const Header: React.FC = () => {
             style={styles.hamburger}
             onClick={() => setMenuOpen(!menuOpen)}
             ref={hamburgerRef}
-            aria-label="Menu"
+            aria-label={t("header.menuAria")}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
           >
@@ -327,18 +334,18 @@ const Header: React.FC = () => {
             style={styles.toggleBtn}
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           >
-            {theme === "dark" ? "\u2600\uFE0F Light" : "\uD83C\uDF19 Dark"}
+            {theme === "dark" ? t("header.themeLight") : t("header.themeDark")}
           </button>
           <button
             className="toggle-btn-h"
             style={styles.toggleBtn}
             onClick={() => setLang(lang === "en" ? "hi" : "en")}
           >
-            {lang === "en" ? "\u0939\u093F\u0902\u0926\u0940" : "EN"}
+            {t("header.langToggle")}
           </button>
         </div>
-        <a href="tel:+916388360881" style={{ ...styles.callBtn, marginTop: 12, justifyContent: "center" }}>
-          {lang === "en" ? "Call Now" : "\u0915\u0949\u0932 \u0915\u0930\u0947\u0902"}
+        <a href={`tel:${SITE_CONFIG.phone}`} style={{ ...styles.callBtn, marginTop: 12, justifyContent: "center" }}>
+          {t("header.callNow")}
         </a>
       </div>
     </>

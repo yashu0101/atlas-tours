@@ -64,3 +64,32 @@ export function faqPageJsonLd(faqs: readonly Pick<FAQ, "question" | "answer">[])
 export function jsonLdString(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
+
+/** Absolute URL for a site-relative path ("/images/x.jpg"); absolute URLs pass through. */
+export function absoluteUrl(pathOrUrl: string): string {
+  return pathOrUrl.startsWith("/") ? `${SITE_URL}${pathOrUrl}` : pathOrUrl;
+}
+
+/** BlogPosting structured data for a public blog detail page (G-07). */
+export function blogPostingJsonLd(
+  post: Pick<import("./types").BlogPost, "id" | "title" | "excerpt" | "image" | "author" | "category" | "createdAt">,
+) {
+  const url = `${SITE_URL}/blog/${encodeURIComponent(post.id)}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt || undefined,
+    image: post.image ? [absoluteUrl(post.image)] : undefined,
+    datePublished: post.createdAt || undefined,
+    articleSection: post.category || undefined,
+    author: { "@type": "Organization", name: post.author || SITE_CONFIG.name },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_CONFIG.name,
+      logo: { "@type": "ImageObject", url: `${SITE_URL}${LOGO_PATH}` },
+    },
+    url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+  };
+}

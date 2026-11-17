@@ -4,10 +4,17 @@ export const SITE_CONFIG: SiteConfig = {
   name: "Atlas Tour & Travels",
   phone: "+916388360881",
   whatsapp: "916388360881",
-  email: "atlastourandtravels01@gmail.com",
+  // C-09: public email pending client confirmation — change only this line.
+  email: "info@atlastours.in",
   address: "Varanasi, Uttar Pradesh, India",
   tagline: "Spiritual Journey... Lifetime Memories",
 };
+
+/**
+ * Phone formatted for display ("+91 6388360881"), derived from SITE_CONFIG.phone.
+ * Kept out of SITE_CONFIG because that object is also the seeded DB `config` row (SiteConfig).
+ */
+export const PHONE_DISPLAY = SITE_CONFIG.phone.replace(/^\+91(\d+)$/, "+91 $1");
 
 export const DEFAULT_PACKAGES: TourPackage[] = [
   {

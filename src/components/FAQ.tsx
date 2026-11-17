@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import type { FAQ as FAQItem } from "@/lib/types";
 import { useApp } from "@/lib/context";
+import { useT } from "@/lib/i18n/use-t";
 
 const FAQAccordionItem: React.FC<{
   faq: FAQItem;
@@ -54,7 +55,7 @@ const FAQAccordionItem: React.FC<{
     question: {
       fontSize: 16,
       fontWeight: 600,
-      color: isOpen ? "var(--orange)" : "var(--text)",
+      color: isOpen ? "var(--orange-text)" : "var(--text)",
       transition: "color 0.3s",
       flex: 1,
     },
@@ -69,7 +70,7 @@ const FAQAccordionItem: React.FC<{
       alignItems: "center",
       justifyContent: "center",
       fontSize: 20,
-      color: isOpen ? "#fff" : "var(--primary)",
+      color: isOpen ? "var(--on-accent)" : "var(--primary)",
       fontWeight: 300,
       flexShrink: 0,
       transition: "all 0.3s",
@@ -116,6 +117,7 @@ const FAQAccordionItem: React.FC<{
 /** FAQs are loaded on the server (F-02) and passed in already filtered for public visibility. */
 const FAQ: React.FC<{ initialFaqs: FAQItem[] }> = ({ initialFaqs }) => {
   const faqs = initialFaqs;
+  const t = useT();
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const styles: Record<string, React.CSSProperties> = {
@@ -131,7 +133,7 @@ const FAQ: React.FC<{ initialFaqs: FAQItem[] }> = ({ initialFaqs }) => {
     badge: {
       display: "inline-block",
       background: "rgba(230,126,34,0.1)",
-      color: "var(--orange)",
+      color: "var(--orange-text)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,
@@ -165,10 +167,10 @@ const FAQ: React.FC<{ initialFaqs: FAQItem[] }> = ({ initialFaqs }) => {
         [data-theme="dark"] #faq { --faq-icon-bg: rgba(91,143,217,0.15); }
       `}</style>
       <div className="reveal" style={styles.header}>
-        <span style={styles.badge}>FAQ</span>
-        <h2 style={styles.heading}>Frequently Asked Questions</h2>
+        <span style={styles.badge}>{t("faq.badge")}</span>
+        <h2 style={styles.heading}>{t("faq.heading")}</h2>
         <p style={styles.subheading}>
-          Find answers to common questions about our tours and services.
+          {t("faq.subheading")}
         </p>
       </div>
 
