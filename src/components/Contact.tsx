@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import type { TourPackage } from "@/lib/types";
+import { SITE_CONFIG, PHONE_DISPLAY } from "@/lib/config";
+import { useT } from "@/lib/i18n/use-t";
 
 type PackageOption = Pick<TourPackage, "id" | "name">;
 
@@ -18,15 +20,16 @@ const EMPTY_FORM = {
 };
 
 const contactCards = [
-  { icon: "phone", label: "Phone", value: "+91 6388360881", href: "tel:+916388360881" },
-  { icon: "mail", label: "Email", value: "info@atlastours.in", href: "mailto:info@atlastours.in" },
-  { icon: "whatsapp", label: "WhatsApp", value: "+91 6388360881", href: "https://wa.me/916388360881" },
-  { icon: "map", label: "Address", value: "Varanasi, Uttar Pradesh, India", href: "#" },
-];
+  { icon: "phone", label: "common.phone", value: PHONE_DISPLAY, href: `tel:${SITE_CONFIG.phone}` },
+  { icon: "mail", label: "common.email", value: SITE_CONFIG.email, href: `mailto:${SITE_CONFIG.email}` },
+  { icon: "whatsapp", label: "common.whatsapp", value: PHONE_DISPLAY, href: `https://wa.me/${SITE_CONFIG.whatsapp}` },
+  { icon: "map", label: "common.address", value: SITE_CONFIG.address, href: "#" },
+] as const;
 
 /** Package options come from the server-rendered page (F-02), already filtered for public visibility. */
 const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackages }) => {
   const packages = initialPackages;
+  const t = useT();
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -83,7 +86,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
     width: "100%",
     padding: "14px 18px",
     borderRadius: 12,
-    border: "1px solid var(--bg3)",
+    border: "1px solid var(--input-border)",
     fontSize: 15,
     fontFamily: "'Poppins', sans-serif",
     background: "var(--bg2)",
@@ -114,7 +117,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
     badge: {
       display: "inline-block",
       background: "rgba(230,126,34,0.1)",
-      color: "var(--orange)",
+      color: "var(--orange-text)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,
@@ -161,7 +164,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
       width: "100%",
       padding: "14px 0",
       background: "linear-gradient(135deg, #e67e22, #f39c12)",
-      color: "#fff",
+      color: "var(--on-accent)",
       border: "none",
       borderRadius: 12,
       fontSize: 16,
@@ -176,7 +179,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
       textAlign: "center",
       padding: "12px 20px",
       background: "rgba(39,174,96,0.1)",
-      color: "#27ae60",
+      color: "var(--success-text)",
       borderRadius: 10,
       fontSize: 14,
       fontWeight: 600,
@@ -210,7 +213,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
     },
     cardLabel: {
       fontSize: 13,
-      color: "var(--contact-muted, #888)",
+      color: "var(--contact-muted, #6e6e6e)",
       fontWeight: 500,
       marginBottom: 4,
     },
@@ -249,10 +252,10 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
       `}</style>
 
       <div className="reveal" style={styles.header}>
-        <span style={styles.badge}>Contact</span>
-        <h2 style={styles.heading}>Get In Touch</h2>
+        <span style={styles.badge}>{t("contact.badge")}</span>
+        <h2 style={styles.heading}>{t("contact.heading")}</h2>
         <p style={styles.subheading}>
-          Plan your dream trip with us. We would love to hear from you.
+          {t("contact.subheading")}
         </p>
       </div>
 
@@ -262,7 +265,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
             aria-hidden="true"
             style={{ position: "absolute", left: -9999, top: "auto", width: 1, height: 1, overflow: "hidden" }}
           >
-            <label htmlFor="contact-website">Website</label>
+            <label htmlFor="contact-website">{t("common.honeypotLabel")}</label>
             <input
               id="contact-website"
               name="website"
@@ -275,7 +278,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
           </div>
           <div className="contact-form-grid" style={styles.formGrid}>
             <div>
-              <label htmlFor="contact-name" style={labelStyle}>Full Name *</label>
+              <label htmlFor="contact-name" style={labelStyle}>{t("common.fullNameRequired")}</label>
               <input
                 id="contact-name"
                 className="contact-input"
@@ -284,11 +287,11 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
                 value={formData.name}
                 onChange={handleChange}
                 required
-                placeholder="Your name"
+                placeholder={t("contact.namePlaceholder")}
               />
             </div>
             <div>
-              <label htmlFor="contact-phone" style={labelStyle}>Phone *</label>
+              <label htmlFor="contact-phone" style={labelStyle}>{t("common.phoneRequired")}</label>
               <input
                 id="contact-phone"
                 className="contact-input"
@@ -301,7 +304,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
               />
             </div>
             <div>
-              <label htmlFor="contact-email" style={labelStyle}>Email</label>
+              <label htmlFor="contact-email" style={labelStyle}>{t("common.email")}</label>
               <input
                 id="contact-email"
                 className="contact-input"
@@ -314,7 +317,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
               />
             </div>
             <div>
-              <label htmlFor="contact-travelers" style={labelStyle}>No. of Travelers</label>
+              <label htmlFor="contact-travelers" style={labelStyle}>{t("contact.travelers")}</label>
               <input
                 id="contact-travelers"
                 className="contact-input"
@@ -328,7 +331,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
               />
             </div>
             <div>
-              <label htmlFor="contact-travel-date" style={labelStyle}>Travel Date</label>
+              <label htmlFor="contact-travel-date" style={labelStyle}>{t("common.travelDate")}</label>
               <input
                 id="contact-travel-date"
                 className="contact-input"
@@ -340,7 +343,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
               />
             </div>
             <div>
-              <label htmlFor="contact-package" style={labelStyle}>Select Package</label>
+              <label htmlFor="contact-package" style={labelStyle}>{t("contact.package")}</label>
               <select
                 id="contact-package"
                 className="contact-input"
@@ -349,7 +352,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
                 value={formData.packageId}
                 onChange={handleChange}
               >
-                <option value="">Choose a package</option>
+                <option value="">{t("contact.choosePackage")}</option>
                 {packages.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -358,7 +361,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
               </select>
             </div>
             <div style={styles.fullWidth}>
-              <label htmlFor="contact-message" style={labelStyle}>Message</label>
+              <label htmlFor="contact-message" style={labelStyle}>{t("contact.message")}</label>
               <textarea
                 id="contact-message"
                 className="contact-input"
@@ -366,7 +369,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                placeholder="Tell us about your travel plans..."
+                placeholder={t("contact.messagePlaceholder")}
               />
             </div>
             <div style={styles.fullWidth}>
@@ -376,18 +379,18 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
                 style={styles.submitBtn}
                 disabled={submitting}
               >
-                {submitting ? "Sending..." : "Send Enquiry"}
+                {submitting ? t("common.sending") : t("contact.submit")}
               </button>
             </div>
           </div>
           {submitted && (
             <div style={styles.successMsg}>
-              Thank you! Your enquiry has been sent successfully. We will get back to you soon.
+              {t("contact.success")}
             </div>
           )}
           {submitError && (
             <div style={styles.successMsg}>
-              Something went wrong. Please call or WhatsApp us at {contactCards[0].value}.
+              {t("contact.error", { phone: contactCards[0].value })}
             </div>
           )}
         </form>
@@ -417,7 +420,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
                 </svg>
               </div>
               <div>
-                <div style={styles.cardLabel}>{card.label}</div>
+                <div style={styles.cardLabel}>{t(card.label)}</div>
                 <div style={styles.cardValue}>{card.value}</div>
               </div>
             </a>
@@ -432,7 +435,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="Atlas Tours Location"
+              title={t("contact.mapTitle")}
             />
           </div>
         </div>

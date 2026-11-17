@@ -1,20 +1,19 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { SITE_CONFIG } from "@/lib/config";
+import { useT } from "@/lib/i18n/use-t";
 
-const typingTexts = [
-  "Incredible Destinations",
-  "Spiritual Journeys",
-  "Divine Experiences",
-];
+const typingKeys = ["hero.typing1", "hero.typing2", "hero.typing3"] as const;
 
 const stats = [
-  { value: "500+", label: "Happy Travellers" },
-  { value: "15+", label: "Tour Packages" },
-  { value: "10+", label: "Destinations" },
-];
+  { value: "500+", labelKey: "hero.statHappyTravellers" },
+  { value: "15+", labelKey: "hero.statTourPackages" },
+  { value: "10+", labelKey: "hero.statDestinations" },
+] as const;
 
 const Hero: React.FC = () => {
+  const t = useT();
   const [textIndex, setTextIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -57,17 +56,16 @@ const Hero: React.FC = () => {
         video.autoplay = false;
         video.pause();
       }
-      setDisplayText(typingTexts[0]);
     }
   }, []);
 
   useEffect(() => {
     if (reducedMotion !== false) return; // not mounted yet, or reduced motion: no typing loop
-    const current = typingTexts[textIndex];
+    const current = t(typingKeys[textIndex]);
 
     // Fully typed: hold the phrase, then start deleting. 2680ms reproduces the
     // previous effective hold (an 1800ms nested timer plus overshoot ticks).
-    if (!isDeleting && charIndex === current.length) {
+    if (!isDeleting && charIndex >= current.length) {
       const hold = setTimeout(() => setIsDeleting(true), 2680);
       return () => clearTimeout(hold);
     }
@@ -82,14 +80,14 @@ const Hero: React.FC = () => {
           setCharIndex((p) => p - 1);
           if (charIndex - 1 === 0) {
             setIsDeleting(false);
-            setTextIndex((p) => (p + 1) % typingTexts.length);
+            setTextIndex((p) => (p + 1) % typingKeys.length);
           }
         }
       },
       isDeleting ? 40 : 80
     );
     return () => clearTimeout(timeout);
-  }, [charIndex, isDeleting, textIndex, reducedMotion]);
+  }, [charIndex, isDeleting, textIndex, reducedMotion, t]);
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
@@ -118,7 +116,7 @@ const Hero: React.FC = () => {
       left: 0,
       width: "100%",
       height: "100%",
-      background: "linear-gradient(135deg, rgba(26,58,107,0.82) 0%, rgba(15,37,72,0.7) 50%, rgba(230,126,34,0.25) 100%)",
+      background: "linear-gradient(135deg, rgba(26,58,107,0.82) 0%, rgba(15,37,72,0.8) 50%, rgba(230,126,34,0.25) 100%)",
       zIndex: 1,
     },
     content: {
@@ -134,7 +132,7 @@ const Hero: React.FC = () => {
       fontWeight: 500,
       letterSpacing: 4,
       textTransform: "uppercase",
-      color: "#f39c12",
+      color: "var(--gold-text)",
       marginBottom: 16,
     },
     heading: {
@@ -153,7 +151,7 @@ const Hero: React.FC = () => {
     typingText: {
       fontSize: "clamp(24px, 4vw, 44px)",
       fontWeight: 700,
-      color: "#f39c12",
+      color: "var(--gold-text)",
       borderRight: "3px solid #f39c12",
       paddingRight: 4,
     },
@@ -173,7 +171,7 @@ const Hero: React.FC = () => {
     },
     btnPrimary: {
       background: "linear-gradient(135deg, #e67e22, #f39c12)",
-      color: "#fff",
+      color: "var(--on-accent)",
       border: "none",
       borderRadius: 30,
       padding: "14px 36px",
@@ -217,12 +215,12 @@ const Hero: React.FC = () => {
     statValue: {
       fontSize: 30,
       fontWeight: 800,
-      color: "#f39c12",
+      color: "var(--gold-text)",
       marginBottom: 4,
     },
     statLabel: {
       fontSize: 13,
-      color: "rgba(255,255,255,0.8)",
+      color: "rgba(255,255,255,0.9)",
       fontWeight: 500,
     },
     scrollIndicator: {
@@ -235,7 +233,7 @@ const Hero: React.FC = () => {
       flexDirection: "column",
       alignItems: "center",
       gap: 8,
-      color: "rgba(255,255,255,0.6)",
+      color: "rgba(255,255,255,0.8)",
       fontSize: 12,
       letterSpacing: 2,
       textTransform: "uppercase",
@@ -306,43 +304,42 @@ const Hero: React.FC = () => {
       ))}
 
       <div style={styles.content}>
-        <p className="hero-stagger-1" style={styles.subtitle}>Welcome to Atlas Tours</p>
-        <h1 className="hero-stagger-2" style={styles.heading}>Discover</h1>
+        <p className="hero-stagger-1" style={styles.subtitle}>{t("hero.welcome")}</p>
+        <h1 className="hero-stagger-2" style={styles.heading}>{t("hero.discover")}</h1>
         <div className="hero-stagger-2" style={styles.typingWrap}>
           <span style={{ ...styles.typingText, animation: "blink-cursor 0.8s infinite" }}>
-            {displayText}
+            {reducedMotion ? t("hero.typing1") : displayText}
           </span>
         </div>
         <p className="hero-stagger-3" style={styles.description}>
-          Experience the magic of India with curated travel packages designed
-          for spiritual seekers, adventure lovers, and culture enthusiasts.
+          {t("hero.description")}
         </p>
         <div className="hero-stagger-4" style={styles.btnGroup}>
           <a href="#packages" className="hero-btn-primary pulse-glow" style={styles.btnPrimary}>
-            View Packages
+            {t("hero.viewPackages")}
           </a>
           <a
-            href="https://wa.me/916388360881?text=Hello!%20I%20am%20interested%20in%20booking%20a%20tour."
+            href={`https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent(t("hero.whatsappMessage"))}`}
             target="_blank"
             rel="noopener noreferrer"
             className="hero-btn-secondary"
             style={styles.btnSecondary}
           >
-            Book on WhatsApp
+            {t("hero.bookWhatsApp")}
           </a>
         </div>
         <div className="hero-stagger-5" style={styles.statsRow}>
           {stats.map((s) => (
-            <div key={s.label} className="glass" style={styles.statCard}>
+            <div key={s.labelKey} className="glass" style={styles.statCard}>
               <div style={styles.statValue}>{s.value}</div>
-              <div style={styles.statLabel}>{s.label}</div>
+              <div style={styles.statLabel}>{t(s.labelKey)}</div>
             </div>
           ))}
         </div>
       </div>
 
       <div style={styles.scrollIndicator}>
-        <span>Scroll</span>
+        <span>{t("hero.scroll")}</span>
         <div style={styles.scrollMouse}>
           <div
             style={{

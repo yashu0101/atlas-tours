@@ -133,13 +133,15 @@ Styling is **CSS custom properties + inline `React.CSSProperties` objects**, not
 
 Shared types: import entity types from `src/lib/types.ts` (`TourPackage`, `Review`, `GalleryImage`, `BlogPost`, `FAQ`, `Offer`, …) — never redeclare them locally. Field names that previously drifted: reviews use `text` (not `message`), blogs use `createdAt` (not `date`), itinerary is `string[]`, ids are `id` (not `_id`).
 
-`src/lib/context.tsx` provides `useApp()` with `lang` (`"en" | "hi"`) and `theme`, persisted to `localStorage`; theme is reflected onto `<html data-theme>` (lang is not reflected — see Platform config). Translation is inline ternaries — there is no message catalog. `Header.tsx` (nav labels) and `FAQ.tsx` (shows `questionHi`/`answerHi` when Hindi is selected and present) consume it; the rest of the site is English-only (G-08).
+`src/lib/context.tsx` provides `useApp()` with `lang` (`"en" | "hi"`) and `theme`, persisted to `localStorage`; theme is reflected onto `<html data-theme>` (lang is not reflected — see Platform config). UI strings live in a typed message catalog, `src/lib/i18n/` (`en.ts` is the full source of truth; `hi.ts` is a partial that falls back to English). Client components use `const t = useT()` (`src/lib/i18n/use-t.ts`); server components use `getT("en")` / `translate("en", key)`. Keys are a typed dot-path union, so a typo fails `tsc`. Never hardcode visible text in components — add a key to `en.ts`, then run `UPDATE_HINDI_DOC=1 npx vitest run tests/unit/i18n.test.ts` to refresh `docs/hindi-strings-needed.md` (the test fails if it is stale). Most Hindi copy is still missing (G-08). DB content is not translated; `FAQ.tsx` shows `questionHi`/`answerHi` when present.
 
 SEO: `src/lib/seo.ts` holds site URL, title, description, OG image and the JSON-LD builders (`travelAgencyJsonLd`, `faqPageJsonLd`, `jsonLdString` which escapes `<`). `layout.tsx` sets `metadataBase`/OG/Twitter/canonical and the TravelAgency JSON-LD; `src/app/robots.ts` and `src/app/sitemap.ts` exist; the favicon is `src/app/icon.jpeg`.
 
 Images are unoptimized (`next.config.ts`) since package/gallery URLs point at arbitrary remote hosts (Unsplash by default). Local fallbacks live in `public/images/` (`hero-fallback.jpg`, `placeholder.jpg`, `package.jpg`, `atlas-logo.jpeg`).
 
-### Known inconsistencies still open
+### Contact info, routes and colours (P4)
 
-- Phone/email are hardcoded in several components and `Contact.tsx` shows a different email than `SITE_CONFIG` (C-09).
-- Offers are managed in the admin but never shown on the public site (G-05).
+- **Contact details come only from `SITE_CONFIG` / `PHONE_DISPLAY` in `src/lib/config.ts`** — `tests/unit/site-config.test.ts` fails if a component hardcodes the phone or email. The email `info@atlastours.in` is provisional (C-09, see `CLIENT_QUESTIONS.md`).
+- Detail routes: `/packages/[id]` (with `BookingForm` → `/api/book`) and `/blog/[id]`, both server components that `notFound()` on hidden/inactive items and reuse the home chrome. `Header`/`Footer` turn section links into `/#x` off the home page via `usePathname()`. The sitemap lists both.
+- Offers render on the home page (`Offers.tsx`) only when visible: `active !== false` and `validTo` (inclusive, IST date) not passed (`isOfferPublicAt` in `visibility.ts`).
+- Text colours: use `--orange-text` / `--gold-text` for orange/gold *text*, `--on-accent` for text on orange/gold *fills*, `--success-text` / `--error-text` for status messages and `--input-border` for form borders. `tests/unit/contrast.test.ts` checks WCAG AA for the variable pairs in both themes.

@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
 import Packages from "@/components/Packages";
+import Offers from "@/components/Offers";
 import Gallery from "@/components/Gallery";
 import Counter from "@/components/Counter";
 import Reviews from "@/components/Reviews";
@@ -13,10 +14,11 @@ import WhatsApp from "@/components/WhatsApp";
 import BackToTop from "@/components/BackToTop";
 import ScrollProgress from "@/components/ScrollProgress";
 import RevealObserver from "@/components/RevealObserver";
-import { getBlogs, getFAQs, getGallery, getPackages, getReviews } from "@/lib/db";
-import { isPublicBlog, isPublicFAQ, isPublicGalleryImage, isPublicPackage, isPublicReview } from "@/lib/visibility";
+import { getBlogs, getFAQs, getGallery, getOffers, getPackages, getReviews } from "@/lib/db";
+import { isPublicBlog, isPublicFAQ, isPublicGalleryImage, isPublicOffer, isPublicPackage, isPublicReview } from "@/lib/visibility";
 import { faqPageJsonLd, jsonLdString } from "@/lib/seo";
-import type { BlogPost, FAQ as FAQItem, GalleryImage, Review, TourPackage } from "@/lib/types";
+import { translate } from "@/lib/i18n";
+import type { BlogPost, FAQ as FAQItem, GalleryImage, Offer, Review, TourPackage } from "@/lib/types";
 
 // F-02: content is read from the DB on every request so admin edits appear
 // immediately (and the JSON backend reads a local file that changes at runtime).
@@ -33,19 +35,22 @@ async function loadPublic<T>(label: string, load: () => Promise<T[]>, isPublic: 
 }
 
 export default async function HomePage() {
-  const [packages, gallery, reviews, blogs, faqs]: [TourPackage[], GalleryImage[], Review[], BlogPost[], FAQItem[]] =
+  const [packages, gallery, reviews, blogs, faqs, offers]:
+    [TourPackage[], GalleryImage[], Review[], BlogPost[], FAQItem[], Offer[]] =
     await Promise.all([
       loadPublic("packages", getPackages, isPublicPackage),
       loadPublic("gallery", getGallery, isPublicGalleryImage),
       loadPublic("reviews", getReviews, isPublicReview),
       loadPublic("blogs", getBlogs, isPublicBlog),
       loadPublic("faqs", getFAQs, isPublicFAQ),
+      // G-05: active and not expired (IST calendar date), same rule as GET /api/offers.
+      loadPublic("offers", getOffers, isPublicOffer),
     ]);
 
   return (
     <>
       {/* E-11: first focusable element; off-screen until it receives keyboard focus. */}
-      <a href="#main-content" className="skip-link">Skip to main content</a>
+      <a href="#main-content" className="skip-link">{translate("en", "common.skipToContent")}</a>
       <ScrollProgress />
       <Header />
       {/* Unstyled block wrapper (Header is position:fixed, no CSS targets sibling structure),
@@ -56,6 +61,14 @@ export default async function HomePage() {
         <About />
         <WaveDivider fill="var(--bg)" />
         <Packages initialPackages={packages} />
+        {/* G-05: only rendered when at least one offer is visible; --bg3 keeps the wave
+            colours distinct from Packages (--bg) above and Gallery (--bg2) below. */}
+        {offers.length > 0 && (
+          <>
+            <WaveDivider fill="var(--bg3)" />
+            <Offers initialOffers={offers} />
+          </>
+        )}
         <WaveDivider fill="var(--bg2)" />
         <Gallery initialImages={gallery} />
         <Counter />

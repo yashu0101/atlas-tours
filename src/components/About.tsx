@@ -2,13 +2,14 @@
 
 import React from "react";
 import Image from "next/image";
+import { useT } from "@/lib/i18n/use-t";
 
 const features = [
-  { icon: "shield", title: "Trusted Agency", desc: "Registered and reliable travel partner with years of trust." },
-  { icon: "tag", title: "Best Prices", desc: "Competitive pricing with no hidden charges or surprises." },
-  { icon: "users", title: "Expert Guides", desc: "Knowledgeable local guides for immersive experiences." },
-  { icon: "headphones", title: "24/7 Support", desc: "Round-the-clock assistance throughout your journey." },
-];
+  { icon: "shield", title: "about.trustedTitle", desc: "about.trustedDesc" },
+  { icon: "tag", title: "about.pricesTitle", desc: "about.pricesDesc" },
+  { icon: "users", title: "about.guidesTitle", desc: "about.guidesDesc" },
+  { icon: "headphones", title: "about.supportTitle", desc: "about.supportDesc" },
+] as const;
 
 const iconPaths: Record<string, string> = {
   shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
@@ -18,6 +19,7 @@ const iconPaths: Record<string, string> = {
 };
 
 const About: React.FC = () => {
+  const t = useT();
   const styles: Record<string, React.CSSProperties> = {
     section: {
       padding: "100px 24px",
@@ -58,7 +60,7 @@ const About: React.FC = () => {
     badge: {
       display: "inline-block",
       background: "rgba(230,126,34,0.1)",
-      color: "#e67e22",
+      color: "var(--orange-text)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,
@@ -75,7 +77,7 @@ const About: React.FC = () => {
       marginBottom: 20,
     },
     accent: {
-      color: "#e67e22",
+      color: "var(--orange-text)",
     },
     desc: {
       fontSize: 16,
@@ -127,7 +129,7 @@ const About: React.FC = () => {
     },
     btnPrimary: {
       background: "linear-gradient(135deg, #e67e22, #f39c12)",
-      color: "#fff",
+      color: "var(--on-accent)",
       border: "none",
       borderRadius: 28,
       padding: "12px 32px",
@@ -165,7 +167,7 @@ const About: React.FC = () => {
           <div className="img-zoom" style={styles.imgWrap}>
             <Image
               src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=500&q=75"
-              alt="About Atlas Tours"
+              alt={t("about.imageAlt")}
               width={500}
               height={600}
               style={{ width: "100%", height: "auto", display: "block" }}
@@ -175,16 +177,12 @@ const About: React.FC = () => {
         </div>
 
         <div className="reveal-right" style={styles.textCol}>
-          <span style={styles.badge}>About Us</span>
+          <span style={styles.badge}>{t("about.badge")}</span>
           <h2 style={styles.heading}>
-            Crafting Unforgettable <span style={styles.accent}>Travel Experiences</span>
+            {t("about.heading")} <span style={styles.accent}>{t("about.headingAccent")}</span>
           </h2>
           <p style={styles.desc}>
-            Atlas Tours is a premier travel agency specializing in spiritual and
-            cultural tours across India. From the sacred ghats of Varanasi to the
-            majestic peaks of the Himalayas, we curate journeys that transform
-            and inspire. With a commitment to quality and personalized service, we
-            ensure every trip becomes a cherished memory.
+            {t("about.description")}
           </p>
 
           <div className="about-features-grid" style={styles.featuresGrid}>
@@ -196,8 +194,8 @@ const About: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <div style={styles.featureTitle}>{f.title}</div>
-                  <div style={styles.featureDesc}>{f.desc}</div>
+                  <div style={styles.featureTitle}>{t(f.title)}</div>
+                  <div style={styles.featureDesc}>{t(f.desc)}</div>
                 </div>
               </div>
             ))}
@@ -205,10 +203,10 @@ const About: React.FC = () => {
 
           <div style={styles.btnGroup}>
             <a href="#packages" style={styles.btnPrimary}>
-              Explore Packages
+              {t("about.explorePackages")}
             </a>
             <a href="#contact" style={styles.btnOutline}>
-              Get In Touch
+              {t("about.getInTouch")}
             </a>
           </div>
         </div>

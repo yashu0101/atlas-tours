@@ -1,15 +1,40 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Image from "next/image";
 import type { GalleryImage } from "@/lib/types";
+import { useT } from "@/lib/i18n/use-t";
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+const ALL = "All";
+
+/** Distinct, non-empty categories in first-seen order (G-06). Exported for tests. */
+export function galleryCategories(images: readonly GalleryImage[]): string[] {
+  const seen = new Set<string>();
+  for (const img of images) {
+    const c = typeof img.category === "string" ? img.category.trim() : "";
+    if (c) seen.add(c);
+  }
+  return [...seen];
+}
+
+/** Images shown for a category tab; "All" (or an unknown category) shows everything. */
+export function filterGallery(images: readonly GalleryImage[], category: string): GalleryImage[] {
+  if (category === ALL) return [...images];
+  return images.filter((img) => (typeof img.category === "string" ? img.category.trim() : "") === category);
+}
+
 /** Images are loaded on the server (F-02) and passed in already filtered for public visibility. */
 const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages }) => {
-  const images = initialImages;
+  const t = useT();
+  const categories = useMemo(() => galleryCategories(initialImages), [initialImages]);
+  const [activeCategory, setActiveCategory] = useState(ALL);
+  // The grid and the lightbox both work on the filtered set, so arrows/counter stay within the tab.
+  const images = useMemo(() => filterGallery(initialImages, activeCategory), [initialImages, activeCategory]);
+  // Tabs only make sense with at least two categories.
+  const showFilters = categories.length > 1;
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -84,7 +109,7 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
     badge: {
       display: "inline-block",
       background: "rgba(230,126,34,0.1)",
-      color: "var(--orange)",
+      color: "var(--orange-text)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,
@@ -104,6 +129,33 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
       color: "var(--text2)",
       maxWidth: 500,
       margin: "0 auto",
+    },
+    filters: {
+      display: "flex",
+      flexWrap: "wrap",
+      justifyContent: "center",
+      gap: 10,
+      maxWidth: 1200,
+      margin: "0 auto 36px",
+      padding: 0,
+      listStyle: "none",
+    },
+    filterBtn: {
+      padding: "8px 20px",
+      borderRadius: 20,
+      border: "none",
+      background: "rgba(230,126,34,0.1)",
+      color: "var(--orange-text)",
+      fontSize: 14,
+      fontWeight: 600,
+      cursor: "pointer",
+      fontFamily: "'Poppins', sans-serif",
+      transition: "all 0.3s",
+    },
+    filterBtnActive: {
+      background: "linear-gradient(135deg, #e67e22, #f39c12)",
+      color: "var(--on-accent)",
+      boxShadow: "0 4px 15px rgba(230,126,34,0.3)",
     },
     masonry: {
       maxWidth: 1200,
@@ -126,7 +178,7 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
       left: 0,
       width: "100%",
       height: "100%",
-      background: "linear-gradient(transparent 60%, rgba(26,58,107,0.6))",
+      background: "linear-gradient(transparent 60%, rgba(26,58,107,0.9))",
       opacity: 0,
       transition: "opacity 0.3s",
       display: "flex",
@@ -204,15 +256,36 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
         .gallery-item:hover { transform: scale(1.02); }
         .gallery-item:hover .gallery-overlay { opacity: 1 !important; }
         .lb-arrow:hover { background: rgba(255,255,255,0.3) !important; }
+        .gallery-filter[aria-pressed="false"]:hover { background: rgba(230,126,34,0.2) !important; }
       `}</style>
 
       <div className="reveal" style={styles.header}>
-        <span style={styles.badge}>Gallery</span>
-        <h2 style={styles.heading}>Travel Moments</h2>
+        <span style={styles.badge}>{t("gallery.badge")}</span>
+        <h2 style={styles.heading}>{t("gallery.heading")}</h2>
         <p style={styles.subheading}>
-          A visual journey through the destinations we love.
+          {t("gallery.subheading")}
         </p>
       </div>
+
+      {showFilters && (
+        <div role="group" aria-label={t("gallery.filterAria")} style={styles.filters}>
+          {[ALL, ...categories].map((cat) => {
+            const active = cat === activeCategory;
+            return (
+              <button
+                key={cat}
+                type="button"
+                className="gallery-filter"
+                aria-pressed={active}
+                style={active ? { ...styles.filterBtn, ...styles.filterBtnActive } : styles.filterBtn}
+                onClick={() => setActiveCategory(cat)}
+              >
+                {cat === ALL ? t("common.all") : cat}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <div style={styles.masonry}>
         {images.map((img, i) => (
@@ -222,7 +295,7 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
             style={styles.masonryItem}
             role="button"
             tabIndex={0}
-            aria-label={img.caption || img.category || "Gallery image"}
+            aria-label={img.caption || img.category || t("gallery.imageFallback")}
             onClick={(e) => openLightbox(i, e.currentTarget)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -243,7 +316,7 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
           >
             <Image
               src={img.src}
-              alt={img.caption || "Gallery image"}
+              alt={img.caption || t("gallery.imageFallback")}
               width={400}
               height={300 + (i % 3) * 80}
               style={{ width: "100%", height: "auto", display: "block" }}
@@ -261,17 +334,17 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
           ref={lightboxRef}
           role="dialog"
           aria-modal="true"
-          aria-label={images[lightboxIndex].caption || "Image viewer"}
+          aria-label={images[lightboxIndex].caption || t("gallery.viewerAria")}
           style={styles.lightbox}
           onClick={closeLightbox}
         >
-          <button ref={closeBtnRef} style={styles.lbClose} aria-label="Close image viewer" onClick={closeLightbox}>
+          <button ref={closeBtnRef} style={styles.lbClose} aria-label={t("gallery.closeViewerAria")} onClick={closeLightbox}>
             &#10005;
           </button>
           <button
             className="lb-arrow"
             style={{ ...styles.lbArrow, left: 24 }}
-            aria-label="Previous image"
+            aria-label={t("gallery.previousAria")}
             onClick={(e) => {
               e.stopPropagation();
               goPrev();
@@ -298,7 +371,7 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
           <button
             className="lb-arrow"
             style={{ ...styles.lbArrow, right: 24 }}
-            aria-label="Next image"
+            aria-label={t("gallery.nextAria")}
             onClick={(e) => {
               e.stopPropagation();
               goNext();
@@ -307,7 +380,7 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
             &#8250;
           </button>
           <div style={styles.lbCounter}>
-            {lightboxIndex + 1} / {images.length}
+            {t("gallery.counter", { current: lightboxIndex + 1, total: images.length })}
           </div>
         </div>
       )}

@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useT } from "@/lib/i18n/use-t";
 
 const BackToTop: React.FC = () => {
+  const t = useT();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -61,7 +63,7 @@ const BackToTop: React.FC = () => {
         className="back-to-top-btn"
         style={styles.button}
         onClick={scrollToTop}
-        aria-label="Back to top"
+        aria-label={t("common.backToTop")}
       >
         <svg
           width="22"

@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { SITE_CONFIG } from "@/lib/config";
+import { useT } from "@/lib/i18n/use-t";
 
 const WhatsApp: React.FC = () => {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const phoneNumber = "916388360881";
+  const phoneNumber = SITE_CONFIG.whatsapp;
   const fabRef = useRef<HTMLButtonElement>(null);
 
   // Closing from inside the popup would leave focus on an element that is about to
@@ -17,7 +20,7 @@ const WhatsApp: React.FC = () => {
 
   const sendMessage = () => {
     const text = encodeURIComponent(
-      message || "Hello! I am interested in your tour packages."
+      message || t("whatsapp.defaultMessage")
     );
     window.open(`https://wa.me/${phoneNumber}?text=${text}`, "_blank");
     setMessage("");
@@ -124,7 +127,7 @@ const WhatsApp: React.FC = () => {
     },
     bubbleTime: {
       fontSize: 11,
-      color: "#999",
+      color: "#767676",
       marginTop: 4,
       textAlign: "right" as const,
     },
@@ -139,7 +142,7 @@ const WhatsApp: React.FC = () => {
       flex: 1,
       padding: "10px 16px",
       borderRadius: 24,
-      border: "1px solid #e0e0e0",
+      border: "1px solid #949494",
       fontSize: 14,
       fontFamily: "'Poppins', sans-serif",
       // outline is removed via the .wa-input class (globals.css) so the global
@@ -164,7 +167,7 @@ const WhatsApp: React.FC = () => {
       width: 18,
       height: 18,
       borderRadius: "50%",
-      background: "#e74c3c",
+      background: "#c0392b",
       fontSize: 10,
       fontWeight: 700,
       color: "#fff",
@@ -195,29 +198,29 @@ const WhatsApp: React.FC = () => {
           </div>
           <div style={styles.headerInfo}>
             <div style={styles.headerName}>Atlas Tours</div>
-            <div style={styles.headerStatus}>Typically replies instantly</div>
+            <div style={styles.headerStatus}>{t("whatsapp.status")}</div>
           </div>
-          <button style={styles.closeBtn} onClick={close} aria-label="Close WhatsApp chat">
+          <button style={styles.closeBtn} onClick={close} aria-label={t("whatsapp.closeAria")}>
             &#10005;
           </button>
         </div>
         <div style={styles.popupBody}>
           <div style={styles.bubble}>
-            Hello! Welcome to Atlas Tours. How can we help you plan your trip?
-            <div style={styles.bubbleTime}>Now</div>
+            {t("whatsapp.greeting")}
+            <div style={styles.bubbleTime}>{t("whatsapp.now")}</div>
           </div>
         </div>
         <div style={styles.popupFooter}>
           <input
             className="wa-input"
             style={styles.input}
-            placeholder="Type a message..."
-            aria-label="WhatsApp message"
+            placeholder={t("whatsapp.placeholder")}
+            aria-label={t("whatsapp.inputAria")}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           />
-          <button style={styles.sendBtn} onClick={sendMessage} aria-label="Send message on WhatsApp">
+          <button style={styles.sendBtn} onClick={sendMessage} aria-label={t("whatsapp.sendAria")}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
               <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
             </svg>
@@ -231,7 +234,7 @@ const WhatsApp: React.FC = () => {
         style={styles.fab}
         onClick={() => setOpen(!open)}
         ref={fabRef}
-        aria-label="Chat on WhatsApp"
+        aria-label={t("whatsapp.fabAria")}
         aria-expanded={open}
         aria-controls="whatsapp-popup"
       >

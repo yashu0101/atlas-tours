@@ -2,7 +2,7 @@
 
 > **Single source of truth** for project status and the fix backlog.
 > Audit date: **2026-11-17** · Audited commit: `dd7e91d` · Rating at audit: **4.5 / 10**
-> Last updated: **2026-11-18** · Branches: `audit-fixes` (PR #1, P0+P1) → `p2-fixes` (PR #2, P2) → `p3-fixes` (PR #3, P3) · Current rating: **8 / 10** · **55 / 66 done · 11 blocked on client decisions · 0 open**
+> Last updated: **2026-11-18** · PRs #1–#3 merged into `dev` (`e2bf268`); `master` not yet updated · Current rating: **8.5 / 10** · **62 / 66 done · 4 blocked on client decisions · 0 open** (P4: commit `5d45b93`, PR #4 → `dev`, not merged yet)
 
 ---
 
@@ -23,49 +23,58 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 ## 1. Progress
 
 | Workstream | Owns files | Issues | Done | Status |
-|---|---|---|---|---|---|
+|---|---|---|---|---|
 | A — Admin panel | `src/app/admin/**`, `src/app/login/page.tsx` | 8 | 8 | ✅ |
 | B — API, DB & auth | `src/lib/*` (db, auth, api, crud-route, seed-data, …), `src/app/api/**` | 12 | 12 | ✅ |
-| C — Public data contracts | `Packages.tsx`, `Reviews.tsx`, `Blog.tsx`, `FAQ.tsx`, `Contact.tsx`, `Gallery.tsx` | 9 | 8 | ⏸ C-09 blocked |
+| C — Public data contracts | `Packages.tsx`, `Reviews.tsx`, `Blog.tsx`, `FAQ.tsx`, `Contact.tsx`, `Gallery.tsx` | 9 | 9 | ✅ (C-09 email provisional) |
 | D — Page shell & animation | `src/app/page.tsx`, `src/app/globals.css`, `src/lib/context.tsx` | 5 | 5 | ✅ |
-| E — Dark mode & accessibility | all `src/components/*` | 12 | 11 | ⏸ E-10 blocked |
+| E — Dark mode & accessibility | all `src/components/*` | 12 | 12 | ✅ |
 | F — SEO, config, assets, tooling | `layout.tsx`, `next.config.ts`, `package.json`, `public/`, `eslint.config.mjs` | 10 | 10 | ✅ |
-| G — Missing features | new files, `tests/` | 10 | 1 | ⏸ G-01…G-09 blocked · G-10 ✅ |
-| **Total** | | **66** | **55** | 11 blocked · 0 open |
+| G — Missing features | new files, `tests/` | 10 | 6 | ⏸ G-02, G-04, G-08 (Hindi copy), G-09 blocked |
+| **Total** | | **66** | **62** | 4 blocked · 0 open |
 
-**By severity:** P0 ✅ 6/6 · P1 ✅ 21/21 · P2 ✅ 19/26 (7 ⏸) · P3 ✅ 9/13 (4 ⏸).
+**By severity:** P0 ✅ 6/6 · P1 ✅ 21/21 · P2 ✅ 24/26 (2 ⏸: G-02, G-04) · P3 ✅ 11/13 (2 ⏸: G-08 copy, G-09).
 
-**Blocked on the client (⏸) — nothing else is left:**
-- **C-09** — which email is correct: `info@atlastours.in` (Contact section) or `atlastourandtravels01@gmail.com` (`SITE_CONFIG`, JSON-LD)?
-- **E-10** — contrast fixes change colours (needs design approval).
-- **G-01…G-05** — booking form UI, notifications provider (email/WhatsApp), package detail pages, image upload provider, offers display.
-- **G-06…G-09** — package/gallery filters (new UI), blog detail pages, full Hindi (needs translated copy), payments (needs Razorpay account).
+**Blocked on the client (⏸) — nothing else is left.** All open questions for the client are collected in **`CLIENT_QUESTIONS.md`**.
+- **G-02** — notifications: needs an email/WhatsApp provider and addresses.
+- **G-04** — admin image upload: needs a storage provider account (Vercel Blob / Cloudinary).
+- **G-08** — message catalog is built; needs the Hindi copy (170 strings, `docs/hindi-strings-needed.md`).
+- **G-09** — payments: needs a Razorpay account and deposit/full-payment decision.
 
-**Parallel plan for what's left:** workstreams are still split by file ownership. Note that since F-02, `src/app/page.tsx` is a server component and every section component takes its data as props — any agent touching a section component must keep that contract (see CLAUDE.md → Frontend). A (admin), B (API/DB), E (component a11y/dark mode), F (tooling) and G (new features) can run in parallel if agents stay inside their file lists.
+**Built with provisional answers (one-line changes once the client confirms):** C-09 email `info@atlastours.in`; G-01/Q-1 per-person pricing; E-10 dark text on orange buttons (visible change — needs a design sign-off).
+
+**Merge status:** PRs #1 → #2 → #3 are **merged into `dev`** (merge commits `f9a17c4`, `899fc03`, `e2bf268`). **PR #4 (`p4-fixes` → `dev`, commit `5d45b93`) is open, not merged** — items marked done with `5d45b93` exist only on `p4-fixes` until it merges. `master` is still at the audited commit `dd7e91d`; a `dev` → `master` PR is the step for production.
+
+**For future work:** every remaining item is blocked on a client decision (§2 "Pending" lists the non-numbered ones). When a decision arrives, set the item to 🔄, keep agents inside their workstream's files, and keep the server-props contract for section components (see CLAUDE.md → Frontend).
 
 ---
 
 ## 2. Where the project stands
 
-### Current (2026-11-17, branch `audit-fixes`)
+### Current (2026-11-18, branch `p4-fixes` @ `5d45b93`, PR #4 open → `dev`)
 
 - **Stack:** Next.js **16.4.6** App Router, React 19.3, TypeScript strict, Neon Postgres or JSON-file storage (`DATABASE_URL` switches).
-- **Size:** ~7,500 tracked lines (excl. lockfile/public). Commits on branch: `6d1f665` (P0), `2852416` (P1), plus F-02 + docs (see changelog for commit status).
-- **Type check:** `npx tsc --noEmit` ✅. **Build:** `npm run build` ✅ (no advisory halt; `/` is dynamic, robots/sitemap/icons static).
+- **Checks (recorded for P4):** `npx tsc --noEmit` ✅ · `npm run lint` 0 errors ✅ · `npm test` 217/217 ✅ · `npm run test:e2e` 13/13 ✅ · `npm run build` ✅. (`dev` @ `e2bf268` without P4: 88/88 and 5/5.)
+- **Client questions:** collected in **`CLIENT_QUESTIONS.md`** — keep it and the table below in sync.
 - **`npm audit --omit=dev`:** 0 vulnerabilities. Dev deps still report some (untriaged).
-- **Tests:** none (G-10). **Lint:** still broken (F-08).
-- **Verdict:** **launchable after configuration** — set `JWT_SECRET` (≥32 chars), `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH` (or `ADMIN_PASSWORD`), `DATABASE_URL`, `SEED_SECRET`, `NEXT_PUBLIC_SITE_URL`, and do a manual browser pass (see "Pending verification" below). Remaining items are quality/polish (P2/P3) and new features.
+- **Verdict:** **launchable after configuration and a staging check** — set `JWT_SECRET` (≥32 chars), `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH` (or `ADMIN_PASSWORD`), `DATABASE_URL`, `SEED_SECRET`, `NEXT_PUBLIC_SITE_URL`; run `/api/seed` and admin edits on staging Postgres; do the manual browser pass below. Every remaining numbered item needs a client decision.
 
-### Pending verification / decisions (owner: project lead)
+### Pending verification / decisions (not numbered issues)
 
-| Item | Why it matters |
-|---|---|
-| Browser pass: modal/lightbox focus trap & Esc, gallery keyboard (Enter/Space), reduced-motion mode, dark-mode contact form, admin create/edit/delete/hide | Verified by code review, curl and a headless run, not by a person clicking through |
-| `/api/book` pricing: `amount = price × travelers` | Correct only if package prices are **per person**; if per package, change to `price` |
-| Production domain for `NEXT_PUBLIC_SITE_URL` | Canonical/OG/sitemap fall back to `https://atlastours.in` (unconfirmed) |
-| Contact form error message reuses the green success style | Red error style needs design approval (client asked for no UI changes) |
-| Login placeholder shows `admin@atlastours.com` | Leaks the dev default email; a visible text change, so deferred |
-| First Postgres deploy | Run `POST /api/seed` once after setting `DATABASE_URL` — it now creates tables **and** inserts the default content (B-11). Postgres paths are reviewed but never executed: test on staging first |
+| # | Item | Type | Why it matters |
+|---|---|---|---|
+| V-1 | Postgres staging test: `/api/seed` twice (3/3/6/3/5/2 then all zeros), admin create/edit/clear-field/delete | **Verify** | Postgres update (P2) and seed (P3) paths were reviewed but never executed |
+| V-2 | Browser pass: package modal & gallery lightbox (focus trap, Esc, Enter/Space), closed mobile menu/WhatsApp skipped by Tab, carousel pauses on hover, reduced-motion mode, dark-mode colours, login lock icon, skip link + focus rings; **P4:** `/packages/[id]` and `/blog/[id]` pages, booking form, package/gallery filters, offers section with a live (unexpired) offer, new button text colour | **Verify** | Covered by code review, curl, headless/Playwright runs — not by a person clicking through |
+| V-3 | CSP: check DevTools for report-only violations on `/`, `/login`, `/admin`, then switch to enforcing | **Verify** | CSP currently blocks nothing |
+| V-4 | Production env vars (list above) and `SESSION_VERSION` policy | **Configure** | Production auth fails closed without them |
+| Q-1 | `/api/book` pricing: `amount = price × travelers` | **Decide** (provisional, built) | P4's booking form (G-01) shows this estimate. Correct only if prices are **per person**; if per package, change to `price` in the route and the form |
+| Q-2 | Production domain for `NEXT_PUBLIC_SITE_URL` | **Decide** | Canonical/OG/sitemap fall back to `https://atlastours.in` (unconfirmed) |
+| Q-3 | Contact form error reuses the green success style | **Decide** (design) | Red error style needs design approval |
+| Q-4 | Login placeholder shows `admin@atlastours.com` | **Decide** (visible text) | Leaks the dev default email |
+| Q-5 | Seed offers expired on 2025-12-31 | **Decide** (content) | Since P4, expired offers are hidden automatically, so the new Offers section never shows until real offers are added |
+| Q-8 | E-10 sign-off: text on orange/gold buttons changed from white to dark navy (P4) | **Decide** (design) | A visible change made without design sign-off; alternative is a darker orange with white text |
+| Q-6 | Reviews carousel visible pause button | **Decide** (design) | Hover/focus pause covers most of WCAG 2.2.2; a visible control fully satisfies it |
+| Q-7 | Hero stats (500+, 15+ packages, 10+ destinations) contradict Counter (50+) and data (3 packages) | **Decide** (content) | Part of C-09; needs the correct numbers |
 
 ### Scores
 
@@ -209,7 +218,7 @@ Rule: **delete local interfaces, import from `src/lib/types.ts`.** That alone fi
 | C-06 | P2 | ✅ | Claude | b20bb86 (PR #2) | FAQ ignores Hindi fields; JSON backend ignores `order` |
 | C-07 | P0 | ✅ | Claude | 6d1f665 | Contact form shows success on failure |
 | C-08 | P1 | ✅ | Claude | 2852416 | Contact sends `package` (name) not `packageId`; `travelers` may be `""` |
-| C-09 | P2 | ⏸ | client | needs decision: which email (info@atlastours.in vs gmail) | Contact info / phone hardcoded in 5+ places, inconsistent |
+| C-09 | P2 | ✅ | Claude (P4) | 5d45b93 (PR #4) — `SITE_CONFIG` single source; email **provisional** `info@atlastours.in` (see CLIENT_QUESTIONS.md) | Contact info / phone hardcoded in 5+ places, inconsistent |
 
 - **C-01** — `Packages.tsx:7,341`, `Blog.tsx:7,181`, `FAQ.tsx:6,178`, `Reviews.tsx:6`, `Contact.tsx:6,36,313`.
 - **C-02** — `Packages.tsx:16,430-435` expects `{day,title,description}`; data is `string[]`. **Fix:** render `itinerary.map((line, i) => …Day {i+1}: {line})`. Also drop non-existent `exclusions`/`slug`.
@@ -252,7 +261,7 @@ Owns: all `src/components/*` style/markup, `src/app/login/page.tsx` (after A)
 | E-07 | P2 | ✅ | Claude | 2852416 + b20bb86 | Icon-only buttons lack accessible names |
 | E-08 | P2 | ✅ | Claude | b20bb86 (PR #2) | Reviews carousel auto-advance with no pause / `aria-live` |
 | E-09 | P2 | ✅ | Claude | 2852416 | FAQ buttons lack `aria-expanded`/`aria-controls` |
-| E-10 | P2 | ⏸ | client | needs design approval (visual change) | Contrast failures |
+| E-10 | P2 | ✅ | Claude (P4) | 5d45b93 (PR #4) — new text-only colour vars, dark text on orange buttons, stronger photo scrims; guarded by `tests/unit/contrast.test.ts` | Contrast failures |
 | E-11 | P3 | ✅ | Claude | 45792b5 (PR #3) | No `:focus-visible` styles / skip link; login `outline:none` |
 | E-12 | P3 | ✅ | Claude | b20bb86 (PR #2) | Star ratings & hero `<h1>` not meaningful to screen readers |
 
@@ -296,15 +305,15 @@ Owns: `src/app/layout.tsx`, `next.config.ts`, `package.json`, `public/`, new `sr
 
 | ID | Sev | Status | Owner | Fixed in | Feature |
 |---|---|---|---|---|---|
-| G-01 | P2 | ⏸ | client | needs product decision | Online booking form wired to `/api/book` (or delete the endpoint) |
-| G-02 | P2 | ⏸ | client | needs product decision | Email/WhatsApp notification to owner on new enquiry/booking |
-| G-03 | P2 | ⏸ | client | needs product decision | Package detail pages `/packages/[id]` (SEO + shareable links) |
-| G-04 | P2 | ⏸ | client | needs product decision | Image upload in admin (e.g. Vercel Blob / Cloudinary) |
-| G-05 | P2 | ⏸ | client | needs product decision | Show active offers/coupons on public site |
-| G-06 | P3 | ⏸ | client | needs approval: new UI (filters/tabs) | Package category filter / search; gallery category tabs |
-| G-07 | P3 | ⏸ | client | needs approval: new pages | Blog detail pages |
-| G-08 | P3 | ⏸ | client | needs Hindi copy from the client | Full Hindi translation (message catalog instead of inline ternaries) |
-| G-09 | P3 | ⏸ | client | needs Razorpay account + decision | Payments (Razorpay) — `api/payments/*` folders are empty |
+| G-01 | P2 | ✅ | Claude (P4) | 5d45b93 (PR #4) — `BookingForm.tsx` on package pages; per-person pricing **provisional** (Q-1) | Online booking form wired to `/api/book` (or delete the endpoint) |
+| G-02 | P2 | ⏸ | client | needs provider + addresses (CLIENT_QUESTIONS.md) | Email/WhatsApp notification to owner on new enquiry/booking |
+| G-03 | P2 | ✅ | Claude (P4) | 5d45b93 (PR #4) — `/packages/[id]` + metadata, TouristTrip JSON-LD, sitemap | Package detail pages `/packages/[id]` (SEO + shareable links) |
+| G-04 | P2 | ⏸ | client | needs storage provider account (CLIENT_QUESTIONS.md) | Image upload in admin (e.g. Vercel Blob / Cloudinary) |
+| G-05 | P2 | ✅ | Claude (P4) | 5d45b93 (PR #4) — `Offers.tsx`; expired offers hidden (IST, inclusive `validTo`) | Show active offers/coupons on public site |
+| G-06 | P3 | ✅ | Claude (P4) | 5d45b93 (PR #4) — package category chips, gallery category tabs | Package category filter / search; gallery category tabs |
+| G-07 | P3 | ✅ | Claude (P4) | 5d45b93 (PR #4) — `/blog/[id]` + BlogPosting JSON-LD, sitemap | Blog detail pages |
+| G-08 | P3 | ⏸ | client | catalog done (`src/lib/i18n/`, 5d45b93 PR #4); needs 170 Hindi strings — `docs/hindi-strings-needed.md` | Full Hindi translation (message catalog instead of inline ternaries) |
+| G-09 | P3 | ⏸ | client | needs Razorpay account + decision (CLIENT_QUESTIONS.md) | Payments (Razorpay) — `api/payments/*` folders are empty |
 | G-10 | P3 | ✅ | Claude | 45792b5 (PR #3) | Test setup (Vitest + Playwright smoke test of home page & admin CRUD) |
 
 ---
@@ -350,3 +359,6 @@ Done: ~~Day 1: D-01 · A-01 · A-02 · C-01…C-05 · C-07 · B-01~~ · ~~Day 2:
 | 2026-11-17 | Claude | **Docs refresh.** CLAUDE.md rewritten for the current architecture (server-rendered page, `api.ts`/`crud-route.ts`/`visibility.ts`, fail-closed prod auth, new env vars `ADMIN_PASSWORD_HASH` and `NEXT_PUBLIC_SITE_URL`, rate limits, public-form rules, "no visual changes" constraint, pointer to this file). This file: header shows current rating 7/10; §1 totals by severity; §2 split into current snapshot / pending decisions / scores at-audit vs now; §3 feature inventory updated with "Was" column; §5 and §6 updated; P1 rows now reference commit `2852416`. |
 | 2026-11-17 | Claude (5 parallel subagents + review), branch `p2-fixes` | **P2 round: 19 of 26 P2s done (incl. D-04, E-07 completed), plus P3s A-07, B-12, E-12. The other 7 P2s are ⏸ blocked on client decisions** (C-09 email, E-10 colours, G-01…G-05 features). No visual redesign. **Backend:** B-07 PATCH touches only present keys; `nullable()` fields clear with `null`/`""`; Postgres `pgUpdate` from fixed column maps via `sql.query` (COALESCE removed; Postgres path reviewed, not executed); B-08 JWT issuer/audience/role/`SESSION_VERSION`, `sameSite: strict`, logout clears with matching flags; B-09 `"image"` field type (https or `/path` only); B-12 `safeParseArray`. **Config:** security headers + report-only CSP (`next.config.ts`); Poppins via `next/font` (300–900), Font Awesome and Google Fonts CDNs removed (login lock is inline SVG); `eslint.config.mjs` (lint: 0 errors, 3 intentional `<img>` warnings); pre-paint theme script; `<html lang>` stays `en`. **Admin:** shared types + status narrowing, newest-first recent lists, non-mutating FAQ sort, edits send `null` to clear. **Components:** inert closed menu/WhatsApp popup + aria-expanded + Esc; carousel pauses on hover/focus and under reduced motion, live region, star labels; Counter rAF cleanup; dark-mode overrides with light mode unchanged (colour table in agent report); FAQ shows Hindi when selected; Contact timer cleanup. Lint errors fixed by Claude: admin `<a href="/">` → `<Link>`, unused vars removed, Hero mount-only setState documented. Verified: `tsc` ✅, `lint` ✅, `build` ✅, curl on a temp dev server: strict cookie, headers, null-clearing, bad image URL → 400, FAQ create/clear/delete, enquiry, HTML has content + no CDN fonts ✅. **Not browser-verified:** inert menus, carousel pause, dark-mode colours, login lock icon. Note: the user's dev server on :3000 stopped during this round (not stopped by Claude). |
 | 2026-11-18 | Claude (4 parallel subagents + review), branch `p3-fixes` | **P3 round: every item not blocked on a client decision is now done (55/66; 11 ⏸ blocked, 0 open).** A-08: admin page 895 → 121 lines; `_lib/api.ts`, `_lib/crud.ts` (`entityCrud`, `useEntityTab`), `_components/*Tab.tsx`, `forms/*`, `AdminStyles`, `Dashboard` — CSS and form bodies byte-identical to before. B-11: `/api/seed` creates tables **and** inserts default content idempotently (`ON CONFLICT (id) DO NOTHING`), `content:false` flag; new `src/lib/seed-data.ts` shared with the JSON auto-seed (old JSON auto-seed had drifted from `data/db.json` — fixed); `JSON_DB_PATH` env var. E-11: keyboard-only `:focus-visible` ring, skip link + `<main id="main-content">`, login and WhatsApp inputs no longer hide focus (Claude fixed WhatsApp). F-09: Tailwind removed. F-10: 18 empty route folders removed. G-10: Vitest 4.1.12 (88 tests: validators, visibility, rate limit, safeEqual, packages + enquiry routes on a temp DB) and Playwright 1.65.1 (3 smoke tests + 2 admin e2e tests added by Claude: FAQ create/edit-clear/deactivate/delete with reloads, and hide-package-removes-from-home). G-06…G-09 marked ⏸ (need client decisions). Verified: `tsc` ✅, `lint` 0 errors ✅, `npm test` 88/88 ✅, `npm run test:e2e` 5/5 ✅, `build` ✅, `data/db.json` untouched ✅. CLAUDE.md updated (test commands, `JSON_DB_PATH`, seed, admin layout, focus rules). Postgres seed path reviewed, not executed. |
+| 2026-11-18 | Claude | **Merged PRs #1, #2, #3 into new branch `dev`** (created from `master` @ `dd7e91d`; merge commits `f9a17c4`, `899fc03`, `e2bf268`; merge commits, not squash, so all recorded hashes remain valid; `dev` tree verified identical to `p3-fixes`; `master` untouched; feature branches kept). Status review: **55/66 done, 11 ⏸ blocked on client decisions, 0 open.** §1 now records merge status; §2 snapshot moved to `dev` and the pending table split into Verify (V-1…V-4) and Decide (Q-1…Q-7) items, adding Q-5 (expired seed offers), Q-6 (carousel pause button) and Q-7 (contradictory hero stats). |
+| 2026-11-18 | Claude (5 parallel subagents in 2 waves + lead integration), branch `p4-fixes`, commit `5d45b93`, PR #4 | **P4 round: 7 of the 11 blocked items built with the user's go-ahead; 62/66 done, 4 ⏸ (G-02, G-04, G-08 Hindi copy, G-09).** Open client questions moved to new `CLIENT_QUESTIONS.md`. **C-09:** every component reads phone/email/WhatsApp/address from `SITE_CONFIG` (+ `PHONE_DISPLAY`); email provisionally `info@atlastours.in` (also in `data/db.json` config); guard test `tests/unit/site-config.test.ts`. **G-03:** `/packages/[id]` (server, 404 for hidden/unknown, metadata, TouristTrip JSON-LD, sticky booking aside); helpers in `src/app/packages/package-utils.ts`. **G-01:** `BookingForm.tsx` → `/api/book` (estimate price × travelers, red error style, 429 handling; no message field because `/api/book` has none — uses `city`). **G-06:** package category chips (`category` field) + gallery category tabs; lightbox navigates the filtered set. **G-05:** `Offers.tsx` after Packages, rendered only when an offer is visible; `isPublicOffer` now also hides offers whose `validTo` (inclusive, IST) has passed — seed offers are expired so the section is hidden by default. **G-07:** `/blog/[id]` (plain-text paragraphs, BlogPosting JSON-LD, metadata). Sitemap lists package and blog pages. Header/Footer section links become `/#x` off the home page (`usePathname`); both detail pages reuse the home chrome. **E-10:** new vars `--orange-text`, `--gold-text`, `--on-accent`, `--success-text`, `--error-text`, `--input-border`; `--text2` light `#657071`, dark `--primary` `#73a0df`; **text on orange/gold fills is now dark navy instead of white** (white failed at 2.2–2.9:1); stronger scrims on hero/package hero/gallery captions; `tests/unit/contrast.test.ts` (69 pairs) guards AA. Left: focus ring 2.85:1 on white, WhatsApp brand green, decorative icons. **G-08:** typed catalog `src/lib/i18n/` (`en.ts` 179 keys, `hi.ts` partial with the 9 existing Hindi strings, `useT()` hook, `translate`/`getT` for server); English output unchanged; `docs/hindi-strings-needed.md` lists 170 strings for the client. Verified: `tsc` ✅, `lint` 0 errors ✅, `npm test` 217/217 ✅, `build` ✅, Playwright 13/13 ✅ (run against `next start` on :3150 with temp DB because the user's dev server occupied the project; one e2e selector fixed by Claude). **Not browser-verified by a person:** new pages, dark mode of new UI, offers section with live data, button text colour change. |
+| 2026-11-18 | Claude | **Pending-status review.** Synced §1/§2 with the P4 round: merge-status note now says PR #4 is open (P4 items exist only on `p4-fixes`); §2 snapshot moved to `p4-fixes` with P4's recorded checks; pointer to `CLIENT_QUESTIONS.md`; V-2 extended with the new P4 UI; Q-1 marked provisional-and-built; Q-5 updated (expired offers now auto-hidden); added Q-8 (sign-off for the dark-navy button text from E-10). Fixed a malformed separator row in the §1 Progress table (introduced 2026-11-18 by the scores-column edit). Status unchanged: 62/66 done, 4 ⏸. |

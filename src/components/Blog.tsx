@@ -2,23 +2,15 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import type { BlogPost } from "@/lib/types";
-
-// Same output as toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
-// for an Indian visitor (e.g. "1 Jun 2024"), but computed by hand in IST so the server-rendered
-// text and the hydrated text can never differ by timezone or ICU version (F-02).
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
-const IST_OFFSET_MS = 330 * 60 * 1000;
-const formatBlogDate = (iso: string) => {
-  const t = Date.parse(iso);
-  if (Number.isNaN(t)) return "";
-  const d = new Date(t + IST_OFFSET_MS);
-  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-};
+import { useT } from "@/lib/i18n/use-t";
+import { formatISTDate as formatBlogDate } from "@/app/blog/_lib/format-date";
 
 /** Posts are loaded on the server (F-02) and passed in already filtered for public visibility. */
 const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
   const blogs = initialBlogs;
+  const t = useT();
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const styles: Record<string, React.CSSProperties> = {
@@ -34,7 +26,7 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
     badge: {
       display: "inline-block",
       background: "rgba(230,126,34,0.1)",
-      color: "var(--orange)",
+      color: "var(--orange-text)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,
@@ -81,7 +73,7 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
       top: 16,
       left: 16,
       background: "linear-gradient(135deg, #e67e22, #f39c12)",
-      color: "#fff",
+      color: "var(--on-accent)",
       padding: "4px 14px",
       borderRadius: 8,
       fontSize: 12,
@@ -97,7 +89,7 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
     },
     date: {
       fontSize: 13,
-      color: "var(--blog-muted, #aaa)",
+      color: "var(--blog-muted, #767676)",
       marginBottom: 8,
     },
     title: {
@@ -125,7 +117,7 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
     readMore: {
       background: "none",
       border: "none",
-      color: "var(--orange)",
+      color: "var(--orange-text)",
       fontSize: 14,
       fontWeight: 600,
       cursor: "pointer",
@@ -137,13 +129,31 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
       transition: "color 0.3s",
       marginTop: "auto",
     },
+    actions: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12,
+      flexWrap: "wrap",
+      marginTop: "auto",
+    },
+    fullLink: {
+      color: "var(--orange-text)",
+      fontSize: 14,
+      fontWeight: 600,
+      textDecoration: "none",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 6,
+      transition: "color 0.3s",
+    },
   };
 
   return (
     <section id="blog" style={styles.section}>
       <style>{`
         .blog-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(0,0,0,0.12) !important; }
-        .blog-read-more:hover { color: var(--primary) !important; }
+        .blog-read-more:hover, .blog-full-link:hover { color: var(--primary) !important; }
         /* E-02: dark-mode override. Light mode uses the inline fallback (colour unchanged). */
         [data-theme="dark"] #blog { --blog-muted: var(--text2); }
         @media (max-width: 768px) {
@@ -152,10 +162,10 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
       `}</style>
 
       <div className="reveal" style={styles.header}>
-        <span style={styles.badge}>Our Blog</span>
-        <h2 style={styles.heading}>Travel Stories & Tips</h2>
+        <span style={styles.badge}>{t("blog.badge")}</span>
+        <h2 style={styles.heading}>{t("blog.heading")}</h2>
         <p style={styles.subheading}>
-          Inspiration and insights for your next adventure.
+          {t("blog.subheading")}
         </p>
       </div>
 
@@ -191,16 +201,27 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
                   {blog.content || blog.excerpt}
                 </div>
                 {!isExpanded && <p style={styles.excerpt}>{blog.excerpt}</p>}
-                <button
-                  className="blog-read-more"
-                  style={styles.readMore}
-                  onClick={() => setExpanded(isExpanded ? null : blog.id)}
-                >
-                  {isExpanded ? "Show Less" : "Read More"}{" "}
-                  <span style={{ transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.3s", display: "inline-block" }}>
-                    &#8595;
-                  </span>
-                </button>
+                <div style={styles.actions}>
+                  <button
+                    className="blog-read-more"
+                    style={{ ...styles.readMore, marginTop: 0 }}
+                    onClick={() => setExpanded(isExpanded ? null : blog.id)}
+                  >
+                    {isExpanded ? t("blog.showLess") : t("blog.readMore")}{" "}
+                    <span style={{ transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.3s", display: "inline-block" }}>
+                      &#8595;
+                    </span>
+                  </button>
+                  {/* G-07: full article page; the inline expand above is kept as-is. */}
+                  <Link
+                    href={`/blog/${encodeURIComponent(blog.id)}`}
+                    className="blog-full-link"
+                    style={styles.fullLink}
+                    aria-label={t("blog.fullArticleAria", { title: blog.title })}
+                  >
+                    {t("blog.fullArticle")} <span aria-hidden="true">&#8594;</span>
+                  </Link>
+                </div>
               </div>
             </div>
           );

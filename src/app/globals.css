@@ -10,15 +10,23 @@
   --bg3: #eef2f7;
   --card-bg: #ffffff;
   --text: #2c3e50;
-  --text2: #7f8c8d;
+  --text2: #657071;
   --shadow: 0 4px 20px rgba(0,0,0,0.08);
   --shadow2: 0 8px 40px rgba(0,0,0,0.12);
   --radius: 16px;
   --ease: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* E-10 contrast (WCAG AA). --orange/--gold stay the brand fills; these are for text.
+     Ratios are asserted in tests/unit/contrast.test.ts — keep them in sync. */
+  --orange-text: #9c5212;   /* orange text on light surfaces (incl. the orange-tinted badges) */
+  --gold-text: #f6b144;     /* gold text on the navy sections (theme-independent) */
+  --on-accent: #0a1628;     /* text on orange/gold gradient fills (white is 2.2–2.9:1 there) */
+  --success-text: #1c7c44;
+  --error-text: #c0392b;
+  --input-border: #8a94a6;  /* form field outline, >= 3:1 against the card */
 }
 
 [data-theme="dark"] {
-  --primary: #5b8fd9;
+  --primary: #73a0df;
   --primary-dark: #0a1628;
   --bg: #0f1724;
   --bg2: #151e2e;
@@ -28,6 +36,10 @@
   --text2: #94a3b8;
   --shadow: 0 4px 20px rgba(0,0,0,0.3);
   --shadow2: 0 8px 40px rgba(0,0,0,0.4);
+  --orange-text: #e98c3a;
+  --success-text: #27b061;
+  --error-text: #f1948a;
+  --input-border: #64748b;
 }
 
 /* ===== GLOBAL RESET ===== */
@@ -92,7 +104,7 @@ button { font-family: inherit; }
 .section-tag {
   display: inline-block;
   background: linear-gradient(135deg, var(--orange), var(--gold));
-  color: #fff; padding: 6px 24px; border-radius: 30px;
+  color: var(--on-accent); padding: 6px 24px; border-radius: 30px;
   font-size: 12px; font-weight: 600; text-transform: uppercase;
   letter-spacing: 1.5px; margin-bottom: 14px;
 }
@@ -128,13 +140,13 @@ button { font-family: inherit; }
 }
 .btn-primary {
   background: linear-gradient(135deg, var(--orange), var(--gold));
-  color: #fff; box-shadow: 0 4px 15px rgba(230,126,34,0.3);
+  color: var(--on-accent); box-shadow: 0 4px 15px rgba(230,126,34,0.3);
 }
 .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(230,126,34,0.4); }
 .btn-outline { border: 2px solid var(--primary); color: var(--primary); background: transparent; }
 .btn-outline:hover { background: var(--primary); color: #fff; }
-[data-theme="dark"] .btn-outline { border-color: var(--orange); color: var(--orange); }
-[data-theme="dark"] .btn-outline:hover { background: var(--orange); color: #fff; }
+[data-theme="dark"] .btn-outline { border-color: var(--orange); color: var(--orange-text); }
+[data-theme="dark"] .btn-outline:hover { background: var(--orange); color: var(--on-accent); }
 .btn-whatsapp { background: var(--green); color: #fff; }
 .btn-whatsapp:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(37,211,102,0.4); }
 
