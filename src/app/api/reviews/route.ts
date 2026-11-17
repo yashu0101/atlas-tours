@@ -1,21 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
 import { getReviews, addReview, updateReview, deleteReview } from "@/lib/db";
-import { verifySession } from "@/lib/auth";
+import { crudRoute } from "@/lib/crud-route";
 
-export async function GET() { return NextResponse.json(await getReviews()); }
+const route = crudRoute({
+  list: getReviews,
+  add: addReview,
+  update: updateReview,
+  remove: deleteReview,
+  isPublic: (r) => r.active !== false,
+  fields: { name: "string", rating: "number", text: "text", city: "string", packageName: "string", active: "boolean" },
+  required: ["name", "rating"],
+  defaults: { text: "", city: "", active: true },
+});
 
-export async function POST(req: NextRequest) {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  return NextResponse.json(await addReview(await req.json()));
-}
-
-export async function PATCH(req: NextRequest) {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id, ...u } = await req.json();
-  const r = await updateReview(id, u); return r ? NextResponse.json(r) : NextResponse.json({ error: "Not found" }, { status: 404 });
-}
-
-export async function DELETE(req: NextRequest) {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id } = await req.json(); return NextResponse.json({ success: await deleteReview(id) });
-}
+export const GET = route.GET;
+export const POST = route.POST;
+export const PATCH = route.PATCH;
+export const DELETE = route.DELETE;

@@ -2,17 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-
-interface BlogPost {
-  _id: string;
-  title: string;
-  excerpt: string;
-  content?: string;
-  image: string;
-  category?: string;
-  date?: string;
-  author?: string;
-}
+import type { BlogPost } from "@/lib/types";
 
 const Blog: React.FC = () => {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
@@ -23,7 +13,7 @@ const Blog: React.FC = () => {
     fetch("/api/blogs")
       .then((r) => r.json())
       .then((data) => {
-        setBlogs(Array.isArray(data) ? data : data.blogs || []);
+        setBlogs(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -176,9 +166,9 @@ const Blog: React.FC = () => {
       ) : (
         <div className="blog-grid" style={styles.grid}>
           {blogs.map((blog) => {
-            const isExpanded = expanded === blog._id;
+            const isExpanded = expanded === blog.id;
             return (
-              <div key={blog._id} className="blog-card card-hover reveal" style={styles.card}>
+              <div key={blog.id} className="blog-card card-hover reveal" style={styles.card}>
                 <div className="img-zoom" style={styles.imgWrap}>
                   <Image
                     src={blog.image || "/images/placeholder.jpg"}
@@ -191,12 +181,12 @@ const Blog: React.FC = () => {
                   )}
                 </div>
                 <div style={styles.body}>
-                  {blog.date && (
+                  {blog.createdAt && (
                     <div style={styles.date}>
-                      {new Date(blog.date).toLocaleDateString("en-IN", {
-                        year: "numeric",
-                        month: "long",
+                      {new Date(blog.createdAt).toLocaleDateString("en-IN", {
                         day: "numeric",
+                        month: "short",
+                        year: "numeric",
                       })}
                     </div>
                   )}
@@ -213,7 +203,7 @@ const Blog: React.FC = () => {
                   <button
                     className="blog-read-more"
                     style={styles.readMore}
-                    onClick={() => setExpanded(isExpanded ? null : blog._id)}
+                    onClick={() => setExpanded(isExpanded ? null : blog.id)}
                   >
                     {isExpanded ? "Show Less" : "Read More"}{" "}
                     <span style={{ transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.3s", display: "inline-block" }}>

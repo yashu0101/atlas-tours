@@ -20,28 +20,57 @@ const Hero: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [displayText, setDisplayText] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [dots, setDots] = useState<Array<{ left: number; top: number; delay: number; duration: number }>>([]);
+  const [dots, setDots] = useState<
+    Array<{ left: number; top: number; delay: number; duration: number; width: number; height: number }>
+  >([]);
+  // null until mounted (SSR-safe); true when the user prefers reduced motion.
+  const [reducedMotion, setReducedMotion] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // Generated once on mount (not during render) so SSR/client markup match
+    // and sizes don't re-roll on every typing tick.
     const generated = Array.from({ length: 20 }, () => ({
       left: Math.random() * 100,
       top: Math.random() * 100,
       delay: Math.random() * 5,
       duration: 3 + Math.random() * 4,
+      width: 4 + Math.random() * 6,
+      height: 4 + Math.random() * 6,
     }));
     setDots(generated);
   }, []);
 
   useEffect(() => {
+    const reduce =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setReducedMotion(reduce);
+    if (reduce) {
+      const video = videoRef.current;
+      if (video) {
+        video.autoplay = false;
+        video.pause();
+      }
+      setDisplayText(typingTexts[0]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (reducedMotion !== false) return; // not mounted yet, or reduced motion: no typing loop
     const current = typingTexts[textIndex];
+
+    // Fully typed: hold the phrase, then start deleting. 2680ms reproduces the
+    // previous effective hold (an 1800ms nested timer plus overshoot ticks).
+    if (!isDeleting && charIndex === current.length) {
+      const hold = setTimeout(() => setIsDeleting(true), 2680);
+      return () => clearTimeout(hold);
+    }
+
     const timeout = setTimeout(
       () => {
         if (!isDeleting) {
           setDisplayText(current.substring(0, charIndex + 1));
           setCharIndex((p) => p + 1);
-          if (charIndex + 1 === current.length) {
-            setTimeout(() => setIsDeleting(true), 1800);
-          }
         } else {
           setDisplayText(current.substring(0, charIndex - 1));
           setCharIndex((p) => p - 1);
@@ -54,7 +83,7 @@ const Hero: React.FC = () => {
       isDeleting ? 40 : 80
     );
     return () => clearTimeout(timeout);
-  }, [charIndex, isDeleting, textIndex]);
+  }, [charIndex, isDeleting, textIndex, reducedMotion]);
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
@@ -263,8 +292,8 @@ const Hero: React.FC = () => {
             ...styles.dot,
             left: `${d.left}%`,
             top: `${d.top}%`,
-            width: 4 + Math.random() * 6,
-            height: 4 + Math.random() * 6,
+            width: d.width,
+            height: d.height,
             animation: `float-dot ${d.duration}s ease-in-out ${d.delay}s infinite`,
           }}
         />

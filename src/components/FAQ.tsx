@@ -1,12 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-
-interface FAQItem {
-  _id: string;
-  question: string;
-  answer: string;
-}
+import type { FAQ as FAQItem } from "@/lib/types";
 
 const FAQAccordionItem: React.FC<{
   faq: FAQItem;
@@ -85,11 +80,22 @@ const FAQAccordionItem: React.FC<{
 
   return (
     <div style={styles.item}>
-      <button style={styles.header} onClick={onToggle}>
+      <button
+        style={styles.header}
+        onClick={onToggle}
+        id={`faq-button-${faq.id}`}
+        aria-expanded={isOpen}
+        aria-controls={`faq-panel-${faq.id}`}
+      >
         <span style={styles.question}>{faq.question}</span>
-        <span style={styles.icon}>{isOpen ? "\u2212" : "+"}</span>
+        <span style={styles.icon} aria-hidden="true">{isOpen ? "\u2212" : "+"}</span>
       </button>
-      <div style={styles.contentWrap}>
+      <div
+        style={styles.contentWrap}
+        id={`faq-panel-${faq.id}`}
+        role="region"
+        aria-labelledby={`faq-button-${faq.id}`}
+      >
         <div ref={contentRef}>
           <p style={styles.answer}>{faq.answer}</p>
         </div>
@@ -107,7 +113,7 @@ const FAQ: React.FC = () => {
     fetch("/api/faqs")
       .then((r) => r.json())
       .then((data) => {
-        setFaqs(Array.isArray(data) ? data : data.faqs || []);
+        setFaqs(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -175,7 +181,7 @@ const FAQ: React.FC = () => {
         <div style={styles.list}>
           {faqs.map((faq, i) => (
             <FAQAccordionItem
-              key={faq._id}
+              key={faq.id}
               faq={faq}
               isOpen={openIndex === i}
               onToggle={() => setOpenIndex(openIndex === i ? null : i)}

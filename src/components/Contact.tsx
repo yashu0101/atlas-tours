@@ -1,11 +1,21 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import type { TourPackage } from "@/lib/types";
 
-interface PackageOption {
-  _id: string;
-  name: string;
-}
+type PackageOption = Pick<TourPackage, "id" | "name">;
+
+const EMPTY_FORM = {
+  name: "",
+  phone: "",
+  email: "",
+  travelers: "",
+  travelDate: "",
+  message: "",
+  packageId: "",
+  // Honeypot: real users never see or fill this; the backend drops submissions where it is non-empty.
+  website: "",
+};
 
 const contactCards = [
   { icon: "phone", label: "Phone", value: "+91 6388360881", href: "tel:+916388360881" },
@@ -16,15 +26,7 @@ const contactCards = [
 
 const Contact: React.FC = () => {
   const [packages, setPackages] = useState<PackageOption[]>([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    travelers: "",
-    travelDate: "",
-    message: "",
-    package: "",
-  });
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState(false);
@@ -33,8 +35,8 @@ const Contact: React.FC = () => {
     fetch("/api/packages")
       .then((r) => r.json())
       .then((data) => {
-        const pkgs = Array.isArray(data) ? data : data.packages || [];
-        setPackages(pkgs.map((p: PackageOption) => ({ _id: p._id, name: p.name })));
+        const pkgs: TourPackage[] = Array.isArray(data) ? data : [];
+        setPackages(pkgs.map((p) => ({ id: p.id, name: p.name })));
       })
       .catch(() => {});
   }, []);
@@ -54,11 +56,14 @@ const Contact: React.FC = () => {
       const res = await fetch("/api/enquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          travelers: Number(formData.travelers) || 1,
+        }),
       });
       if (!res.ok) throw new Error(`Enquiry failed: ${res.status}`);
       setSubmitted(true);
-      setFormData({ name: "", phone: "", email: "", travelers: "", travelDate: "", message: "", package: "" });
+      setFormData(EMPTY_FORM);
       setTimeout(() => setSubmitted(false), 5000);
     } catch {
       // Keep formData so the user doesn't lose what they typed.
@@ -76,6 +81,7 @@ const Contact: React.FC = () => {
     fontSize: 15,
     fontFamily: "'Poppins', sans-serif",
     background: "var(--bg2)",
+    color: "var(--text)",
     outline: "none",
     transition: "border-color 0.3s, box-shadow 0.3s",
     boxSizing: "border-box",
@@ -244,10 +250,26 @@ const Contact: React.FC = () => {
 
       <div className="contact-container" style={styles.container}>
         <form style={styles.form} onSubmit={handleSubmit}>
+          <div
+            aria-hidden="true"
+            style={{ position: "absolute", left: -9999, top: "auto", width: 1, height: 1, overflow: "hidden" }}
+          >
+            <label htmlFor="contact-website">Website</label>
+            <input
+              id="contact-website"
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={formData.website}
+              onChange={handleChange}
+            />
+          </div>
           <div className="contact-form-grid" style={styles.formGrid}>
             <div>
-              <label style={labelStyle}>Full Name *</label>
+              <label htmlFor="contact-name" style={labelStyle}>Full Name *</label>
               <input
+                id="contact-name"
                 className="contact-input"
                 style={inputStyle}
                 name="name"
@@ -258,8 +280,9 @@ const Contact: React.FC = () => {
               />
             </div>
             <div>
-              <label style={labelStyle}>Phone *</label>
+              <label htmlFor="contact-phone" style={labelStyle}>Phone *</label>
               <input
+                id="contact-phone"
                 className="contact-input"
                 style={inputStyle}
                 name="phone"
@@ -270,8 +293,9 @@ const Contact: React.FC = () => {
               />
             </div>
             <div>
-              <label style={labelStyle}>Email</label>
+              <label htmlFor="contact-email" style={labelStyle}>Email</label>
               <input
+                id="contact-email"
                 className="contact-input"
                 style={inputStyle}
                 name="email"
@@ -282,8 +306,9 @@ const Contact: React.FC = () => {
               />
             </div>
             <div>
-              <label style={labelStyle}>No. of Travelers</label>
+              <label htmlFor="contact-travelers" style={labelStyle}>No. of Travelers</label>
               <input
+                id="contact-travelers"
                 className="contact-input"
                 style={inputStyle}
                 name="travelers"
@@ -295,8 +320,9 @@ const Contact: React.FC = () => {
               />
             </div>
             <div>
-              <label style={labelStyle}>Travel Date</label>
+              <label htmlFor="contact-travel-date" style={labelStyle}>Travel Date</label>
               <input
+                id="contact-travel-date"
                 className="contact-input"
                 style={inputStyle}
                 name="travelDate"
@@ -306,25 +332,27 @@ const Contact: React.FC = () => {
               />
             </div>
             <div>
-              <label style={labelStyle}>Select Package</label>
+              <label htmlFor="contact-package" style={labelStyle}>Select Package</label>
               <select
+                id="contact-package"
                 className="contact-input"
                 style={inputStyle}
-                name="package"
-                value={formData.package}
+                name="packageId"
+                value={formData.packageId}
                 onChange={handleChange}
               >
                 <option value="">Choose a package</option>
                 {packages.map((p) => (
-                  <option key={p._id} value={p.name}>
+                  <option key={p.id} value={p.id}>
                     {p.name}
                   </option>
                 ))}
               </select>
             </div>
             <div style={styles.fullWidth}>
-              <label style={labelStyle}>Message</label>
+              <label htmlFor="contact-message" style={labelStyle}>Message</label>
               <textarea
+                id="contact-message"
                 className="contact-input"
                 style={{ ...inputStyle, minHeight: 120, resize: "vertical" }}
                 name="message"

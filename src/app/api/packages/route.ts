@@ -1,27 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
 import { getPackages, addPackage, updatePackage, deletePackage } from "@/lib/db";
-import { verifySession } from "@/lib/auth";
+import { crudRoute } from "@/lib/crud-route";
 
-export async function GET() {
-  return NextResponse.json(await getPackages());
-}
+const route = crudRoute({
+  list: getPackages,
+  add: addPackage,
+  update: updatePackage,
+  remove: deletePackage,
+  isPublic: (p) => !p.hidden,
+  fields: {
+    name: "string", destination: "string", duration: "string", price: "number", originalPrice: "number",
+    image: "string", description: "text", highlights: "string[]", itinerary: "string[]", inclusions: "string[]",
+    category: ["spiritual", "cultural", "adventure", "heritage"], hidden: "boolean",
+  },
+  required: ["name", "price"],
+  defaults: { destination: "", duration: "", image: "", description: "", highlights: [], itinerary: [], inclusions: [], category: "spiritual", hidden: false },
+});
 
-export async function POST(req: NextRequest) {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const body = await req.json();
-  body.id = body.id || crypto.randomUUID();
-  return NextResponse.json(await addPackage(body));
-}
-
-export async function PATCH(req: NextRequest) {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id, ...updates } = await req.json();
-  const result = await updatePackage(id, updates);
-  return result ? NextResponse.json(result) : NextResponse.json({ error: "Not found" }, { status: 404 });
-}
-
-export async function DELETE(req: NextRequest) {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id } = await req.json();
-  return NextResponse.json({ success: await deletePackage(id) });
-}
+export const GET = route.GET;
+export const POST = route.POST;
+export const PATCH = route.PATCH;
+export const DELETE = route.DELETE;

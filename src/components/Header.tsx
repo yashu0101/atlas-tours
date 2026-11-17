@@ -10,8 +10,16 @@ const Header: React.FC = () => {
   const { theme, setTheme, lang, setLang } = useApp();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", onScroll);
+    let last: boolean | null = null;
+    const onScroll = () => {
+      const next = window.scrollY > 60;
+      if (next !== last) {
+        last = next;
+        setScrolled(next);
+      }
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 

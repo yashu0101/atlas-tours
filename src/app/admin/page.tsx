@@ -65,25 +65,45 @@ export default function AdminPage() {
   const [newOffer, setNewOffer] = useState(false);
 
   useEffect(() => {
-    fetch("/api/auth/me").then(r => { if (!r.ok) router.push("/login"); else setLoading(false); });
+    fetch("/api/auth/me")
+      .then(r => { if (!r.ok) router.push("/login"); else setLoading(false); })
+      .catch(err => { console.error("Session check failed", err); router.push("/login"); });
   }, [router]);
 
   useEffect(() => {
     if (loading) return;
-    Promise.all([
-      fetch("/api/packages").then(r => r.json()),
-      fetch("/api/bookings").then(r => r.json()),
-      fetch("/api/enquiries").then(r => r.json()),
-      fetch("/api/reviews").then(r => r.json()),
-      fetch("/api/gallery").then(r => r.json()),
-      fetch("/api/blogs").then(r => r.json()),
-      fetch("/api/faqs").then(r => r.json()),
-      fetch("/api/offers").then(r => r.json()),
-    ]).then(([pk, bk, en, rv, gl, bl, fq, of]) => {
-      setPackages(pk); setBookings(bk); setEnquiries(en); setReviews(rv);
-      setGallery(gl); setBlogs(bl); setFaqs(fq); setOffers(of);
+    let cancelled = false;
+    // Content entities use ?all=1 so the admin also sees hidden/inactive items (B-05).
+    const sources = [
+      ["/api/packages?all=1", "packages"], ["/api/bookings", "bookings"], ["/api/enquiries", "enquiries"],
+      ["/api/reviews?all=1", "reviews"], ["/api/gallery?all=1", "gallery"], ["/api/blogs?all=1", "blogs"],
+      ["/api/faqs?all=1", "FAQs"], ["/api/offers?all=1", "offers"],
+    ] as const;
+    type LoadResult = { label: string; status: number; data: unknown };
+    const load = async (url: string, label: string): Promise<LoadResult> => {
+      try {
+        const res = await fetch(url);
+        const data = await res.json().catch(() => null);
+        return { label, status: res.status, data: res.ok ? data : (data as { error?: string } | null)?.error ?? null };
+      } catch (err) {
+        return { label, status: 0, data: err instanceof Error ? err.message : String(err) };
+      }
+    };
+    Promise.all(sources.map(([url, label]) => load(url, label))).then(results => {
+      if (cancelled) return;
+      if (results.some(r => r.status === 401)) { router.push("/login"); return; }
+      const failed = results.filter(r => r.status < 200 || r.status >= 300 || !Array.isArray(r.data));
+      if (failed.length) {
+        console.error("Admin data load failed", failed);
+        alert(`Failed to load: ${failed.map(r => `${r.label} (${r.status || "network error"}${typeof r.data === "string" && r.data ? `: ${r.data}` : ""})`).join(", ")}`);
+      }
+      const arr = <T,>(r: LoadResult): T[] => (Array.isArray(r.data) ? (r.data as T[]) : []);
+      const [pk, bk, en, rv, gl, bl, fq, of] = results;
+      setPackages(arr<TourPackage>(pk)); setBookings(arr<Booking>(bk)); setEnquiries(arr<Enquiry>(en)); setReviews(arr<Review>(rv));
+      setGallery(arr<GalleryImage>(gl)); setBlogs(arr<BlogPost>(bl)); setFaqs(arr<FAQ>(fq)); setOffers(arr<Offer>(of));
     });
-  }, [loading]);
+    return () => { cancelled = true; };
+  }, [loading, router]);
 
   const logout = async () => { await fetch("/api/auth/logout", { method: "POST" }); router.push("/login"); };
 

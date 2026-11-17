@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
@@ -13,17 +13,10 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import WhatsApp from "@/components/WhatsApp";
 import BackToTop from "@/components/BackToTop";
+import ScrollProgress from "@/components/ScrollProgress";
 
 export default function HomePage() {
-  const [scrollProgress, setScrollProgress] = useState(0);
-
   useEffect(() => {
-    const handleScroll = () => {
-      const p = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-      setScrollProgress(p);
-    };
-    window.addEventListener("scroll", handleScroll);
-
     // Scroll reveal observer
     const REVEAL_SELECTOR = ".fade-in, .reveal, .reveal-left, .reveal-right, .reveal-scale";
     const observer = new IntersectionObserver(
@@ -55,7 +48,6 @@ export default function HomePage() {
     mutationObserver.observe(document.body, { childList: true, subtree: true });
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
       observer.disconnect();
       mutationObserver.disconnect();
     };
@@ -63,7 +55,7 @@ export default function HomePage() {
 
   return (
     <>
-      <div className="scroll-progress" style={{ width: `${scrollProgress}%` }} />
+      <ScrollProgress />
       <Header />
       <Hero />
       <WaveDivider fill="var(--bg2)" />

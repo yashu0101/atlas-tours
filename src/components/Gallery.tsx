@@ -1,31 +1,45 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import type { GalleryImage } from "@/lib/types";
 
-interface GalleryImage {
-  id: string;
-  src: string;
-  caption?: string;
-  category?: string;
-}
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const Gallery: React.FC = () => {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const lightboxRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const isLightboxOpen = lightboxIndex !== null;
 
   useEffect(() => {
     fetch("/api/gallery")
       .then((r) => r.json())
       .then((data) => {
-        setImages(Array.isArray(data) ? data : data.images || []);
+        setImages(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
-  const openLightbox = (i: number) => setLightboxIndex(i);
+  // Move focus into the lightbox on open; restore it to the clicked tile on close.
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    closeBtnRef.current?.focus({ preventScroll: true });
+    return () => {
+      triggerRef.current?.focus({ preventScroll: true });
+      triggerRef.current = null;
+    };
+  }, [isLightboxOpen]);
+
+  const openLightbox = (i: number, trigger: HTMLElement) => {
+    triggerRef.current = trigger;
+    setLightboxIndex(i);
+  };
   const closeLightbox = () => setLightboxIndex(null);
   const goPrev = () =>
     setLightboxIndex((p) => (p !== null ? (p - 1 + images.length) % images.length : null));
@@ -38,6 +52,25 @@ const Gallery: React.FC = () => {
       if (e.key === "Escape") closeLightbox();
       if (e.key === "ArrowLeft") goPrev();
       if (e.key === "ArrowRight") goNext();
+      // Trap Tab focus inside the lightbox.
+      const root = lightboxRef.current;
+      if (e.key === "Tab" && root) {
+        const nodes = Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE));
+        if (nodes.length === 0) {
+          e.preventDefault();
+          return;
+        }
+        const first = nodes[0];
+        const last = nodes[nodes.length - 1];
+        const active = document.activeElement;
+        if (e.shiftKey && (active === first || !root.contains(active))) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && (active === last || !root.contains(active))) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lightboxIndex, images.length]
@@ -206,7 +239,26 @@ const Gallery: React.FC = () => {
               key={img.id}
               className={`gallery-item img-zoom reveal stagger-${(i % 3) + 1}`}
               style={styles.masonryItem}
-              onClick={() => openLightbox(i)}
+              role="button"
+              tabIndex={0}
+              aria-label={img.caption || img.category || "Gallery image"}
+              onClick={(e) => openLightbox(i, e.currentTarget)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  openLightbox(i, e.currentTarget);
+                } else if (e.key === " ") {
+                  e.preventDefault(); // stop page scroll
+                }
+              }}
+              onKeyUp={(e) => {
+                // Open on key-up like a native button, so the same key-up
+                // doesn't immediately "click" the lightbox close button.
+                if (e.key === " ") {
+                  e.preventDefault();
+                  openLightbox(i, e.currentTarget);
+                }
+              }}
             >
               <Image
                 src={img.src}
@@ -225,13 +277,21 @@ const Gallery: React.FC = () => {
 
       {/* Lightbox */}
       {lightboxIndex !== null && images[lightboxIndex] && (
-        <div style={styles.lightbox} onClick={closeLightbox}>
-          <button style={styles.lbClose} onClick={closeLightbox}>
+        <div
+          ref={lightboxRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={images[lightboxIndex].caption || "Image viewer"}
+          style={styles.lightbox}
+          onClick={closeLightbox}
+        >
+          <button ref={closeBtnRef} style={styles.lbClose} aria-label="Close image viewer" onClick={closeLightbox}>
             &#10005;
           </button>
           <button
             className="lb-arrow"
             style={{ ...styles.lbArrow, left: 24 }}
+            aria-label="Previous image"
             onClick={(e) => {
               e.stopPropagation();
               goPrev();
@@ -258,6 +318,7 @@ const Gallery: React.FC = () => {
           <button
             className="lb-arrow"
             style={{ ...styles.lbArrow, right: 24 }}
+            aria-label="Next image"
             onClick={(e) => {
               e.stopPropagation();
               goNext();

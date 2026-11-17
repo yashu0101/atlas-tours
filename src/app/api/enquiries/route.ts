@@ -1,21 +1,29 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getEnquiries, updateEnquiryStatus, deleteEnquiry } from "@/lib/db";
-import { verifySession } from "@/lib/auth";
+import { Enquiry } from "@/lib/types";
+import { notFound, oneOf, readJson, requireAdmin, requireId, withHandler } from "@/lib/api";
 
-export async function GET() {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+// Runtime copy of Enquiry["status"]; `satisfies` keeps it in sync with types.ts.
+const ENQUIRY_STATUSES = Object.keys({ new: 1, contacted: 1, confirmed: 1, cancelled: 1 } satisfies Record<Enquiry["status"], 1>) as Enquiry["status"][];
+
+export const GET = withHandler(async () => {
+  await requireAdmin();
   return NextResponse.json(await getEnquiries());
-}
+});
 
-export async function PATCH(req: NextRequest) {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id, status } = await req.json();
+export const PATCH = withHandler(async (req) => {
+  await requireAdmin();
+  const body = await readJson(req);
+  const id = requireId(body);
+  const status = oneOf(body.status, ENQUIRY_STATUSES, "status");
   const result = await updateEnquiryStatus(id, status);
-  return result ? NextResponse.json(result) : NextResponse.json({ error: "Not found" }, { status: 404 });
-}
+  if (!result) throw notFound();
+  return NextResponse.json(result);
+});
 
-export async function DELETE(req: NextRequest) {
-  const s = await verifySession(); if (!s.authenticated) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id } = await req.json();
-  return NextResponse.json({ success: await deleteEnquiry(id) });
-}
+export const DELETE = withHandler(async (req) => {
+  await requireAdmin();
+  const id = requireId(await readJson(req));
+  if (!(await deleteEnquiry(id))) throw notFound();
+  return NextResponse.json({ success: true });
+});

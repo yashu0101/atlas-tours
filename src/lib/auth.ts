@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { timingSafeEqual, createHash } from "crypto";
+import { compare as bcryptCompare } from "bcryptjs";
 
 const COOKIE_NAME = "admin_session";
 const MIN_PROD_SECRET_LENGTH = 32;
@@ -45,21 +46,28 @@ function getJwtSecret(): Uint8Array | null {
   return new TextEncoder().encode(secret);
 }
 
-/** Returns the configured admin credentials, or null in production if any are missing. */
-function resolveAdminCredentials(): { email: string; password: string } | null {
+type AdminCredentials = { email: string } & ({ passwordHash: string } | { password: string });
+
+/**
+ * Returns the configured admin credentials, or null in production if any are missing.
+ * `ADMIN_PASSWORD_HASH` (bcrypt) takes precedence over plaintext `ADMIN_PASSWORD`.
+ */
+function resolveAdminCredentials(): AdminCredentials | null {
   const email = process.env.ADMIN_EMAIL;
   const password = process.env.ADMIN_PASSWORD;
+  const passwordHash = process.env.ADMIN_PASSWORD_HASH;
   if (!isProduction()) {
-    return { email: email || DEV_ADMIN_EMAIL, password: password || DEV_ADMIN_PASSWORD };
+    const devEmail = email || DEV_ADMIN_EMAIL;
+    return passwordHash ? { email: devEmail, passwordHash } : { email: devEmail, password: password || DEV_ADMIN_PASSWORD };
   }
   const missing: string[] = [];
   if (!email) missing.push("ADMIN_EMAIL");
-  if (!password) missing.push("ADMIN_PASSWORD");
+  if (!password && !passwordHash) missing.push("ADMIN_PASSWORD (or ADMIN_PASSWORD_HASH)");
   if (missing.length) {
     logConfigError(`${missing.join(" and ")} not set. Admin login is disabled in production until configured.`);
     return null;
   }
-  return { email: email!, password: password! };
+  return passwordHash ? { email: email!, passwordHash } : { email: email!, password: password! };
 }
 
 /**
@@ -98,15 +106,27 @@ export async function verifySession(): Promise<{ authenticated: boolean; email?:
 }
 
 /**
- * Constant-time credential check. Fails closed in production when
- * ADMIN_EMAIL / ADMIN_PASSWORD / JWT_SECRET are missing or invalid.
+ * Single entry point for admin login checks. Fails closed in production when
+ * ADMIN_EMAIL / ADMIN_PASSWORD(_HASH) / JWT_SECRET are missing or invalid.
+ * With ADMIN_PASSWORD_HASH set, the password is verified with bcrypt; otherwise
+ * it falls back to a constant-time plaintext comparison. Email and password are
+ * always both checked so timing doesn't reveal which one was wrong.
  */
-export function verifyAdminCredentials(email: unknown, password: unknown): boolean {
+export async function verifyAdminCredentials(email: unknown, password: unknown): Promise<boolean> {
   const creds = resolveAdminCredentials();
   const secretOk = getJwtSecret() !== null;
   if (!creds || !secretOk) return false;
   const emailOk = safeEqual(email, creds.email);
-  const passwordOk = safeEqual(password, creds.password);
+  let passwordOk = false;
+  if ("passwordHash" in creds) {
+    try {
+      passwordOk = typeof password === "string" && (await bcryptCompare(password, creds.passwordHash));
+    } catch (err) {
+      logConfigError(`ADMIN_PASSWORD_HASH is not a valid bcrypt hash (${err instanceof Error ? err.message : String(err)}).`);
+    }
+  } else {
+    passwordOk = safeEqual(password, creds.password);
+  }
   return emailOk && passwordOk;
 }
 

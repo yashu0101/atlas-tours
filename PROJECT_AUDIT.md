@@ -23,12 +23,12 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 
 | Workstream | Owns files | Issues | Done | Status |
 |---|---|---|---|---|
-| A — Admin panel | `src/app/admin/page.tsx`, `src/app/login/page.tsx` | 8 | 2 | 🔄 |
-| B — API, DB & auth | `src/lib/db.ts`, `src/lib/auth.ts`, `src/lib/db-schema.ts`, `src/app/api/**` | 12 | 1 | 🔄 |
-| C — Public data contracts | `Packages.tsx`, `Reviews.tsx`, `Blog.tsx`, `FAQ.tsx`, `Contact.tsx`, `Gallery.tsx` | 9 | 2 | 🔄 |
-| D — Page shell & animation | `src/app/page.tsx`, `src/app/globals.css`, `src/lib/context.tsx` | 5 | 1 | 🔄 |
-| E — Dark mode & accessibility | all `src/components/*` (runs **after C**) | 12 | 0 | ⬜ |
-| F — SEO, config, assets, tooling | `layout.tsx`, `next.config.ts`, `package.json`, `public/`, new `sitemap.ts`/`robots.ts` | 10 | 0 | ⬜ |
+| A — Admin panel | `src/app/admin/page.tsx`, `src/app/login/page.tsx` | 8 | 3 | 🔄 |
+| B — API, DB & auth | `src/lib/db.ts`, `src/lib/auth.ts`, `src/lib/db-schema.ts`, `src/app/api/**` | 12 | 7 | 🔄 |
+| C — Public data contracts | `Packages.tsx`, `Reviews.tsx`, `Blog.tsx`, `FAQ.tsx`, `Contact.tsx`, `Gallery.tsx` | 9 | 7 | 🔄 |
+| D — Page shell & animation | `src/app/page.tsx`, `src/app/globals.css`, `src/lib/context.tsx` | 5 | 3 | 🔄 |
+| E — Dark mode & accessibility | all `src/components/*` (runs **after C**) | 12 | 5 | 🔄 |
+| F — SEO, config, assets, tooling | `layout.tsx`, `next.config.ts`, `package.json`, `public/`, new `sitemap.ts`/`robots.ts` | 10 | 5 | 🔄 |
 | G — Missing features | new files | 10 | 0 | ⬜ |
 
 **Parallel plan:** A, B, C, D, F can all start immediately. E starts after C (same files). G starts after A–D are done.
@@ -114,9 +114,9 @@ Convention to follow (per CLAUDE.md): **PATCH/DELETE send `{ id }` in the JSON b
 
 | ID | Sev | Status | Owner | Fixed in | Issue |
 |---|---|---|---|---|---|
-| A-01 | P0 | ✅ | Claude | uncommitted 2026-11-17 | Every admin DELETE fails (500) |
-| A-02 | P0 | ✅ | Claude | uncommitted 2026-11-17 | Create/edit/toggle crash the UI after saving |
-| A-03 | P1 | ⬜ | | | No error handling on initial load / login |
+| A-01 | P0 | ✅ | Claude | 6d1f665 | Every admin DELETE fails (500) |
+| A-02 | P0 | ✅ | Claude | 6d1f665 | Create/edit/toggle crash the UI after saving |
+| A-03 | P1 | ✅ | Claude | uncommitted 2026-11-17 | No error handling on initial load / login |
 | A-04 | P2 | ⬜ | | | Local interfaces duplicate `types.ts` |
 | A-05 | P2 | ⬜ | | | Optimistic UI removes rows even on failure |
 | A-06 | P2 | ⬜ | | | "Recent" lists show oldest on Postgres |
@@ -138,16 +138,16 @@ Owns: `src/lib/db.ts`, `src/lib/auth.ts`, `src/lib/db-schema.ts`, `src/lib/confi
 
 | ID | Sev | Status | Owner | Fixed in | Issue |
 |---|---|---|---|---|---|
-| B-01 | P0 | ✅ | Claude | uncommitted 2026-11-17 | Default admin credentials & JWT secret accepted in production |
-| B-02 | P1 | ⬜ | | | No login rate limit; plaintext, non-constant-time password compare |
-| B-03 | P1 | ⬜ | | | No try/catch or validation in any route |
-| B-04 | P1 | ⬜ | | | Public `/api/book` & `/api/enquiry` unvalidated, abusable |
-| B-05 | P1 | ⬜ | | | Hidden/inactive content served publicly |
-| B-06 | P1 | ⬜ | | | JSON backend: lost writes, wipes data on parse error, fails on serverless |
+| B-01 | P0 | ✅ | Claude | 6d1f665 | Default admin credentials & JWT secret accepted in production |
+| B-02 | P1 | ✅ | Claude | uncommitted 2026-11-17 | No login rate limit; plaintext, non-constant-time password compare |
+| B-03 | P1 | ✅ | Claude | uncommitted 2026-11-17 | No try/catch or validation in any route |
+| B-04 | P1 | ✅ | Claude | uncommitted 2026-11-17 | Public `/api/book` & `/api/enquiry` unvalidated, abusable |
+| B-05 | P1 | ✅ | Claude | uncommitted 2026-11-17 | Hidden/inactive content served publicly |
+| B-06 | P1 | ✅ | Claude | uncommitted 2026-11-17 | JSON backend: lost writes, wipes data on parse error, fails on serverless |
 | B-07 | P2 | ⬜ | | | COALESCE updates can't clear a field; backends behave differently |
 | B-08 | P2 | ⬜ | | | Session not revocable; `role` not checked; logout cookie flags differ |
 | B-09 | P2 | ⬜ | | | No security headers / CSP; remote URLs not restricted to https |
-| B-10 | P2 | ⬜ | | | Client-supplied `id` on POST → PK collisions |
+| B-10 | P2 | ✅ | Claude | uncommitted 2026-11-17 | Client-supplied `id` on POST → PK collisions |
 | B-11 | P3 | ⬜ | | | `/api/seed` weak default secret; creates tables but no seed data |
 | B-12 | P3 | ⬜ | | | Unguarded `JSON.parse` on package array columns |
 
@@ -171,14 +171,14 @@ Rule: **delete local interfaces, import from `src/lib/types.ts`.** That alone fi
 
 | ID | Sev | Status | Owner | Fixed in | Issue |
 |---|---|---|---|---|---|
-| C-01 | P1 | ⬜ | | | `_id` instead of `id` → undefined React keys |
-| C-02 | P1 | ⬜ | | | Package itinerary renders blank |
-| C-03 | P0 | ✅ | Claude | uncommitted 2026-11-17 | Review text always blank |
-| C-04 | P1 | ⬜ | | | Blog "Read More" expands every card |
-| C-05 | P2 | ⬜ | | | Blog date never shows |
+| C-01 | P1 | ✅ | Claude | uncommitted 2026-11-17 | `_id` instead of `id` → undefined React keys |
+| C-02 | P1 | ✅ | Claude | uncommitted 2026-11-17 | Package itinerary renders blank |
+| C-03 | P0 | ✅ | Claude | 6d1f665 | Review text always blank |
+| C-04 | P1 | ✅ | Claude | uncommitted 2026-11-17 | Blog "Read More" expands every card |
+| C-05 | P2 | ✅ | Claude | uncommitted 2026-11-17 | Blog date never shows |
 | C-06 | P2 | ⬜ | | | FAQ ignores Hindi fields; JSON backend ignores `order` |
-| C-07 | P0 | ✅ | Claude | uncommitted 2026-11-17 | Contact form shows success on failure |
-| C-08 | P1 | ⬜ | | | Contact sends `package` (name) not `packageId`; `travelers` may be `""` |
+| C-07 | P0 | ✅ | Claude | 6d1f665 | Contact form shows success on failure |
+| C-08 | P1 | ✅ | Claude | uncommitted 2026-11-17 | Contact sends `package` (name) not `packageId`; `travelers` may be `""` |
 | C-09 | P2 | ⬜ | | | Contact info / phone hardcoded in 5+ places, inconsistent |
 
 - **C-01** — `Packages.tsx:7,341`, `Blog.tsx:7,181`, `FAQ.tsx:6,178`, `Reviews.tsx:6`, `Contact.tsx:6,36,313`.
@@ -196,10 +196,10 @@ Owns: `src/app/page.tsx`, `src/app/globals.css`, `src/lib/context.tsx`, `Hero.ts
 
 | ID | Sev | Status | Owner | Fixed in | Issue |
 |---|---|---|---|---|---|
-| D-01 | P0 | ✅ | Claude | uncommitted 2026-11-17 | Fetched cards stay at `opacity:0` forever |
-| D-02 | P1 | ⬜ | | | Whole page re-renders on every scroll event |
-| D-03 | P1 | ⬜ | | | No `prefers-reduced-motion` support |
-| D-04 | P2 | ⬜ | | | `Math.random()` in render; effects without cleanup |
+| D-01 | P0 | ✅ | Claude | 6d1f665 | Fetched cards stay at `opacity:0` forever |
+| D-02 | P1 | ✅ | Claude | uncommitted 2026-11-17 | Whole page re-renders on every scroll event |
+| D-03 | P1 | ✅ | Claude | uncommitted 2026-11-17 | No `prefers-reduced-motion` support |
+| D-04 | P2 | 🔄 | Claude | partial 2026-11-17 | `Math.random()` in render; effects without cleanup |
 | D-05 | P2 | ⬜ | | | Dark-theme flash on load; `lang="hi"` set on English content |
 
 - **D-01** — `page.tsx:28-36` observes `.reveal`/`.fade-in` once on mount; Packages (`:341`), Gallery (`:207`), Blog (`:181`), Reviews header (`:201`) mount after fetch and are never observed (`globals.css:130`). Likely introduced in `dd7e91d`. **Fix:** add a `MutationObserver` that observes new reveal elements, or a `useReveal()` hook per component. **Verify:** all packages/gallery/blog/reviews visible after scroll.
@@ -213,15 +213,15 @@ Owns: all `src/components/*` style/markup, `src/app/login/page.tsx` (after A)
 
 | ID | Sev | Status | Owner | Fixed in | Issue |
 |---|---|---|---|---|---|
-| E-01 | P1 | ⬜ | | | Contact inputs: near-black text on dark bg |
+| E-01 | P1 | ✅ | Claude | uncommitted 2026-11-17 | Contact inputs: near-black text on dark bg |
 | E-02 | P2 | ⬜ | | | Hardcoded colors break dark mode |
-| E-03 | P1 | ⬜ | | | Gallery tiles not keyboard accessible |
-| E-04 | P1 | ⬜ | | | Modals lack dialog semantics, focus trap, Esc |
-| E-05 | P1 | ⬜ | | | Form labels not associated with inputs |
+| E-03 | P1 | ✅ | Claude | uncommitted 2026-11-17 | Gallery tiles not keyboard accessible |
+| E-04 | P1 | ✅ | Claude | uncommitted 2026-11-17 | Modals lack dialog semantics, focus trap, Esc |
+| E-05 | P1 | ✅ | Claude | uncommitted 2026-11-17 | Form labels not associated with inputs |
 | E-06 | P2 | ⬜ | | | Off-canvas menu & WhatsApp popup focusable when hidden; no `aria-expanded` |
-| E-07 | P2 | ⬜ | | | Icon-only buttons lack accessible names |
+| E-07 | P2 | 🔄 | Claude | partial 2026-11-17 | Icon-only buttons lack accessible names |
 | E-08 | P2 | ⬜ | | | Reviews carousel auto-advance with no pause / `aria-live` |
-| E-09 | P2 | ⬜ | | | FAQ buttons lack `aria-expanded`/`aria-controls` |
+| E-09 | P2 | ✅ | Claude | uncommitted 2026-11-17 | FAQ buttons lack `aria-expanded`/`aria-controls` |
 | E-10 | P2 | ⬜ | | | Contrast failures |
 | E-11 | P3 | ⬜ | | | No `:focus-visible` styles / skip link; login `outline:none` |
 | E-12 | P3 | ⬜ | | | Star ratings & hero `<h1>` not meaningful to screen readers |
@@ -244,12 +244,12 @@ Owns: `src/app/layout.tsx`, `next.config.ts`, `package.json`, `public/`, new `sr
 
 | ID | Sev | Status | Owner | Fixed in | Issue |
 |---|---|---|---|---|---|
-| F-01 | P1 | ⬜ | | | Upgrade Next.js 16.4.3 → ≥16.4.6 (advisory; build halts) |
+| F-01 | P1 | ✅ | Claude | uncommitted 2026-11-17 | Upgrade Next.js 16.4.3 → ≥16.4.6 (advisory; build halts) |
 | F-02 | P1 | ⬜ | | | Core content not server-rendered (not crawlable) |
-| F-03 | P1 | ⬜ | | | Minimal metadata: no OG/Twitter/canonical/icons |
-| F-04 | P1 | ⬜ | | | No JSON-LD (TravelAgency, FAQPage, Product/Offer, Review) |
-| F-05 | P1 | ⬜ | | | Missing images: `hero-fallback.jpg`, `placeholder.jpg`, `package.jpg`; no favicon |
-| F-06 | P2 | ⬜ | | | No `sitemap.ts` / `robots.ts` |
+| F-03 | P1 | ✅ | Claude | uncommitted 2026-11-17 | Minimal metadata: no OG/Twitter/canonical/icons |
+| F-04 | P1 | ✅ | Claude | uncommitted 2026-11-17 | No JSON-LD (TravelAgency, FAQPage, Product/Offer, Review) |
+| F-05 | P1 | ✅ | Claude | uncommitted 2026-11-17 | Missing images: `hero-fallback.jpg`, `placeholder.jpg`, `package.jpg`; no favicon |
+| F-06 | P2 | ✅ | Claude | uncommitted 2026-11-17 | No `sitemap.ts` / `robots.ts` |
 | F-07 | P2 | ⬜ | | | Poppins loaded twice; full Font Awesome for one icon |
 | F-08 | P2 | ⬜ | | | Lint broken — add `eslint.config.mjs` |
 | F-09 | P3 | ⬜ | | | Remove dead deps (`tailwindcss`, `@tailwindcss/turbopack`), use or remove `bcryptjs` (see B-02) |
@@ -304,4 +304,5 @@ Owns: `src/app/layout.tsx`, `next.config.ts`, `package.json`, `public/`, new `sr
 | Date | Who | Change |
 |---|---|---|
 | 2026-11-17 | Claude (audit) | Initial audit of `dd7e91d`; 66 items logged across 7 workstreams |
-| 2026-11-17 | Claude (4 parallel subagents) | **All 6 P0s fixed (uncommitted), no UI/design changes.** D-01: MutationObserver observes late-mounted reveal elements (`page.tsx`). A-01/A-02: admin DELETE sends `{id}` in body; create/save use the bare entity; state changes only on `res.ok` (`admin/page.tsx`). B-01: secrets resolved lazily, fail closed in production, constant-time `verifyAdminCredentials` used by login route (also closes the timing half of B-02), seed returns 503 without `SEED_SECRET` (`auth.ts`, `api/auth/login/route.ts`, `api/seed/route.ts`). C-03: Reviews uses shared `Review` type and `text`. C-07: Contact checks `res.ok`, shows an error, keeps form data. Verified: `tsc` ✅, admin POST/PATCH/DELETE + login via curl ✅, prod fail-closed via `next start` ✅. **Not yet browser-verified:** D-01. **Follow-ups:** login placeholder still shows default email (deferred, UI); Contact error reuses green success style (needs design OK); DELETE returns 200 `{success:false}` for unknown id (fold into B-03). |
+| 2026-11-17 | Claude (4 parallel subagents) | **All 6 P0s fixed (commit 6d1f665), no UI/design changes.** D-01: MutationObserver observes late-mounted reveal elements (`page.tsx`). A-01/A-02: admin DELETE sends `{id}` in body; create/save use the bare entity; state changes only on `res.ok` (`admin/page.tsx`). B-01: secrets resolved lazily, fail closed in production, constant-time `verifyAdminCredentials` used by login route (also closes the timing half of B-02), seed returns 503 without `SEED_SECRET` (`auth.ts`, `api/auth/login/route.ts`, `api/seed/route.ts`). C-03: Reviews uses shared `Review` type and `text`. C-07: Contact checks `res.ok`, shows an error, keeps form data. Verified: `tsc` ✅, admin POST/PATCH/DELETE + login via curl ✅, prod fail-closed via `next start` ✅. **Not yet browser-verified:** D-01. **Follow-ups:** login placeholder still shows default email (deferred, UI); Contact error reuses green success style (needs design OK); DELETE returns 200 `{success:false}` for unknown id (fold into B-03). |
+| 2026-11-17 | Claude (6 parallel subagents) | **P1 round — 21 of 22 P1s fixed, plus B-10, C-05, E-09, F-06 and parts of D-04/E-07. No UI redesign.** Only **F-02 (server rendering) remains** — deferred because it touches `page.tsx` + every component. **Backend:** new `src/lib/api.ts` (`withHandler`, `readJson`, validators), `crud-route.ts` (shared GET/POST/PATCH/DELETE for 6 content entities), `public-form.ts`, `rate-limit.ts` (in-memory, per instance). 400/401/404/429 now return `{error}`; unknown id → 404; ids server-generated; public GETs hide hidden/inactive unless admin `?all=1`; `/api/book` prices server-side (**amount = price × travelers — confirm prices are per person**); honeypot `website`; rate limits 5/min on public forms, 5 failures/15 min on login; optional `ADMIN_PASSWORD_HASH` (bcrypt); JSON backend atomic writes, reseeds only on ENOENT. **Admin:** load errors handled, 401 → /login, uses `?all=1`; login try/catch. **Components:** shared types everywhere (`_id` gone), itinerary renders, Read More per card, blog dates, contact sends `packageId` + numeric travelers + honeypot, dark-mode input text, labels/aria, modal/lightbox dialog semantics + focus trap + Esc, gallery keyboard access (Space opens on key-up). **Perf/motion:** `ScrollProgress.tsx` (no per-scroll re-render), passive listeners, `prefers-reduced-motion` block + Hero respects it, Hero dots stable. **SEO/config:** Next 16.4.6 (prod audit clean), OG/Twitter/canonical, TravelAgency JSON-LD, robots/sitemap, favicon, missing images added. Verified: `tsc` ✅, `npm run build` ✅, admin form payloads round-trip ✅, public GET filtering ✅. **Not browser-verified:** modals/focus trap, reduced motion, reveal animation. **Follow-ups:** set `NEXT_PUBLIC_SITE_URL` (fallback `https://atlastours.in`); CLAUDE.md now stale re login/`/api/book`/`ADMIN_PASSWORD_HASH`; contact input text is `--text` (#2c3e50) instead of browser black in light mode. |
