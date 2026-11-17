@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { initDB } from "@/lib/db-schema";
+import { seedContent } from "@/lib/db";
 import { safeEqual } from "@/lib/auth";
 
 // Dev-only fallback (documented in CLAUDE.md). Never accepted in production.
 const DEV_SEED_SECRET = "atlas-seed-2024";
 
+/**
+ * POST { secret, content? } — creates the Postgres tables and (unless `content: false`)
+ * inserts the default content from `src/lib/seed-data.ts`. Safe to re-run: existing
+ * rows (matched by id) are never updated or deleted, and bookings/enquiries are never
+ * seeded. Responds `{ tables: "ok", inserted: { packages, reviews, gallery, blogs, faqs, offers } }`
+ * with the number of rows actually inserted (0s on a re-run); `inserted` is null when
+ * `content: false`.
+ */
 export async function POST(req: NextRequest) {
   // Resolved at request time so `next build` (NODE_ENV=production) is unaffected.
   let expected = process.env.SEED_SECRET;
@@ -16,19 +25,33 @@ export async function POST(req: NextRequest) {
     expected = DEV_SEED_SECRET;
   }
 
-  let secret: unknown;
+  let body: { secret?: unknown; content?: unknown };
   try {
-    ({ secret } = await req.json());
+    body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
   }
-  if (!safeEqual(secret, expected)) {
+  if (!body || typeof body !== "object" || !safeEqual(body.secret, expected)) {
     return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
   }
-  if (!process.env.DATABASE_URL) return NextResponse.json({ error: "No DATABASE_URL" }, { status: 400 });
+  if (body.content !== undefined && typeof body.content !== "boolean") {
+    return NextResponse.json({ error: "`content` must be a boolean" }, { status: 400 });
+  }
+  if (!process.env.DATABASE_URL) {
+    return NextResponse.json(
+      { error: "No DATABASE_URL: the JSON backend needs no seeding (it seeds itself when its data file is missing)" },
+      { status: 400 },
+    );
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { neon } = require("@neondatabase/serverless");
-  const sql = neon(process.env.DATABASE_URL);
-  await initDB(sql);
-  return NextResponse.json({ success: true, message: "Database tables created" });
+  try {
+    await initDB(neon(process.env.DATABASE_URL));
+    const inserted = body.content === false ? null : await seedContent();
+    return NextResponse.json({ tables: "ok", inserted });
+  } catch (err) {
+    console.error("[seed] failed:", err);
+    return NextResponse.json({ error: "Seeding failed; see server logs" }, { status: 500 });
+  }
 }

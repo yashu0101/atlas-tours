@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status & fix tracker
 
-**`PROJECT_AUDIT.md` is the source of truth for open issues and project status.** Every issue has an ID (`A-01`, `B-05`, …), severity, status and owner. When you fix something, update its row, the progress table and the changelog there. When you find something new, add it with the next free ID. All P0/P1 items are closed and most P2s (see the file) as of 2026-11-17; remaining work is a few decisions-blocked P2s, P3s and the feature backlog (workstream G).
+**`PROJECT_AUDIT.md` is the source of truth for open issues and project status.** Every issue has an ID (`A-01`, `B-05`, …), severity, status and owner. When you fix something, update its row, the progress table and the changelog there. When you find something new, add it with the next free ID. As of 2026-11-18 every item that needs no client decision is done; the 11 remaining items are blocked on client decisions (marked ⏸ in the file).
 
 ## Commands
 
@@ -14,15 +14,18 @@ npm run build        # production build
 npm start            # serve the production build
 npx tsc --noEmit     # type check
 npm run lint         # ESLint (flat config)
+npm test             # Vitest unit + route tests (tests/unit, tests/routes)
+npx vitest run tests/unit/api.test.ts   # a single test file
+npm run test:e2e     # Playwright (tests/e2e) — starts its own dev server on :3150
 ```
 
-`npm run lint` uses `eslint.config.mjs` (flat config). Run it alongside `npx tsc --noEmit`.
+Before finishing a change, run `npx tsc --noEmit`, `npm run lint` and `npm test`; run `npm run test:e2e` when touching pages, components or the admin UI.
 
-There is no test runner. `tests/` exists but is empty and untracked (G-10).
+**Tests never touch `data/db.json`.** `vitest.config.mts` forces `DATABASE_URL=""`; DB-backed tests use `tests/helpers/temp-db.ts`, which points `JSON_DB_PATH` at a fresh temp file seeded from `src/lib/seed-data.ts`. Route tests call handlers directly with `new NextRequest(...)` and mock `next/headers` cookies (see `tests/routes/packages.test.ts`). Playwright's `webServer` also uses a temp `JSON_DB_PATH`. Vitest is pinned to 4.x because 5.x requires `@types/node` ≥ 22.
 
-**Testing writes locally mutates `data/db.json`, which is git-tracked.** After any manual POST/PATCH/DELETE testing, run `git checkout -- data/db.json`. Public form endpoints and login are rate-limited in memory (see below), so repeated curl testing can get you a `429` until the dev server restarts or the window passes.
+**Manual testing against `npm run dev` does mutate `data/db.json`, which is git-tracked.** After manual POST/PATCH/DELETE testing, run `git checkout -- data/db.json` (or start the dev server with `JSON_DB_PATH` pointing at a scratch file). Public form endpoints and login are rate-limited in memory, so repeated curl testing can return `429` until the dev server restarts or the window passes.
 
-Seeding Postgres tables (after `DATABASE_URL` is set). It only creates tables — it inserts no content (B-11):
+Seeding Postgres (after `DATABASE_URL` is set) creates the tables **and** inserts the default content from `src/lib/seed-data.ts`. It is idempotent and non-destructive (`ON CONFLICT (id) DO NOTHING`; never updates/deletes; never seeds bookings/enquiries). Response: `{ "tables": "ok", "inserted": { "packages": n, … } }`. Pass `"content": false` to only create tables. In JSON mode it returns 400 (the JSON file seeds itself when missing).
 
 ```bash
 curl -X POST http://host/api/seed -H 'Content-Type: application/json' -d '{"secret":"<SEED_SECRET>"}'
@@ -42,6 +45,7 @@ In **development** every var is optional and the fallbacks below apply. In **pro
 | `SEED_SECRET` | `atlas-seed-2024` | required to use `/api/seed` | guards `/api/seed` |
 | `SESSION_VERSION` | `"1"` | optional | embedded in session tokens; change it to log every admin out |
 | `NEXT_PUBLIC_SITE_URL` | `https://atlastours.in` | should be set (domain unconfirmed) | `metadataBase`, canonical, OG, sitemap, robots |
+| `JSON_DB_PATH` | `data/db.json` | — (JSON backend only) | overrides the JSON file path; resolved on every call; used by tests |
 
 ## Architecture
 
@@ -89,7 +93,19 @@ Rate limiting (`src/lib/rate-limit.ts`) is **in-memory and per instance** — it
 
 There is no middleware. Auth is enforced per route handler; the `/admin` page guards itself client-side via `/api/auth/me` and redirects to `/login` on any 401.
 
-Empty scaffold folders exist under `src/app/api/` (`payments/*`, `notifications`, `callback-slots`, `planning`, `tracking`) and `src/app/` (`callback`, `compare`, `wishlist`, …) — they have no route files (F-10 / workstream G).
+### Admin UI (`src/app/admin/`)
+
+`page.tsx` (~120 lines, `"use client"`) holds the entity list state, the auth check, the bulk `?all=1` load, logout and tab switching. Everything else lives in private (underscore, non-route) folders:
+
+- `_lib/api.ts` — fetch helpers (`sendEntity`, `deleteById`, `reportFailure`, `loadList`), the `Patch<T>` type and status constants.
+- `_lib/crud.ts` — `entityCrud(url, label, setItems)` (create/update/remove that only touch state on success) and `useEntityTab(...)` (per-tab modal state).
+- `_components/` — `Dashboard`, one `*Tab.tsx` per entity, `shared.tsx` (`TabHeader`, `Modal`), `AdminStyles.tsx` (the admin CSS), and `forms/*Form.tsx`.
+
+Edit paths send `null` for emptied nullable fields (conversion lives in each `*Tab.tsx`); create never sends `null`. The admin is covered end to end by `tests/e2e/admin.spec.ts`.
+
+### Seed data (`src/lib/seed-data.ts`)
+
+Single source for default content (3 packages, 3 reviews, 6 gallery images, 3 blogs, 5 FAQs, 2 offers — fixed ids and 2024 dates). Used by the JSON backend when its file is missing and by `/api/seed` for Postgres. `data/db.json` matches it; keep them in sync if the seed changes. The two seed offers expired on 2025-12-31.
 
 ### Auth (`src/lib/auth.ts`)
 
@@ -102,7 +118,8 @@ Image URL fields (package `image`, gallery `src`, blog `image`) use the `"image"
 - `next.config.ts` sends `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, HSTS (production) and a **report-only** CSP. Before switching the CSP to enforcing, check DevTools for violations on `/`, `/login`, `/admin`. A new external origin (image host, video CDN, embed) must be added to the CSP.
 - Poppins is self-hosted via `next/font/google` in `layout.tsx` (weights 300–900, CSS var `--font-poppins`); inline `fontFamily: "'Poppins', sans-serif"` still works. **Font Awesome and Google Fonts CDNs are no longer loaded** — use inline SVG icons.
 - `layout.tsx` has an inline pre-paint script that applies the stored theme (`localStorage["atlas-theme"]`) before hydration. `context.tsx` must keep its first render as `"en"`/`"light"` and read localStorage only in an effect (FAQ.tsx reads `lang` and would hit hydration mismatches otherwise). `<html lang>` stays `"en"` regardless of the toggle until content is translated (G-08).
-- `npm run lint` works (`eslint.config.mjs`, flat config from `eslint-config-next`). Remaining warnings are intentional `<img>` usage in the admin page.
+- `npm run lint` works (`eslint.config.mjs`, flat config from `eslint-config-next`). Remaining warnings are intentional `<img>` usage in the admin tabs/forms.
+- Keyboard focus: `globals.css` has a global `:focus-visible` outline (`--orange`, 0 specificity via `:where()`). Never add inline `outline: none` — inline styles beat it. To hide the mouse outline, put `outline: none` in a class (see `.login-input`, `.wa-input`) so the `:focus-visible` rule still applies. The home page starts with a `.skip-link` to `<main id="main-content" tabIndex={-1}>`, visible only on keyboard focus.
 
 ### Frontend
 
@@ -112,7 +129,7 @@ Sections are `"use client"` components rendered in order with `<WaveDivider>` SV
 
 Scroll reveal lives in `src/components/RevealObserver.tsx` (renders nothing): an `IntersectionObserver` adds `visible`/`active` to any `.fade-in`, `.reveal`, `.reveal-left`, `.reveal-right`, `.reveal-scale` element, and a `MutationObserver` picks up elements mounted later. Components opt into animation purely by class name (plus `.stagger-N`, `.card-hover`, `.img-zoom` from `globals.css`). `globals.css` has a `prefers-reduced-motion` block that disables animations and shows reveal elements immediately; `Hero.tsx` also stops the video and typing loop for reduced motion. `ScrollProgress.tsx` updates the progress bar through a ref (no React state per scroll) — keep scroll listeners passive and avoid setState on every scroll event.
 
-Styling is **CSS custom properties + inline `React.CSSProperties` objects**, not Tailwind. `tailwindcss` is in `devDependencies` but unwired — dead weight (F-09). Theme and dark mode come from `:root` / `[data-theme="dark"]` variables in `src/app/globals.css`; a component that hardcodes a color will break dark mode (E-02 fixed this for the sections; when a dark override is needed and no variable matches, components use a local `var(--x, #original)` set only under `[data-theme="dark"] #section-id` in their own `<style>` block). Fonts are self-hosted via next/font (see Platform config). **The client has asked for no visual/design changes** unless explicitly approved.
+Styling is **CSS custom properties + inline `React.CSSProperties` objects**, not Tailwind (it has been removed — don't reintroduce utility classes). Theme and dark mode come from `:root` / `[data-theme="dark"]` variables in `src/app/globals.css`; a component that hardcodes a color will break dark mode (E-02 fixed this for the sections; when a dark override is needed and no variable matches, components use a local `var(--x, #original)` set only under `[data-theme="dark"] #section-id` in their own `<style>` block). Fonts are self-hosted via next/font (see Platform config). **The client has asked for no visual/design changes** unless explicitly approved.
 
 Shared types: import entity types from `src/lib/types.ts` (`TourPackage`, `Review`, `GalleryImage`, `BlogPost`, `FAQ`, `Offer`, …) — never redeclare them locally. Field names that previously drifted: reviews use `text` (not `message`), blogs use `createdAt` (not `date`), itinerary is `string[]`, ids are `id` (not `_id`).
 
@@ -124,6 +141,5 @@ Images are unoptimized (`next.config.ts`) since package/gallery URLs point at ar
 
 ### Known inconsistencies still open
 
-- `admin/page.tsx` (~900 lines) should be split into components (A-08). It now imports shared types.
 - Phone/email are hardcoded in several components and `Contact.tsx` shows a different email than `SITE_CONFIG` (C-09).
 - Offers are managed in the admin but never shown on the public site (G-05).

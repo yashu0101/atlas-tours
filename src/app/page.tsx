@@ -44,23 +44,29 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* E-11: first focusable element; off-screen until it receives keyboard focus. */}
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       <ScrollProgress />
       <Header />
-      <Hero />
-      <WaveDivider fill="var(--bg2)" />
-      <About />
-      <WaveDivider fill="var(--bg)" />
-      <Packages initialPackages={packages} />
-      <WaveDivider fill="var(--bg2)" />
-      <Gallery initialImages={gallery} />
-      <Counter />
-      <WaveDivider fill="var(--bg)" />
-      <Reviews initialReviews={reviews} />
-      <WaveDivider fill="var(--bg2)" />
-      <Blog initialBlogs={blogs} />
-      <WaveDivider fill="var(--bg)" />
-      <FAQ initialFaqs={faqs} />
-      <Contact initialPackages={packages} />
+      {/* Unstyled block wrapper (Header is position:fixed, no CSS targets sibling structure),
+          so wrapping the sections in <main> does not change layout. */}
+      <main id="main-content" tabIndex={-1}>
+        <Hero />
+        <WaveDivider fill="var(--bg2)" />
+        <About />
+        <WaveDivider fill="var(--bg)" />
+        <Packages initialPackages={packages} />
+        <WaveDivider fill="var(--bg2)" />
+        <Gallery initialImages={gallery} />
+        <Counter />
+        <WaveDivider fill="var(--bg)" />
+        <Reviews initialReviews={reviews} />
+        <WaveDivider fill="var(--bg2)" />
+        <Blog initialBlogs={blogs} />
+        <WaveDivider fill="var(--bg)" />
+        <FAQ initialFaqs={faqs} />
+        <Contact initialPackages={packages} />
+      </main>
       <Footer />
       <WhatsApp />
       <BackToTop />
