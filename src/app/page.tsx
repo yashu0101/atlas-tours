@@ -25,6 +25,7 @@ export default function HomePage() {
     window.addEventListener("scroll", handleScroll);
 
     // Scroll reveal observer
+    const REVEAL_SELECTOR = ".fade-in, .reveal, .reveal-left, .reveal-right, .reveal-scale";
     const observer = new IntersectionObserver(
       (entries) => entries.forEach((e) => {
         if (e.isIntersecting) {
@@ -33,11 +34,30 @@ export default function HomePage() {
       }),
       { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
     );
-    document.querySelectorAll(".fade-in, .reveal, .reveal-left, .reveal-right, .reveal-scale").forEach((el) => observer.observe(el));
+
+    const observed = new WeakSet<Element>();
+    const observeReveal = (el: Element) => {
+      if (observed.has(el) || el.classList.contains("visible")) return;
+      observed.add(el);
+      observer.observe(el);
+    };
+    document.querySelectorAll(REVEAL_SELECTOR).forEach(observeReveal);
+
+    // Sections that fetch data client-side (Packages, Gallery, Blog, Reviews)
+    // mount their reveal elements later — observe those as they are added.
+    const mutationObserver = new MutationObserver((mutations) => {
+      mutations.forEach((m) => m.addedNodes.forEach((node) => {
+        if (!(node instanceof Element)) return;
+        if (node.matches(REVEAL_SELECTOR)) observeReveal(node);
+        node.querySelectorAll(REVEAL_SELECTOR).forEach(observeReveal);
+      }));
+    });
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
       observer.disconnect();
+      mutationObserver.disconnect();
     };
   }, []);
 

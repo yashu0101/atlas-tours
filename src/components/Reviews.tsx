@@ -1,16 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-
-interface Review {
-  _id: string;
-  name: string;
-  city?: string;
-  packageName?: string;
-  rating: number;
-  message: string;
-  avatar?: string;
-}
+import type { Review } from "@/lib/types";
 
 const Reviews: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -212,7 +203,7 @@ const Reviews: React.FC = () => {
             {review.name?.charAt(0).toUpperCase()}
           </div>
           <div style={styles.stars}>{renderStars(review.rating)}</div>
-          <p style={styles.message}>&ldquo;{review.message}&rdquo;</p>
+          <p style={styles.message}>&ldquo;{review.text}&rdquo;</p>
           <div style={styles.name}>{review.name}</div>
           <div style={styles.meta}>
             {[review.city, review.packageName].filter(Boolean).join(" | ")}

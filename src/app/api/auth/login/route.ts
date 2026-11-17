@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSession, getAdminCredentials, COOKIE_NAME } from "@/lib/auth";
+import { createSession, verifyAdminCredentials, COOKIE_NAME } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
-  const { email, password } = await req.json();
-  const creds = getAdminCredentials();
-  if (email !== creds.email || password !== creds.password) {
+  const { email, password } = await req.json().catch(() => ({}));
+  if (!verifyAdminCredentials(email, password)) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
   const token = await createSession(email);

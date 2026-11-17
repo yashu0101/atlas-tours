@@ -27,6 +27,7 @@ const Contact: React.FC = () => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
 
   useEffect(() => {
     fetch("/api/packages")
@@ -47,19 +48,24 @@ const Contact: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setSubmitError(false);
+    setSubmitted(false);
     try {
-      await fetch("/api/enquiry", {
+      const res = await fetch("/api/enquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+      if (!res.ok) throw new Error(`Enquiry failed: ${res.status}`);
       setSubmitted(true);
       setFormData({ name: "", phone: "", email: "", travelers: "", travelDate: "", message: "", package: "" });
       setTimeout(() => setSubmitted(false), 5000);
     } catch {
-      alert("Something went wrong. Please try again.");
+      // Keep formData so the user doesn't lose what they typed.
+      setSubmitError(true);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   const inputStyle: React.CSSProperties = {
@@ -341,6 +347,11 @@ const Contact: React.FC = () => {
           {submitted && (
             <div style={styles.successMsg}>
               Thank you! Your enquiry has been sent successfully. We will get back to you soon.
+            </div>
+          )}
+          {submitError && (
+            <div style={styles.successMsg}>
+              Something went wrong. Please call or WhatsApp us at {contactCards[0].value}.
             </div>
           )}
         </form>

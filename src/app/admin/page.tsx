@@ -87,127 +87,147 @@ export default function AdminPage() {
 
   const logout = async () => { await fetch("/api/auth/logout", { method: "POST" }); router.push("/login"); };
 
+  // Shared request helpers: API routes take the id in the JSON body and return the bare entity.
+  const jsonHeaders = { "Content-Type": "application/json" };
+  const reportFailure = async (action: string, res: Response) => {
+    const body = await res.json().catch(() => null);
+    console.error(`${action} failed (${res.status})`, body);
+    alert(`${action} failed${body?.error ? `: ${body.error}` : ""}`);
+  };
+  const deleteById = async (url: string, id: string, label: string) => {
+    const res = await fetch(url, { method: "DELETE", headers: jsonHeaders, body: JSON.stringify({ id }) });
+    if (!res.ok) { await reportFailure(`Delete ${label}`, res); return false; }
+    return true;
+  };
+  const sendEntity = async <T,>(url: string, method: "POST" | "PATCH", payload: unknown, label: string): Promise<T | null> => {
+    const res = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(payload) });
+    if (!res.ok) { await reportFailure(`${method === "POST" ? "Create" : "Update"} ${label}`, res); return null; }
+    return (await res.json()) as T;
+  };
+
   // Booking CRUD
   const updateBookingStatus = async (id: string, field: string, value: string) => {
-    await fetch("/api/bookings", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, [field]: value }) });
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, [field]: value } : b));
+    const updated = await sendEntity<Booking>("/api/bookings", "PATCH", { id, [field]: value }, "booking");
+    if (!updated) return;
+    setBookings(prev => prev.map(b => b.id === id ? updated : b));
   };
   const deleteBooking = async (id: string) => {
     if (!confirm("Delete this booking?")) return;
-    await fetch(`/api/bookings?id=${id}`, { method: "DELETE" });
+    if (!(await deleteById("/api/bookings", id, "booking"))) return;
     setBookings(prev => prev.filter(b => b.id !== id));
   };
 
   // Enquiry CRUD
   const updateEnquiryStatus = async (id: string, status: string) => {
-    await fetch("/api/enquiries", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status }) });
-    setEnquiries(prev => prev.map(e => e.id === id ? { ...e, status } : e));
+    const updated = await sendEntity<Enquiry>("/api/enquiries", "PATCH", { id, status }, "enquiry");
+    if (!updated) return;
+    setEnquiries(prev => prev.map(e => e.id === id ? updated : e));
   };
   const deleteEnquiry = async (id: string) => {
     if (!confirm("Delete this enquiry?")) return;
-    await fetch(`/api/enquiries?id=${id}`, { method: "DELETE" });
+    if (!(await deleteById("/api/enquiries", id, "enquiry"))) return;
     setEnquiries(prev => prev.filter(e => e.id !== id));
   };
 
   // Package CRUD
   const createPkgFn = async (pkg: Omit<TourPackage, "id" | "createdAt">) => {
-    const res = await fetch("/api/packages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(pkg) });
-    const data = await res.json();
-    setPackages(prev => [...prev, data.package]); setNewPkg(false);
+    const created = await sendEntity<TourPackage>("/api/packages", "POST", pkg, "package");
+    if (!created) return;
+    setPackages(prev => [...prev, created]); setNewPkg(false);
   };
   const savePkgFn = async (id: string, updates: Partial<TourPackage>) => {
-    const res = await fetch("/api/packages", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...updates }) });
-    const data = await res.json();
-    setPackages(prev => prev.map(p => p.id === id ? data.package : p)); setEditPkg(null);
+    const updated = await sendEntity<TourPackage>("/api/packages", "PATCH", { id, ...updates }, "package");
+    if (!updated) return;
+    setPackages(prev => prev.map(p => p.id === id ? updated : p)); setEditPkg(null);
   };
   const removePkg = async (id: string) => {
     if (!confirm("Delete this package?")) return;
-    await fetch(`/api/packages?id=${id}`, { method: "DELETE" });
+    if (!(await deleteById("/api/packages", id, "package"))) return;
     setPackages(prev => prev.filter(p => p.id !== id));
   };
 
   // Review CRUD
   const createReviewFn = async (rev: Omit<Review, "id" | "createdAt">) => {
-    const res = await fetch("/api/reviews", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rev) });
-    const data = await res.json();
-    setReviews(prev => [...prev, data.review]); setNewReview(false);
+    const created = await sendEntity<Review>("/api/reviews", "POST", rev, "review");
+    if (!created) return;
+    setReviews(prev => [...prev, created]); setNewReview(false);
   };
   const saveReviewFn = async (id: string, updates: Partial<Review>) => {
-    const res = await fetch("/api/reviews", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...updates }) });
-    const data = await res.json();
-    setReviews(prev => prev.map(r => r.id === id ? data.review : r)); setEditReview(null);
+    const updated = await sendEntity<Review>("/api/reviews", "PATCH", { id, ...updates }, "review");
+    if (!updated) return;
+    setReviews(prev => prev.map(r => r.id === id ? updated : r)); setEditReview(null);
   };
   const removeReview = async (id: string) => {
     if (!confirm("Delete this review?")) return;
-    await fetch(`/api/reviews?id=${id}`, { method: "DELETE" });
+    if (!(await deleteById("/api/reviews", id, "review"))) return;
     setReviews(prev => prev.filter(r => r.id !== id));
   };
 
   // Gallery CRUD
   const createGalleryFn = async (img: Omit<GalleryImage, "id" | "createdAt">) => {
-    const res = await fetch("/api/gallery", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(img) });
-    const data = await res.json();
-    setGallery(prev => [...prev, data.image]); setNewGallery(false);
+    const created = await sendEntity<GalleryImage>("/api/gallery", "POST", img, "image");
+    if (!created) return;
+    setGallery(prev => [...prev, created]); setNewGallery(false);
   };
   const saveGalleryFn = async (id: string, updates: Partial<GalleryImage>) => {
-    const res = await fetch("/api/gallery", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...updates }) });
-    const data = await res.json();
-    setGallery(prev => prev.map(g => g.id === id ? data.image : g)); setEditGallery(null);
+    const updated = await sendEntity<GalleryImage>("/api/gallery", "PATCH", { id, ...updates }, "image");
+    if (!updated) return;
+    setGallery(prev => prev.map(g => g.id === id ? updated : g)); setEditGallery(null);
   };
   const removeGallery = async (id: string) => {
     if (!confirm("Delete this image?")) return;
-    await fetch(`/api/gallery?id=${id}`, { method: "DELETE" });
+    if (!(await deleteById("/api/gallery", id, "image"))) return;
     setGallery(prev => prev.filter(g => g.id !== id));
   };
 
   // Blog CRUD
   const createBlogFn = async (post: Omit<BlogPost, "id" | "createdAt">) => {
-    const res = await fetch("/api/blogs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(post) });
-    const data = await res.json();
-    setBlogs(prev => [...prev, data.blog]); setNewBlog(false);
+    const created = await sendEntity<BlogPost>("/api/blogs", "POST", post, "blog post");
+    if (!created) return;
+    setBlogs(prev => [...prev, created]); setNewBlog(false);
   };
   const saveBlogFn = async (id: string, updates: Partial<BlogPost>) => {
-    const res = await fetch("/api/blogs", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...updates }) });
-    const data = await res.json();
-    setBlogs(prev => prev.map(b => b.id === id ? data.blog : b)); setEditBlog(null);
+    const updated = await sendEntity<BlogPost>("/api/blogs", "PATCH", { id, ...updates }, "blog post");
+    if (!updated) return;
+    setBlogs(prev => prev.map(b => b.id === id ? updated : b)); setEditBlog(null);
   };
   const removeBlog = async (id: string) => {
     if (!confirm("Delete this blog post?")) return;
-    await fetch(`/api/blogs?id=${id}`, { method: "DELETE" });
+    if (!(await deleteById("/api/blogs", id, "blog post"))) return;
     setBlogs(prev => prev.filter(b => b.id !== id));
   };
 
   // FAQ CRUD
   const createFaqFn = async (faq: Omit<FAQ, "id" | "createdAt">) => {
-    const res = await fetch("/api/faqs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(faq) });
-    const data = await res.json();
-    setFaqs(prev => [...prev, data.faq]); setNewFaq(false);
+    const created = await sendEntity<FAQ>("/api/faqs", "POST", faq, "FAQ");
+    if (!created) return;
+    setFaqs(prev => [...prev, created]); setNewFaq(false);
   };
   const saveFaqFn = async (id: string, updates: Partial<FAQ>) => {
-    const res = await fetch("/api/faqs", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...updates }) });
-    const data = await res.json();
-    setFaqs(prev => prev.map(f => f.id === id ? data.faq : f)); setEditFaq(null);
+    const updated = await sendEntity<FAQ>("/api/faqs", "PATCH", { id, ...updates }, "FAQ");
+    if (!updated) return;
+    setFaqs(prev => prev.map(f => f.id === id ? updated : f)); setEditFaq(null);
   };
   const removeFaq = async (id: string) => {
     if (!confirm("Delete this FAQ?")) return;
-    await fetch(`/api/faqs?id=${id}`, { method: "DELETE" });
+    if (!(await deleteById("/api/faqs", id, "FAQ"))) return;
     setFaqs(prev => prev.filter(f => f.id !== id));
   };
 
   // Offer CRUD
   const createOfferFn = async (offer: Omit<Offer, "id" | "createdAt">) => {
-    const res = await fetch("/api/offers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(offer) });
-    const data = await res.json();
-    setOffers(prev => [...prev, data.offer]); setNewOffer(false);
+    const created = await sendEntity<Offer>("/api/offers", "POST", offer, "offer");
+    if (!created) return;
+    setOffers(prev => [...prev, created]); setNewOffer(false);
   };
   const saveOfferFn = async (id: string, updates: Partial<Offer>) => {
-    const res = await fetch("/api/offers", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...updates }) });
-    const data = await res.json();
-    setOffers(prev => prev.map(o => o.id === id ? data.offer : o)); setEditOffer(null);
+    const updated = await sendEntity<Offer>("/api/offers", "PATCH", { id, ...updates }, "offer");
+    if (!updated) return;
+    setOffers(prev => prev.map(o => o.id === id ? updated : o)); setEditOffer(null);
   };
   const removeOffer = async (id: string) => {
     if (!confirm("Delete this offer?")) return;
-    await fetch(`/api/offers?id=${id}`, { method: "DELETE" });
+    if (!(await deleteById("/api/offers", id, "offer"))) return;
     setOffers(prev => prev.filter(o => o.id !== id));
   };
 
