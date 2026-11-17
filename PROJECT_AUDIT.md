@@ -2,7 +2,7 @@
 
 > **Single source of truth** for project status and the fix backlog.
 > Audit date: **2026-11-17** · Audited commit: `dd7e91d` · Rating at audit: **4.5 / 10**
-> Last updated: **2026-11-18** · PRs #1–#4 merged into `dev` (`3ebe2e9`); `master` not yet updated · Current rating: **8.5 / 10** · **62 / 66 done · 4 blocked on client decisions · 0 open**
+> Last updated: **2026-11-18** · PRs #1–#5 merged into `dev` (`ba4cd92`); `master` not yet updated · Current rating: **8.5 / 10** · **62 / 66 done · 4 blocked on client decisions · 0 open**
 
 ---
 
@@ -43,7 +43,7 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 
 **Built with provisional answers (one-line changes once the client confirms):** C-09 email `info@atlastours.in`; G-01/Q-1 per-person pricing; E-10 dark text on orange buttons (visible change — needs a design sign-off).
 
-**Merge status:** PRs #1 → #2 → #3 → #4 are **merged into `dev`** (merge commits `f9a17c4`, `899fc03`, `e2bf268`, `3ebe2e9`; merge commits, not squash, so every hash in this file exists on `dev`). `master` is still at the audited commit `dd7e91d`; a `dev` → `master` PR is the step for production.
+**Merge status:** PRs #1 → #2 → #3 → #4 → #5 are **merged into `dev`** (merge commits `f9a17c4`, `899fc03`, `e2bf268`, `3ebe2e9`, `ba4cd92`; merge commits, not squash, so every hash in this file exists on `dev`). `master` is still at the audited commit `dd7e91d`; a `dev` → `master` PR is the step for production.
 
 **For future work:** every remaining item is blocked on a client decision (§2 "Pending" lists the non-numbered ones). When a decision arrives, set the item to 🔄, keep agents inside their workstream's files, and keep the server-props contract for section components (see CLAUDE.md → Frontend).
 
@@ -51,7 +51,7 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 
 ## 2. Where the project stands
 
-### Current (2026-11-18, branch `dev` @ `3ebe2e9`)
+### Current (2026-11-18, branch `dev` @ `ba4cd92`)
 
 - **Stack:** Next.js **16.4.6** App Router, React 19.3, TypeScript strict, Neon Postgres or JSON-file storage (`DATABASE_URL` switches).
 - **Checks (recorded for P4):** `npx tsc --noEmit` ✅ · `npm run lint` 0 errors ✅ · `npm test` 217/217 ✅ · `npm run test:e2e` 13/13 ✅ · `npm run build` ✅. PR #4 Vercel preview deployments passed.
@@ -70,10 +70,10 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 | Q-1 | `/api/book` pricing: `amount = price × travelers` | **Decide** (provisional, built) | P4's booking form (G-01) shows this estimate. Correct only if prices are **per person**; if per package, change to `price` in the route and the form |
 | Q-2 | Production domain for `NEXT_PUBLIC_SITE_URL` | **Decide** | Canonical/OG/sitemap fall back to `https://atlastours.in` (unconfirmed) |
 | Q-3 | Contact form error reuses the green success style | **Decide** (design) | Red error style needs design approval |
-| Q-4 | ~~Login placeholder shows `admin@atlastours.com`~~ | ✅ **Done** (branch `q-fixes`) | Placeholder is now `you@example.com`; guarded by `tests/e2e/reviews.spec.ts` |
-| Q-5 | ~~Seed offers expired on 2025-12-31~~ | ✅ **Done** (branch `q-fixes`) — decision: remove samples | Both sample offers removed from `seed-data.ts` and `data/db.json`; the Offers section appears once the owner adds a real, active, unexpired offer in Admin → Offers |
+| Q-4 | ~~Login placeholder shows `admin@atlastours.com`~~ | ✅ **Done** (`de31c8f`, PR #5) | Placeholder is now `you@example.com`; guarded by `tests/e2e/reviews.spec.ts` |
+| Q-5 | ~~Seed offers expired on 2025-12-31~~ | ✅ **Done** (`de31c8f`, PR #5) — decision: remove samples | Both sample offers removed from `seed-data.ts` and `data/db.json`; the Offers section appears once the owner adds a real, active, unexpired offer in Admin → Offers |
 | Q-8 | E-10 sign-off: text on orange/gold buttons changed from white to dark navy (P4) | **Decide** (design) | A visible change made without design sign-off; alternative is a darker orange with white text |
-| Q-6 | ~~Reviews carousel visible pause button~~ | ✅ **Done** (branch `q-fixes`) | Pause/play button between the arrows (same style, hidden under reduced motion); focus-pause now counts keyboard focus only, and play always resumes. Covered by `tests/e2e/reviews.spec.ts` |
+| Q-6 | ~~Reviews carousel visible pause button~~ | ✅ **Done** (`de31c8f`, PR #5) | Pause/play button between the arrows (same style, hidden under reduced motion); focus-pause now counts keyboard focus only, and play always resumes. Covered by `tests/e2e/reviews.spec.ts` |
 | Q-7 | Hero stats (500+, 15+ packages, 10+ destinations) contradict Counter (50+) and data (3 packages) | **Decide** (content) | Part of C-09; needs the correct numbers |
 
 ### Scores
@@ -364,3 +364,4 @@ Done: ~~Day 1: D-01 · A-01 · A-02 · C-01…C-05 · C-07 · B-01~~ · ~~Day 2:
 | 2026-11-18 | Claude | **Pending-status review.** Synced §1/§2 with the P4 round: merge-status note now says PR #4 is open (P4 items exist only on `p4-fixes`); §2 snapshot moved to `p4-fixes` with P4's recorded checks; pointer to `CLIENT_QUESTIONS.md`; V-2 extended with the new P4 UI; Q-1 marked provisional-and-built; Q-5 updated (expired offers now auto-hidden); added Q-8 (sign-off for the dark-navy button text from E-10). Fixed a malformed separator row in the §1 Progress table (introduced 2026-11-18 by the scores-column edit). Status unchanged: 62/66 done, 4 ⏸. |
 | 2026-11-18 | Claude | **Merged PR #4 into `dev`** (merge commit `3ebe2e9`, merge commit not squash; all 3 Vercel checks passed beforehand; `dev` tree verified identical to `p4-fixes`; `master` untouched at `dd7e91d`). Header, §1 merge status and §2 snapshot now point at `dev`. Status unchanged: 62/66 done, 4 ⏸ (G-02, G-04, G-08 Hindi copy, G-09). |
 | 2026-11-18 | Claude, branch `q-fixes` | **Q-4, Q-5, Q-6 done (user decisions).** Q-4: login email placeholder → `you@example.com`. Q-6: visible pause/play button in the reviews carousel (inline SVG, existing arrow style, i18n keys `reviews.pauseAria`/`reviews.playAria`, hidden under reduced motion). The new e2e test caught a real bug: after a mouse click, focus stayed on the button and the focus-pause kept the carousel stopped, so play did nothing — fixed by counting only keyboard (`:focus-visible`) focus and clearing the focus pause when play is pressed. Q-5 (user chose "remove the samples"): `SEED_OFFERS` is now empty and `data/db.json` has no offers; the Offers section shows only once the owner adds a real offer. `docs/hindi-strings-needed.md` regenerated (172 of 181 untranslated). Verified: `tsc` ✅, `lint` 0 errors ✅, `npm test` 217/217 ✅, `build` ✅, Playwright 16/16 ✅ (new `tests/e2e/reviews.spec.ts`: rotation, pause/play, reduced motion, placeholder) — run against `next start` because the user's dev server held the dev lock. Remaining Q items: Q-1, Q-2, Q-3, Q-7, Q-8. |
+| 2026-11-18 | Claude | **Merged PR #5 (`q-fixes`) into `dev`** (merge commit `ba4cd92`; 3 Vercel checks passed; `dev` tree verified identical to `q-fixes`; `master` untouched). Q-4/Q-5/Q-6 rows now reference `de31c8f`. |
