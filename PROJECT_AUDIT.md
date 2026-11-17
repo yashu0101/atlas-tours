@@ -2,7 +2,7 @@
 
 > **Single source of truth** for project status and the fix backlog.
 > Audit date: **2026-11-17** · Audited commit: `dd7e91d` · Rating at audit: **4.5 / 10**
-> Last updated: **2026-11-18** · PRs #1–#5 merged into `dev` (`ba4cd92`); N-round in PR #6 (`n-features` @ `66ef8ef`) · `master` not yet updated · Current rating: **8.5 / 10** · **68 / 77 done · 8 blocked on client decisions · 1 open (F-11)**
+> Last updated: **2026-11-18** · PRs #1–#6 merged into `dev` (`a508f04`) · `master` not yet updated · Current rating: **8.5 / 10** · **68 / 77 done · 8 blocked on client decisions · 1 open (F-11)**
 
 ---
 
@@ -44,7 +44,7 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 
 **Built with provisional answers (one-line changes once the client confirms):** C-09 email `info@atlastours.in`; G-01/Q-1 per-person pricing; E-10 dark text on orange buttons (visible change — needs a design sign-off).
 
-**Merge status:** PRs #1 → #2 → #3 → #4 → #5 are **merged into `dev`** (merge commits `f9a17c4`, `899fc03`, `e2bf268`, `3ebe2e9`, `ba4cd92`; merge commits, not squash, so every hash in this file exists on `dev`). `master` is still at the audited commit `dd7e91d`; a `dev` → `master` PR is the step for production.
+**Merge status:** PRs #1 → #2 → #3 → #4 → #5 → #6 are **merged into `dev`** (merge commits `f9a17c4`, `899fc03`, `e2bf268`, `3ebe2e9`, `ba4cd92`, `a508f04`; merge commits, not squash, so every hash in this file exists on `dev`). `master` is still at the audited commit `dd7e91d`; a `dev` → `master` PR is the step for production.
 
 **For future work:** every remaining item is blocked on a client decision (§2 "Pending" lists the non-numbered ones). When a decision arrives, set the item to 🔄, keep agents inside their workstream's files, and keep the server-props contract for section components (see CLAUDE.md → Frontend).
 
@@ -52,10 +52,10 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 
 ## 2. Where the project stands
 
-### Current (2026-11-18, branch `dev` @ `ba4cd92`)
+### Current (2026-11-18, branch `dev` @ `a508f04`)
 
 - **Stack:** Next.js **16.4.6** App Router, React 19.3, TypeScript strict, Neon Postgres or JSON-file storage (`DATABASE_URL` switches).
-- **Checks (recorded for P4):** `npx tsc --noEmit` ✅ · `npm run lint` 0 errors ✅ · `npm test` 217/217 ✅ · `npm run test:e2e` 13/13 ✅ · `npm run build` ✅. PR #4 Vercel preview deployments passed.
+- **Checks (recorded after the PR #6 merge, `a508f04`):** `npx tsc --noEmit` ✅ · `npm run lint` 0 errors ✅ · `npm test` 294/294 ✅ · `npm run test:e2e` 28/28 ✅ · `npm run build` ✅. PR #6 Vercel preview deployments passed.
 - **Client questions:** collected in **`CLIENT_QUESTIONS.md`** — keep it and the table below in sync.
 - **`npm audit --omit=dev`:** 0 vulnerabilities. Dev deps still report some (untriaged).
 - **Verdict:** **launchable after configuration and a staging check** — set `JWT_SECRET` (≥32 chars), `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH` (or `ADMIN_PASSWORD`), `DATABASE_URL`, `SEED_SECRET`, `NEXT_PUBLIC_SITE_URL`; run `/api/seed` and admin edits on staging Postgres; do the manual browser pass below. Every remaining numbered item needs a client decision.
@@ -320,7 +320,7 @@ Owns: `src/app/layout.tsx`, `next.config.ts`, `package.json`, `public/`, new `sr
 
 ### Workstream N — New features (proposed 2026-11-18)
 
-Built with the user's go-ahead: commit `66ef8ef`, PR #6 into `dev` (open). Visible changes need the client's review (CLIENT_QUESTIONS.md → N-4…N-9).
+Built with the user's go-ahead: commit `66ef8ef`, PR #6, merged into `dev` (`a508f04`). Visible changes need the client's review (CLIENT_QUESTIONS.md → N-4…N-9).
 
 | ID | Sev | Status | Owner | Fixed in | Feature |
 |---|---|---|---|---|---|
@@ -386,3 +386,4 @@ Done: ~~Day 1: D-01 · A-01 · A-02 · C-01…C-05 · C-07 · B-01~~ · ~~Day 2:
 | 2026-11-18 | Claude | **Merged PR #5 (`q-fixes`) into `dev`** (merge commit `ba4cd92`; 3 Vercel checks passed; `dev` tree verified identical to `q-fixes`; `master` untouched). Q-4/Q-5/Q-6 rows now reference `de31c8f`. |
 | 2026-11-18 | Claude (lead + 3 parallel subagents), branch `n-features` in worktree `../atlas-tours-n-features`, commit `66ef8ef`, PR #6 | **N-round: new Workstream N (10 proposed features) logged; 6 built (N-1, N-4, N-5, N-6, N-7, N-9), 4 ⏸ on client decisions (N-2 analytics provider, N-3 departure/seat model, N-8 roles, N-10 after G-02).** Worked in a separate git worktree because another session had uncommitted Q-fixes in the main folder. **Backend (lead):** `Enquiry.kind`, `Review.source` (+ `ALTER TABLE … ADD COLUMN IF NOT EXISTS` in `db-schema.ts`; Postgres path not executed — extends V-1), `findBookingsByIdPrefix`, public routes `/api/booking-status`, `/api/review`, `/api/trip-request`, sitemap lists `/plan-trip` and `/reviews/new`, footer links. **Admin (agent):** N-1 + review moderation. **Public pages (agent):** `/track`, `/reviews/new`, `/plan-trip`, `FormPageShell`, entry links in Reviews/Contact/BookingForm; i18n sections `track`, `reviewForm`, `tripRequest`. **N-7/N-9 (agent):** wishlist/compare, SmartImage, hero video gating. Lead fixed a wishlist e2e race with `admin.spec.ts` (which hides the Rajasthan package). Found F-11 (broken seed image). Verified: `tsc` ✅, `lint` 0 errors ✅, `npm test` 294/294 ✅, `npm run build` ✅, `npm run test:e2e` 25/25 ✅. **Not browser-verified by a person:** all new UI, dark mode of new pages, mobile layout, hero on slow connections/Safari, CSV in Excel. Hindi doc regenerated (new strings untranslated, G-08). |
 | 2026-11-18 | Claude | **Merged `dev` (PR #5) into `n-features` to resolve PR #6 conflicts.** Conflicts: `en.ts` (kept both `reviews.pauseAria`/`playAria` and `reviews.writeReview`), `docs/hindi-strings-needed.md` (regenerated), this file (header now lists PRs #1–#5 merged + PR #6). `Reviews.tsx`, `CLAUDE.md`, `CLIENT_QUESTIONS.md` merged cleanly. Re-verified after the merge (see PR #6). |
+| 2026-11-18 | Claude | **Merged PR #6 (`n-features`) into `dev`** (merge commit `a508f04`, merge commit not squash; after merging `dev`/PR #5 into the branch: `tsc` ✅, lint 0 errors ✅, `npm test` 294/294 ✅, `build` ✅, `test:e2e` 28/28 ✅ incl. PR #5's reviews spec; 3 Vercel checks passed; `dev` tree verified identical to `n-features`; `master` untouched). Status: 68/77 done, 8 ⏸, 1 open (F-11). |
