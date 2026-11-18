@@ -1,42 +1,51 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import type { TourPackage } from "@/lib/types";
+import { SITE_CONFIG, PHONE_DISPLAY } from "@/lib/config";
+import { useT } from "@/lib/i18n/use-t";
 
-interface PackageOption {
-  _id: string;
-  name: string;
-}
+type PackageOption = Pick<TourPackage, "id" | "name">;
+
+const EMPTY_FORM = {
+  name: "",
+  phone: "",
+  email: "",
+  travelers: "",
+  travelDate: "",
+  message: "",
+  packageId: "",
+  // Honeypot: real users never see or fill this; the backend drops submissions where it is non-empty.
+  website: "",
+};
 
 const contactCards = [
-  { icon: "phone", label: "Phone", value: "+91 6388360881", href: "tel:+916388360881" },
-  { icon: "mail", label: "Email", value: "info@atlastours.in", href: "mailto:info@atlastours.in" },
-  { icon: "whatsapp", label: "WhatsApp", value: "+91 6388360881", href: "https://wa.me/916388360881" },
-  { icon: "map", label: "Address", value: "Varanasi, Uttar Pradesh, India", href: "#" },
-];
+  { icon: "phone", label: "common.phone", value: PHONE_DISPLAY, href: `tel:${SITE_CONFIG.phone}` },
+  { icon: "mail", label: "common.email", value: SITE_CONFIG.email, href: `mailto:${SITE_CONFIG.email}` },
+  { icon: "whatsapp", label: "common.whatsapp", value: PHONE_DISPLAY, href: `https://wa.me/${SITE_CONFIG.whatsapp}` },
+  { icon: "map", label: "common.address", value: SITE_CONFIG.address, href: "#" },
+] as const;
 
-const Contact: React.FC = () => {
-  const [packages, setPackages] = useState<PackageOption[]>([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    travelers: "",
-    travelDate: "",
-    message: "",
-    package: "",
-  });
+/** Package options come from the server-rendered page (F-02), already filtered for public visibility. */
+/** `minDate`: earliest selectable travel date (today in IST, "YYYY-MM-DD"), computed on the server. */
+const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> = ({ initialPackages, minDate }) => {
+  const packages = initialPackages;
+  const t = useT();
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
+  // Timer that hides the success message; cleared on unmount and when a new submit starts (D-04).
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    fetch("/api/packages")
-      .then((r) => r.json())
-      .then((data) => {
-        const pkgs = Array.isArray(data) ? data : data.packages || [];
-        setPackages(pkgs.map((p: PackageOption) => ({ _id: p._id, name: p.name })));
-      })
-      .catch(() => {});
-  }, []);
+  const clearSuccessTimer = () => {
+    if (successTimerRef.current !== null) {
+      clearTimeout(successTimerRef.current);
+      successTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => clearSuccessTimer, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -46,30 +55,43 @@ const Contact: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    clearSuccessTimer();
     setSubmitting(true);
+    setSubmitError(false);
+    setSubmitted(false);
     try {
-      await fetch("/api/enquiry", {
+      const res = await fetch("/api/enquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          travelers: Number(formData.travelers) || 1,
+        }),
       });
+      if (!res.ok) throw new Error(`Enquiry failed: ${res.status}`);
       setSubmitted(true);
-      setFormData({ name: "", phone: "", email: "", travelers: "", travelDate: "", message: "", package: "" });
-      setTimeout(() => setSubmitted(false), 5000);
+      setFormData(EMPTY_FORM);
+      successTimerRef.current = setTimeout(() => {
+        successTimerRef.current = null;
+        setSubmitted(false);
+      }, 5000);
     } catch {
-      alert("Something went wrong. Please try again.");
+      // Keep formData so the user doesn't lose what they typed.
+      setSubmitError(true);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "14px 18px",
     borderRadius: 12,
-    border: "1px solid var(--bg3)",
+    border: "1px solid var(--input-border)",
     fontSize: 15,
     fontFamily: "'Poppins', sans-serif",
     background: "var(--bg2)",
+    color: "var(--text)",
     outline: "none",
     transition: "border-color 0.3s, box-shadow 0.3s",
     boxSizing: "border-box",
@@ -96,7 +118,7 @@ const Contact: React.FC = () => {
     badge: {
       display: "inline-block",
       background: "rgba(230,126,34,0.1)",
-      color: "#e67e22",
+      color: "var(--orange-text)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,
@@ -143,7 +165,7 @@ const Contact: React.FC = () => {
       width: "100%",
       padding: "14px 0",
       background: "linear-gradient(135deg, #e67e22, #f39c12)",
-      color: "#fff",
+      color: "var(--on-accent)",
       border: "none",
       borderRadius: 12,
       fontSize: 16,
@@ -158,7 +180,7 @@ const Contact: React.FC = () => {
       textAlign: "center",
       padding: "12px 20px",
       background: "rgba(39,174,96,0.1)",
-      color: "#27ae60",
+      color: "var(--success-text)",
       borderRadius: 10,
       fontSize: 14,
       fontWeight: 600,
@@ -192,7 +214,7 @@ const Contact: React.FC = () => {
     },
     cardLabel: {
       fontSize: 13,
-      color: "#888",
+      color: "var(--contact-muted, #6e6e6e)",
       fontWeight: 500,
       marginBottom: 4,
     },
@@ -221,6 +243,8 @@ const Contact: React.FC = () => {
       <style>{`
         .contact-input:focus { border-color: #e67e22 !important; box-shadow: 0 0 0 3px rgba(230,126,34,0.1) !important; }
         .contact-card-h:hover { border-color: rgba(230,126,34,0.3) !important; box-shadow: 0 4px 15px rgba(0,0,0,0.06) !important; }
+        /* E-02: dark-mode override. Light mode uses the inline fallback (colour unchanged). */
+        [data-theme="dark"] #contact { --contact-muted: var(--text2); }
         .submit-btn-h:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(230,126,34,0.45) !important; }
         @media (max-width: 868px) {
           .contact-container { grid-template-columns: 1fr !important; }
@@ -229,31 +253,48 @@ const Contact: React.FC = () => {
       `}</style>
 
       <div className="reveal" style={styles.header}>
-        <span style={styles.badge}>Contact</span>
-        <h2 style={styles.heading}>Get In Touch</h2>
+        <span style={styles.badge}>{t("contact.badge")}</span>
+        <h2 style={styles.heading}>{t("contact.heading")}</h2>
         <p style={styles.subheading}>
-          Plan your dream trip with us. We would love to hear from you.
+          {t("contact.subheading")}
         </p>
       </div>
 
       <div className="contact-container" style={styles.container}>
         <form style={styles.form} onSubmit={handleSubmit}>
+          <div
+            aria-hidden="true"
+            style={{ position: "absolute", left: -9999, top: "auto", width: 1, height: 1, overflow: "hidden" }}
+          >
+            <label htmlFor="contact-website">{t("common.honeypotLabel")}</label>
+            <input
+              id="contact-website"
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={formData.website}
+              onChange={handleChange}
+            />
+          </div>
           <div className="contact-form-grid" style={styles.formGrid}>
             <div>
-              <label style={labelStyle}>Full Name *</label>
+              <label htmlFor="contact-name" style={labelStyle}>{t("common.fullNameRequired")}</label>
               <input
+                id="contact-name"
                 className="contact-input"
                 style={inputStyle}
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 required
-                placeholder="Your name"
+                placeholder={t("contact.namePlaceholder")}
               />
             </div>
             <div>
-              <label style={labelStyle}>Phone *</label>
+              <label htmlFor="contact-phone" style={labelStyle}>{t("common.phoneRequired")}</label>
               <input
+                id="contact-phone"
                 className="contact-input"
                 style={inputStyle}
                 name="phone"
@@ -264,8 +305,9 @@ const Contact: React.FC = () => {
               />
             </div>
             <div>
-              <label style={labelStyle}>Email</label>
+              <label htmlFor="contact-email" style={labelStyle}>{t("common.email")}</label>
               <input
+                id="contact-email"
                 className="contact-input"
                 style={inputStyle}
                 name="email"
@@ -276,8 +318,9 @@ const Contact: React.FC = () => {
               />
             </div>
             <div>
-              <label style={labelStyle}>No. of Travelers</label>
+              <label htmlFor="contact-travelers" style={labelStyle}>{t("contact.travelers")}</label>
               <input
+                id="contact-travelers"
                 className="contact-input"
                 style={inputStyle}
                 name="travelers"
@@ -289,42 +332,46 @@ const Contact: React.FC = () => {
               />
             </div>
             <div>
-              <label style={labelStyle}>Travel Date</label>
+              <label htmlFor="contact-travel-date" style={labelStyle}>{t("common.travelDate")}</label>
               <input
+                id="contact-travel-date"
                 className="contact-input"
                 style={inputStyle}
                 name="travelDate"
                 type="date"
+                min={minDate}
                 value={formData.travelDate}
                 onChange={handleChange}
               />
             </div>
             <div>
-              <label style={labelStyle}>Select Package</label>
+              <label htmlFor="contact-package" style={labelStyle}>{t("contact.package")}</label>
               <select
+                id="contact-package"
                 className="contact-input"
                 style={inputStyle}
-                name="package"
-                value={formData.package}
+                name="packageId"
+                value={formData.packageId}
                 onChange={handleChange}
               >
-                <option value="">Choose a package</option>
+                <option value="">{t("contact.choosePackage")}</option>
                 {packages.map((p) => (
-                  <option key={p._id} value={p.name}>
+                  <option key={p.id} value={p.id}>
                     {p.name}
                   </option>
                 ))}
               </select>
             </div>
             <div style={styles.fullWidth}>
-              <label style={labelStyle}>Message</label>
+              <label htmlFor="contact-message" style={labelStyle}>{t("contact.message")}</label>
               <textarea
+                id="contact-message"
                 className="contact-input"
                 style={{ ...inputStyle, minHeight: 120, resize: "vertical" }}
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                placeholder="Tell us about your travel plans..."
+                placeholder={t("contact.messagePlaceholder")}
               />
             </div>
             <div style={styles.fullWidth}>
@@ -334,15 +381,26 @@ const Contact: React.FC = () => {
                 style={styles.submitBtn}
                 disabled={submitting}
               >
-                {submitting ? "Sending..." : "Send Enquiry"}
+                {submitting ? t("common.sending") : t("contact.submit")}
               </button>
             </div>
           </div>
           {submitted && (
             <div style={styles.successMsg}>
-              Thank you! Your enquiry has been sent successfully. We will get back to you soon.
+              {t("contact.success")}
             </div>
           )}
+          {submitError && (
+            <div style={styles.successMsg}>
+              {t("contact.error", { phone: contactCards[0].value })}
+            </div>
+          )}
+          {/* N-6: entry points to /plan-trip. */}
+          <p style={{ textAlign: "center", marginTop: 16, fontSize: 14, color: "var(--text2)" }}>
+            <a href="/plan-trip" style={{ color: "var(--orange-text)", fontWeight: 600 }}>{t("contact.planTripLink")}</a>
+            <span aria-hidden="true"> &middot; </span>
+            <a href="/plan-trip?mode=callback" style={{ color: "var(--orange-text)", fontWeight: 600 }}>{t("contact.callbackLink")}</a>
+          </p>
         </form>
 
         <div style={styles.infoSide}>
@@ -370,7 +428,7 @@ const Contact: React.FC = () => {
                 </svg>
               </div>
               <div>
-                <div style={styles.cardLabel}>{card.label}</div>
+                <div style={styles.cardLabel}>{t(card.label)}</div>
                 <div style={styles.cardValue}>{card.value}</div>
               </div>
             </a>
@@ -385,7 +443,7 @@ const Contact: React.FC = () => {
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="Atlas Tours Location"
+              title={t("contact.mapTitle")}
             />
           </div>
         </div>

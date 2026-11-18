@@ -2,16 +2,36 @@
 
 import React from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { SITE_CONFIG, PHONE_DISPLAY } from "@/lib/config";
+import { useT } from "@/lib/i18n/use-t";
 
 const quickLinks = [
-  { label: "Home", href: "#home" },
-  { label: "About Us", href: "#about" },
-  { label: "Packages", href: "#packages" },
-  { label: "Gallery", href: "#gallery" },
-  { label: "Blog", href: "#blog" },
-  { label: "FAQ", href: "#faq" },
-  { label: "Contact", href: "#contact" },
-];
+  { label: "header.nav.home", href: "#home" },
+  { label: "footer.aboutUs", href: "#about" },
+  { label: "header.nav.packages", href: "#packages" },
+  { label: "header.nav.gallery", href: "#gallery" },
+  { label: "header.nav.blog", href: "#blog" },
+  { label: "header.nav.faq", href: "#faq" },
+  { label: "header.nav.contact", href: "#contact" },
+] as const;
+
+// N-4…N-7 pages: real routes, so they are used as-is on every page.
+const pageLinks = [
+  { label: "footer.planTrip", href: "/plan-trip" },
+  { label: "footer.trackBooking", href: "/track" },
+  { label: "footer.wishlist", href: "/wishlist" },
+  { label: "footer.writeReview", href: "/reviews/new" },
+] as const;
+
+const services = [
+  "footer.serviceSpiritual",
+  "footer.serviceCultural",
+  "footer.serviceAdventure",
+  "footer.serviceGroup",
+  "footer.serviceCustom",
+  "footer.serviceHotel",
+] as const;
 
 const socialLinks = [
   { name: "Facebook", href: "https://facebook.com/atlastours", icon: "M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" },
@@ -21,7 +41,11 @@ const socialLinks = [
 ];
 
 const Footer: React.FC = () => {
+  const t = useT();
   const year = new Date().getFullYear();
+  // Section links are bare hashes on the home page; on sub-routes they point back to "/".
+  const onHome = usePathname() === "/";
+  const sectionHref = (hash: string) => (onHome ? hash : `/${hash}`);
 
   const styles: Record<string, React.CSSProperties> = {
     footer: {
@@ -122,7 +146,7 @@ const Footer: React.FC = () => {
     },
     contactLabel: {
       fontSize: 12,
-      color: "rgba(255,255,255,0.4)",
+      color: "rgba(255,255,255,0.6)",
       marginBottom: 2,
     },
     socials: {
@@ -157,7 +181,7 @@ const Footer: React.FC = () => {
     },
     copyright: {
       fontSize: 13,
-      color: "rgba(255,255,255,0.4)",
+      color: "rgba(255,255,255,0.6)",
     },
   };
 
@@ -190,25 +214,31 @@ const Footer: React.FC = () => {
             </span>
           </div>
           <p style={styles.desc}>
-            Your trusted partner for spiritual and cultural tours across India.
-            We create memorable journeys with expert guidance and premium service.
+            {t("footer.description")}
           </p>
           <div style={styles.partner}>
-            In Partnership with Hotel Ganga Imperial
+            {t("footer.partner")}
           </div>
         </div>
 
         {/* Column 2: Quick Links */}
         <div>
           <h3 style={styles.colTitle}>
-            Quick Links
+            {t("footer.quickLinks")}
             <span style={styles.colTitleBar} />
           </h3>
           <ul style={styles.linkList}>
             {quickLinks.map((l) => (
               <li key={l.href}>
+                <a href={sectionHref(l.href)} className="footer-link" style={styles.link}>
+                  {t(l.label)}
+                </a>
+              </li>
+            ))}
+            {pageLinks.map((l) => (
+              <li key={l.href}>
                 <a href={l.href} className="footer-link" style={styles.link}>
-                  {l.label}
+                  {t(l.label)}
                 </a>
               </li>
             ))}
@@ -218,14 +248,14 @@ const Footer: React.FC = () => {
         {/* Column 3: Services */}
         <div>
           <h3 style={styles.colTitle}>
-            Services
+            {t("footer.services")}
             <span style={styles.colTitleBar} />
           </h3>
           <ul style={styles.linkList}>
-            {["Spiritual Tours", "Cultural Trips", "Adventure Tours", "Group Packages", "Custom Itineraries", "Hotel Booking"].map((s) => (
+            {services.map((s) => (
               <li key={s}>
-                <a href="#packages" className="footer-link" style={styles.link}>
-                  {s}
+                <a href={s === "footer.serviceCustom" ? "/plan-trip" : sectionHref("#packages")} className="footer-link" style={styles.link}>
+                  {t(s)}
                 </a>
               </li>
             ))}
@@ -235,7 +265,7 @@ const Footer: React.FC = () => {
         {/* Column 4: Contact Info */}
         <div>
           <h3 style={styles.colTitle}>
-            Contact Info
+            {t("footer.contactInfo")}
             <span style={styles.colTitleBar} />
           </h3>
           <div style={styles.contactItem}>
@@ -245,8 +275,8 @@ const Footer: React.FC = () => {
               </svg>
             </div>
             <div>
-              <div style={styles.contactLabel}>Phone</div>
-              <div style={styles.contactText}>+91 6388360881</div>
+              <div style={styles.contactLabel}>{t("common.phone")}</div>
+              <div style={styles.contactText}>{PHONE_DISPLAY}</div>
             </div>
           </div>
           <div style={styles.contactItem}>
@@ -257,8 +287,8 @@ const Footer: React.FC = () => {
               </svg>
             </div>
             <div>
-              <div style={styles.contactLabel}>Email</div>
-              <div style={styles.contactText}>info@atlastours.in</div>
+              <div style={styles.contactLabel}>{t("common.email")}</div>
+              <div style={styles.contactText}>{SITE_CONFIG.email}</div>
             </div>
           </div>
           <div style={styles.contactItem}>
@@ -269,8 +299,8 @@ const Footer: React.FC = () => {
               </svg>
             </div>
             <div>
-              <div style={styles.contactLabel}>Address</div>
-              <div style={styles.contactText}>Varanasi, Uttar Pradesh, India</div>
+              <div style={styles.contactLabel}>{t("common.address")}</div>
+              <div style={styles.contactText}>{SITE_CONFIG.address}</div>
             </div>
           </div>
 
@@ -296,10 +326,10 @@ const Footer: React.FC = () => {
 
       <div style={styles.bottom}>
         <p style={styles.copyright}>
-          &copy; {year} Atlas Tours. All rights reserved.
+          {t("footer.copyright", { year })}
         </p>
-        <p style={{ ...styles.copyright, color: "rgba(255,255,255,0.3)" }}>
-          Crafted with care for unforgettable journeys.
+        <p style={{ ...styles.copyright, color: "rgba(255,255,255,0.55)" }}>
+          {t("footer.tagline")}
         </p>
       </div>
     </footer>

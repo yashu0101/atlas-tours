@@ -6,24 +6,28 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.13",
-    "next": "16.4.3",
+    "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
-    "@tailwindcss/turbopack": "^4",
+    "@electric-sql/pglite": "^0.5.16",
+    "@playwright/test": "1.65.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.3",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "eslint-config-next": "16.4.6",
+    "typescript": "^5",
+    "vitest": "4.1.12"
   }
 }

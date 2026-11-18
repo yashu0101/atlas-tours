@@ -1,60 +1,123 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { SITE_CONFIG } from "@/lib/config";
+import { useT } from "@/lib/i18n/use-t";
+import { shouldAutoplayVideo } from "@/lib/images";
 
-const typingTexts = [
-  "Incredible Destinations",
-  "Spiritual Journeys",
-  "Divine Experiences",
-];
+const HERO_VIDEO_SRC = "https://assets.mixkit.co/videos/4064/4064-720.mp4";
+
+/**
+ * N-9 video states. "idle" on the server and the first client render (no source attached, so
+ * nothing downloads); then "auto" (desktop, fast connection, motion OK) or "manual" (poster +
+ * Play button). "playing" after the visitor pressed Play.
+ */
+type VideoState = "idle" | "auto" | "manual" | "playing";
+
+type NetworkInformationLike = { saveData?: boolean; effectiveType?: string };
+
+const typingKeys = ["hero.typing1", "hero.typing2", "hero.typing3"] as const;
 
 const stats = [
-  { value: "500+", label: "Happy Travellers" },
-  { value: "15+", label: "Tour Packages" },
-  { value: "10+", label: "Destinations" },
-];
+  { value: "500+", labelKey: "hero.statHappyTravellers" },
+  { value: "15+", labelKey: "hero.statTourPackages" },
+  { value: "10+", labelKey: "hero.statDestinations" },
+] as const;
 
 const Hero: React.FC = () => {
+  const t = useT();
   const [textIndex, setTextIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [displayText, setDisplayText] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [dots, setDots] = useState<Array<{ left: number; top: number; delay: number; duration: number }>>([]);
+  const [dots, setDots] = useState<
+    Array<{ left: number; top: number; delay: number; duration: number; width: number; height: number }>
+  >([]);
+  // null until mounted (SSR-safe); true when the user prefers reduced motion.
+  const [reducedMotion, setReducedMotion] = useState<boolean | null>(null);
+  const [videoState, setVideoState] = useState<VideoState>("idle");
+  const loadVideo = videoState === "auto" || videoState === "playing";
 
   useEffect(() => {
+    // Generated once on mount (not during render) so SSR/client markup match
+    // and sizes don't re-roll on every typing tick.
     const generated = Array.from({ length: 20 }, () => ({
       left: Math.random() * 100,
       top: Math.random() * 100,
       delay: Math.random() * 5,
       duration: 3 + Math.random() * 4,
+      width: 4 + Math.random() * 6,
+      height: 4 + Math.random() * 6,
     }));
+    // Intentional mount-only setState: random values must not be generated during
+    // render or the server and client markup would differ (hydration mismatch).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDots(generated);
   }, []);
 
   useEffect(() => {
-    const current = typingTexts[textIndex];
+    const reduce =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Intentional mount-only setState: matchMedia is browser-only, so the
+    // preference can't be known during the server render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReducedMotion(reduce);
+    const connection = (navigator as Navigator & { connection?: NetworkInformationLike }).connection;
+    const auto = shouldAutoplayVideo({
+      viewportWidth: window.innerWidth,
+      reducedMotion: reduce,
+      saveData: connection?.saveData,
+      effectiveType: connection?.effectiveType,
+    });
+    setVideoState(auto ? "auto" : "manual");
+  }, []);
+
+  // Start playback once a source is attached (autoplay) or the visitor pressed Play.
+  // If the browser refuses autoplay, fall back to the poster + Play button.
+  useEffect(() => {
+    if (videoState !== "auto" && videoState !== "playing") return;
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = true;
+    const p = video.play();
+    if (p && typeof p.catch === "function") {
+      p.catch(() => {
+        if (videoState === "auto") setVideoState("manual");
+      });
+    }
+  }, [videoState]);
+
+  useEffect(() => {
+    if (reducedMotion !== false) return; // not mounted yet, or reduced motion: no typing loop
+    const current = t(typingKeys[textIndex]);
+
+    // Fully typed: hold the phrase, then start deleting. 2680ms reproduces the
+    // previous effective hold (an 1800ms nested timer plus overshoot ticks).
+    if (!isDeleting && charIndex >= current.length) {
+      const hold = setTimeout(() => setIsDeleting(true), 2680);
+      return () => clearTimeout(hold);
+    }
+
     const timeout = setTimeout(
       () => {
         if (!isDeleting) {
           setDisplayText(current.substring(0, charIndex + 1));
           setCharIndex((p) => p + 1);
-          if (charIndex + 1 === current.length) {
-            setTimeout(() => setIsDeleting(true), 1800);
-          }
         } else {
           setDisplayText(current.substring(0, charIndex - 1));
           setCharIndex((p) => p - 1);
           if (charIndex - 1 === 0) {
             setIsDeleting(false);
-            setTextIndex((p) => (p + 1) % typingTexts.length);
+            setTextIndex((p) => (p + 1) % typingKeys.length);
           }
         }
       },
       isDeleting ? 40 : 80
     );
     return () => clearTimeout(timeout);
-  }, [charIndex, isDeleting, textIndex]);
+  }, [charIndex, isDeleting, textIndex, reducedMotion, t]);
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
@@ -83,7 +146,7 @@ const Hero: React.FC = () => {
       left: 0,
       width: "100%",
       height: "100%",
-      background: "linear-gradient(135deg, rgba(26,58,107,0.82) 0%, rgba(15,37,72,0.7) 50%, rgba(230,126,34,0.25) 100%)",
+      background: "linear-gradient(135deg, rgba(26,58,107,0.82) 0%, rgba(15,37,72,0.8) 50%, rgba(230,126,34,0.25) 100%)",
       zIndex: 1,
     },
     content: {
@@ -99,7 +162,7 @@ const Hero: React.FC = () => {
       fontWeight: 500,
       letterSpacing: 4,
       textTransform: "uppercase",
-      color: "#f39c12",
+      color: "var(--gold-text)",
       marginBottom: 16,
     },
     heading: {
@@ -118,7 +181,7 @@ const Hero: React.FC = () => {
     typingText: {
       fontSize: "clamp(24px, 4vw, 44px)",
       fontWeight: 700,
-      color: "#f39c12",
+      color: "var(--gold-text)",
       borderRight: "3px solid #f39c12",
       paddingRight: 4,
     },
@@ -138,7 +201,7 @@ const Hero: React.FC = () => {
     },
     btnPrimary: {
       background: "linear-gradient(135deg, #e67e22, #f39c12)",
-      color: "#fff",
+      color: "var(--on-accent)",
       border: "none",
       borderRadius: 30,
       padding: "14px 36px",
@@ -182,12 +245,12 @@ const Hero: React.FC = () => {
     statValue: {
       fontSize: 30,
       fontWeight: 800,
-      color: "#f39c12",
+      color: "var(--gold-text)",
       marginBottom: 4,
     },
     statLabel: {
       fontSize: 13,
-      color: "rgba(255,255,255,0.8)",
+      color: "rgba(255,255,255,0.9)",
       fontWeight: 500,
     },
     scrollIndicator: {
@@ -200,10 +263,30 @@ const Hero: React.FC = () => {
       flexDirection: "column",
       alignItems: "center",
       gap: 8,
-      color: "rgba(255,255,255,0.6)",
+      color: "rgba(255,255,255,0.8)",
       fontSize: 12,
       letterSpacing: 2,
       textTransform: "uppercase",
+    },
+    // N-9: bottom-left so it never sits under the fixed WhatsApp button (bottom-right).
+    playBtn: {
+      position: "absolute",
+      bottom: 30,
+      left: 24,
+      zIndex: 3,
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 8,
+      padding: "8px 16px",
+      borderRadius: 30,
+      border: "2px solid rgba(255,255,255,0.5)",
+      background: "rgba(255,255,255,0.1)",
+      color: "#fff",
+      fontSize: 13,
+      fontWeight: 600,
+      cursor: "pointer",
+      fontFamily: "'Poppins', sans-serif",
+      transition: "all 0.3s",
     },
     scrollMouse: {
       width: 26,
@@ -234,24 +317,25 @@ const Hero: React.FC = () => {
         }
         .hero-btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(230,126,34,0.6) !important; }
         .hero-btn-secondary:hover { background: rgba(255,255,255,0.15) !important; border-color: #fff !important; }
+        .hero-play-btn:hover { background: rgba(255,255,255,0.2) !important; border-color: #fff !important; }
         @keyframes blink-cursor { 0%, 100% { border-color: #f39c12; } 50% { border-color: transparent; } }
       `}</style>
 
+      {/* N-9: preload="none" and no src until it will actually play, so small screens and
+          slow/data-saver connections only download the poster. */}
       <video
         ref={videoRef}
         className="kenburns"
         style={styles.video}
-        autoPlay
+        src={loadVideo ? HERO_VIDEO_SRC : undefined}
+        autoPlay={loadVideo}
+        preload="none"
         muted
         loop
         playsInline
         poster="/images/hero-fallback.jpg"
-      >
-        <source
-          src="https://assets.mixkit.co/videos/4064/4064-720.mp4"
-          type="video/mp4"
-        />
-      </video>
+        aria-hidden="true"
+      />
 
       <div style={styles.overlay} />
 
@@ -263,51 +347,65 @@ const Hero: React.FC = () => {
             ...styles.dot,
             left: `${d.left}%`,
             top: `${d.top}%`,
-            width: 4 + Math.random() * 6,
-            height: 4 + Math.random() * 6,
+            width: d.width,
+            height: d.height,
             animation: `float-dot ${d.duration}s ease-in-out ${d.delay}s infinite`,
           }}
         />
       ))}
 
       <div style={styles.content}>
-        <p className="hero-stagger-1" style={styles.subtitle}>Welcome to Atlas Tours</p>
-        <h1 className="hero-stagger-2" style={styles.heading}>Discover</h1>
+        <p className="hero-stagger-1" style={styles.subtitle}>{t("hero.welcome")}</p>
+        <h1 className="hero-stagger-2" style={styles.heading}>{t("hero.discover")}</h1>
         <div className="hero-stagger-2" style={styles.typingWrap}>
           <span style={{ ...styles.typingText, animation: "blink-cursor 0.8s infinite" }}>
-            {displayText}
+            {reducedMotion ? t("hero.typing1") : displayText}
           </span>
         </div>
         <p className="hero-stagger-3" style={styles.description}>
-          Experience the magic of India with curated travel packages designed
-          for spiritual seekers, adventure lovers, and culture enthusiasts.
+          {t("hero.description")}
         </p>
         <div className="hero-stagger-4" style={styles.btnGroup}>
           <a href="#packages" className="hero-btn-primary pulse-glow" style={styles.btnPrimary}>
-            View Packages
+            {t("hero.viewPackages")}
           </a>
           <a
-            href="https://wa.me/916388360881?text=Hello!%20I%20am%20interested%20in%20booking%20a%20tour."
+            href={`https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent(t("hero.whatsappMessage"))}`}
             target="_blank"
             rel="noopener noreferrer"
             className="hero-btn-secondary"
             style={styles.btnSecondary}
           >
-            Book on WhatsApp
+            {t("hero.bookWhatsApp")}
           </a>
         </div>
         <div className="hero-stagger-5" style={styles.statsRow}>
           {stats.map((s) => (
-            <div key={s.label} className="glass" style={styles.statCard}>
+            <div key={s.labelKey} className="glass" style={styles.statCard}>
               <div style={styles.statValue}>{s.value}</div>
-              <div style={styles.statLabel}>{s.label}</div>
+              <div style={styles.statLabel}>{t(s.labelKey)}</div>
             </div>
           ))}
         </div>
       </div>
 
+      {videoState === "manual" && (
+        <button
+          type="button"
+          className="hero-play-btn"
+          style={styles.playBtn}
+          onClick={() => setVideoState("playing")}
+          aria-label={t("hero.playVideoAria")}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M7 4.5v15a1 1 0 001.5.86l12.5-7.5a1 1 0 000-1.72L8.5 3.64A1 1 0 007 4.5z" />
+          </svg>
+          {t("hero.playVideo")}
+        </button>
+      )}
+
       <div style={styles.scrollIndicator}>
-        <span>Scroll</span>
+        <span>{t("hero.scroll")}</span>
         <div style={styles.scrollMouse}>
           <div
             style={{

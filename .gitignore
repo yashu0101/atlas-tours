@@ -5,3 +5,11 @@ node_modules/
 *.tsbuildinfo
 next-env.d.ts
 .vercel
+
+# test output
+test-results/
+playwright-report/
+blob-report/
+
+# N-8: admin users, sessions and audit log of the JSON backend (local dev only)
+data/*.admin.json

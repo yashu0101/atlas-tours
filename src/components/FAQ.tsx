@@ -1,26 +1,31 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-
-interface FAQItem {
-  _id: string;
-  question: string;
-  answer: string;
-}
+import type { FAQ as FAQItem } from "@/lib/types";
+import { useApp } from "@/lib/context";
+import { useT } from "@/lib/i18n/use-t";
 
 const FAQAccordionItem: React.FC<{
   faq: FAQItem;
   isOpen: boolean;
   onToggle: () => void;
 }> = ({ faq, isOpen, onToggle }) => {
+  const { lang } = useApp();
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
 
+  // C-06: show Hindi when selected and present, else English. `lang` starts as "en" on both the
+  // server and the first client render (AppProvider reads localStorage in an effect), so no hydration mismatch.
+  const useHindi = lang === "hi";
+  const question = (useHindi && faq.questionHi?.trim()) || faq.question;
+  const answer = (useHindi && faq.answerHi?.trim()) || faq.answer;
+
+  // Re-measure when the answer text changes (language switch) so an open panel isn't clipped.
   useEffect(() => {
     if (contentRef.current) {
       setHeight(isOpen ? contentRef.current.scrollHeight : 0);
     }
-  }, [isOpen]);
+  }, [isOpen, answer]);
 
   const styles: Record<string, React.CSSProperties> = {
     item: {
@@ -50,7 +55,7 @@ const FAQAccordionItem: React.FC<{
     question: {
       fontSize: 16,
       fontWeight: 600,
-      color: isOpen ? "#e67e22" : "var(--text)",
+      color: isOpen ? "var(--orange-text)" : "var(--text)",
       transition: "color 0.3s",
       flex: 1,
     },
@@ -60,12 +65,12 @@ const FAQAccordionItem: React.FC<{
       borderRadius: "50%",
       background: isOpen
         ? "linear-gradient(135deg, #e67e22, #f39c12)"
-        : "rgba(26,58,107,0.08)",
+        : "var(--faq-icon-bg, rgba(26,58,107,0.08))",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       fontSize: 20,
-      color: isOpen ? "#fff" : "#1a3a6b",
+      color: isOpen ? "var(--on-accent)" : "var(--primary)",
       fontWeight: 300,
       flexShrink: 0,
       transition: "all 0.3s",
@@ -85,33 +90,35 @@ const FAQAccordionItem: React.FC<{
 
   return (
     <div style={styles.item}>
-      <button style={styles.header} onClick={onToggle}>
-        <span style={styles.question}>{faq.question}</span>
-        <span style={styles.icon}>{isOpen ? "\u2212" : "+"}</span>
+      <button
+        style={styles.header}
+        onClick={onToggle}
+        id={`faq-button-${faq.id}`}
+        aria-expanded={isOpen}
+        aria-controls={`faq-panel-${faq.id}`}
+      >
+        <span style={styles.question} lang={useHindi && question !== faq.question ? "hi" : undefined}>{question}</span>
+        <span style={styles.icon} aria-hidden="true">{isOpen ? "\u2212" : "+"}</span>
       </button>
-      <div style={styles.contentWrap}>
+      <div
+        style={styles.contentWrap}
+        id={`faq-panel-${faq.id}`}
+        role="region"
+        aria-labelledby={`faq-button-${faq.id}`}
+      >
         <div ref={contentRef}>
-          <p style={styles.answer}>{faq.answer}</p>
+          <p style={styles.answer} lang={useHindi && answer !== faq.answer ? "hi" : undefined}>{answer}</p>
         </div>
       </div>
     </div>
   );
 };
 
-const FAQ: React.FC = () => {
-  const [faqs, setFaqs] = useState<FAQItem[]>([]);
-  const [loading, setLoading] = useState(true);
+/** FAQs are loaded on the server (F-02) and passed in already filtered for public visibility. */
+const FAQ: React.FC<{ initialFaqs: FAQItem[] }> = ({ initialFaqs }) => {
+  const faqs = initialFaqs;
+  const t = useT();
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-
-  useEffect(() => {
-    fetch("/api/faqs")
-      .then((r) => r.json())
-      .then((data) => {
-        setFaqs(Array.isArray(data) ? data : data.faqs || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
@@ -126,7 +133,7 @@ const FAQ: React.FC = () => {
     badge: {
       display: "inline-block",
       background: "rgba(230,126,34,0.1)",
-      color: "#e67e22",
+      color: "var(--orange-text)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,
@@ -151,38 +158,32 @@ const FAQ: React.FC = () => {
       maxWidth: 750,
       margin: "0 auto",
     },
-    loader: {
-      textAlign: "center",
-      padding: 60,
-      fontSize: 16,
-      color: "#888",
-    },
   };
 
   return (
     <section id="faq" style={styles.section}>
+      <style>{`
+        /* E-02: dark-mode override. Light mode uses the inline fallback (colour unchanged). */
+        [data-theme="dark"] #faq { --faq-icon-bg: rgba(91,143,217,0.15); }
+      `}</style>
       <div className="reveal" style={styles.header}>
-        <span style={styles.badge}>FAQ</span>
-        <h2 style={styles.heading}>Frequently Asked Questions</h2>
+        <span style={styles.badge}>{t("faq.badge")}</span>
+        <h2 style={styles.heading}>{t("faq.heading")}</h2>
         <p style={styles.subheading}>
-          Find answers to common questions about our tours and services.
+          {t("faq.subheading")}
         </p>
       </div>
 
-      {loading ? (
-        <div style={styles.loader}>Loading FAQs...</div>
-      ) : (
-        <div style={styles.list}>
-          {faqs.map((faq, i) => (
-            <FAQAccordionItem
-              key={faq._id}
-              faq={faq}
-              isOpen={openIndex === i}
-              onToggle={() => setOpenIndex(openIndex === i ? null : i)}
-            />
-          ))}
-        </div>
-      )}
+      <div style={styles.list}>
+        {faqs.map((faq, i) => (
+          <FAQAccordionItem
+            key={faq.id}
+            faq={faq}
+            isOpen={openIndex === i}
+            onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+          />
+        ))}
+      </div>
     </section>
   );
 };

@@ -1,0 +1,119 @@
+import { expect, test } from "@playwright/test";
+
+// Runs against the seed data (see playwright.config.ts → JSON_DB_PATH).
+// Seed package used below: pkg-varanasi "Divine Varanasi & Prayagraj", ₹8,999, category spiritual.
+
+test("package detail page renders server-side content (G-03)", async ({ page }) => {
+  const res = await page.goto("/packages/pkg-varanasi");
+  expect(res?.status()).toBe(200);
+
+  await expect(page).toHaveTitle(/Divine Varanasi & Prayagraj/);
+  await expect(page.getByRole("heading", { level: 1, name: "Divine Varanasi & Prayagraj" })).toBeVisible();
+  await expect(page.getByText("₹8,999").first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Itinerary" })).toBeVisible();
+  await expect(page.getByText("Day 1", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Inclusions" })).toBeVisible();
+  await expect(page.getByText("3-Star Hotel Stay")).toBeVisible();
+
+  const wa = page.getByRole("link", { name: /Enquire on WhatsApp/ });
+  await expect(wa).toHaveAttribute("href", /^https:\/\/wa\.me\/\d+\?text=/);
+
+  // Canonical + JSON-LD
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/packages\/pkg-varanasi$/);
+  const jsonLd = await page.locator('script[type="application/ld+json"]').allTextContents();
+  expect(jsonLd.some((s) => s.includes('"TouristTrip"'))).toBe(true);
+
+  // Header section links point back to the home page from a sub-route.
+  await expect(page.getByRole("banner").getByRole("link", { name: "Packages", exact: true }).first()).toHaveAttribute("href", "/#packages");
+});
+
+test("unknown and hidden packages return 404", async ({ page, request }) => {
+  expect((await page.goto("/packages/does-not-exist"))?.status()).toBe(404);
+
+  const login = await request.post("/api/auth/login", {
+    data: { email: "admin@atlastours.com", password: "admin123" },
+  });
+  expect(login.ok()).toBe(true);
+  const created = await request.post("/api/packages", {
+    data: { name: `E2E hidden ${Date.now()}`, price: 1000, hidden: true },
+  });
+  expect(created.ok()).toBe(true);
+  const { id } = await created.json();
+
+  try {
+    expect((await page.goto(`/packages/${id}`))?.status()).toBe(404);
+  } finally {
+    await request.delete("/api/packages", { data: { id } });
+  }
+});
+
+test("booking form shows the estimate and submits to /api/book (G-01)", async ({ page }) => {
+  await page.goto("/packages/pkg-varanasi");
+  const form = page.getByRole("form", { name: /Book Divine Varanasi/ });
+
+  await form.getByLabel("Full Name *").fill("E2E Traveller");
+  await form.getByLabel("Phone *").fill("+91 98765 43210");
+  await form.getByLabel("Email").fill("e2e@example.com");
+  await form.getByLabel("Travel Date").fill("2099-01-15");
+  await form.getByLabel("Travelers *").fill("2");
+  await expect(form.getByText("× 2 travelers")).toBeVisible();
+  await expect(form.getByText("₹17,998")).toBeVisible();
+
+  const response = page.waitForResponse((r) => r.url().endsWith("/api/book") && r.request().method() === "POST");
+  await form.getByRole("button", { name: "Request Booking" }).click();
+  const res = await response;
+  expect(res.status()).toBe(200);
+  const sent = res.request().postDataJSON();
+  expect(sent).toMatchObject({ packageId: "pkg-varanasi", travelers: 2, name: "E2E Traveller" });
+  expect(sent).not.toHaveProperty("amount");
+
+  await expect(form.getByText(/booking request has been received/)).toBeVisible();
+  await expect(form.getByLabel("Full Name *")).toHaveValue("");
+});
+
+test("home page category filter and detail link (G-06)", async ({ page }) => {
+  await page.goto("/");
+  const section = page.locator("#packages");
+  const filters = section.getByRole("group", { name: "Filter packages by category" });
+
+  await expect(filters.getByRole("button", { name: "All" })).toHaveAttribute("aria-pressed", "true");
+  await filters.getByRole("button", { name: "Heritage" }).click();
+  await expect(filters.getByRole("button", { name: "Heritage" })).toHaveAttribute("aria-pressed", "true");
+  await expect(section.getByRole("heading", { name: "Royal Rajasthan Explorer" })).toBeVisible();
+  await expect(section.getByRole("heading", { name: "Divine Varanasi & Prayagraj" })).toHaveCount(0);
+
+  await filters.getByRole("button", { name: "All" }).click();
+  await section.getByRole("link", { name: /Divine Varanasi & Prayagraj: full details/ }).click();
+  await page.waitForURL("**/packages/pkg-varanasi");
+  await expect(page.getByRole("heading", { level: 1, name: "Divine Varanasi & Prayagraj" })).toBeVisible();
+});
+
+test("package cards open the detail page: image, title, View Details, Book Now", async ({ page }) => {
+  const h1 = page.getByRole("heading", { level: 1, name: "Sacred Odisha Pilgrimage" });
+  const card = () => page.locator("#packages .pkg-card").filter({ hasText: "Sacred Odisha Pilgrimage" });
+
+  await page.goto("/");
+  await card().getByRole("link", { name: "View details: Sacred Odisha Pilgrimage" }).click();
+  await page.waitForURL("**/packages/pkg-odisha");
+  await expect(h1).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+
+  await page.goto("/");
+  await card().getByRole("heading", { name: "Sacred Odisha Pilgrimage" }).getByRole("link").click();
+  await page.waitForURL("**/packages/pkg-odisha");
+  await expect(h1).toBeVisible();
+
+  // The image link is mouse-only (aria-hidden), so click the image itself.
+  await page.goto("/");
+  await card().locator('img[alt="Sacred Odisha Pilgrimage"]').click();
+  await page.waitForURL("**/packages/pkg-odisha");
+  await expect(h1).toBeVisible();
+
+  // Book Now lands on the booking form.
+  await page.goto("/");
+  await card().getByRole("link", { name: "Book Sacred Odisha Pilgrimage" }).click();
+  await page.waitForURL("**/packages/pkg-odisha#book");
+  const form = page.getByRole("form", { name: /Book Sacred Odisha Pilgrimage/ });
+  await expect(form).toBeInViewport();
+  await expect(form.getByLabel("Travel Date")).toHaveAttribute("min", /^\d{4}-\d{2}-\d{2}$/);
+});

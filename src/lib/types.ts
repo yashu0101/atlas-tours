@@ -25,8 +25,16 @@ export interface Enquiry {
   travelDate: string;
   message: string;
   status: "new" | "contacted" | "confirmed" | "cancelled";
+  /**
+   * Which public form created it (N-6). Missing on enquiries saved before N-6 and on
+   * Postgres rows from before the column existed — treat missing as "contact".
+   */
+  kind?: EnquiryKind;
   createdAt: string;
 }
+
+/** contact = Contact section form; trip-plan = "Plan my trip" form; callback = callback-slot request (N-6). */
+export type EnquiryKind = "contact" | "trip-plan" | "callback";
 
 export interface Booking {
   id: string;
@@ -52,6 +60,11 @@ export interface Review {
   city: string;
   packageName?: string;
   active: boolean;
+  /**
+   * N-5: "customer" = submitted through the public review form (saved inactive until an
+   * admin approves it). Missing = added by the admin (including every review from before N-5).
+   */
+  source?: "admin" | "customer";
   createdAt: string;
 }
 
@@ -118,4 +131,63 @@ export interface DB {
   faqs: FAQ[];
   offers: Offer[];
   config: SiteConfig;
+}
+
+// ============================================================
+// Admin users, sessions and audit log (N-8). Stored outside `DB`: the JSON backend keeps
+// them in a separate file next to db.json (`db.admin.json`), Postgres in their own tables.
+// ============================================================
+
+/** A database admin user. All admins have equal permissions. `passwordHash` never leaves the server. */
+export interface AdminUser {
+  id: string;
+  /** Stored lower-case; unique (case-insensitive). */
+  email: string;
+  name: string;
+  /** bcrypt hash. Never sent to the client (see `PublicAdminUser`). */
+  passwordHash: string;
+  active: boolean;
+  createdAt: string;
+  lastLoginAt?: string;
+}
+
+/** What the admin API returns for a user. */
+export type PublicAdminUser = Omit<AdminUser, "passwordHash">;
+
+/** `userId` of sessions created by the env admin (ADMIN_EMAIL + ADMIN_PASSWORD(_HASH)). */
+export const ENV_ADMIN_ID = "env";
+
+/** A server-side admin session; `id` is the JWT's `jti`. */
+export interface AdminSession {
+  id: string;
+  /** AdminUser id, or `ENV_ADMIN_ID` for the env admin. */
+  userId: string;
+  email: string;
+  createdAt: string;
+  expiresAt: string;
+  revokedAt?: string;
+  userAgent?: string;
+  ip?: string;
+}
+
+export type AuditAction =
+  | "create" | "update" | "delete"
+  | "login" | "logout" | "login_failed" | "signout_all" | "password_change";
+
+/** One admin action. `details` lists the changed field NAMES only — never values or passwords. */
+export interface AuditEntry {
+  id: string;
+  createdAt: string;
+  actorEmail: string;
+  action: AuditAction;
+  entity?: string;
+  entityId?: string;
+  details: string[];
+}
+
+/** The JSON backend's admin file (`db.admin.json`). */
+export interface AdminDB {
+  adminUsers: AdminUser[];
+  adminSessions: AdminSession[];
+  auditLog: AuditEntry[];
 }

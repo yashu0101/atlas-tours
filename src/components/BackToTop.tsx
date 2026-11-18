@@ -1,13 +1,23 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useT } from "@/lib/i18n/use-t";
 
 const BackToTop: React.FC = () => {
+  const t = useT();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 500);
-    window.addEventListener("scroll", onScroll);
+    let last: boolean | null = null;
+    const onScroll = () => {
+      const next = window.scrollY > 500;
+      if (next !== last) {
+        last = next;
+        setVisible(next);
+      }
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -53,7 +63,7 @@ const BackToTop: React.FC = () => {
         className="back-to-top-btn"
         style={styles.button}
         onClick={scrollToTop}
-        aria-label="Back to top"
+        aria-label={t("common.backToTop")}
       >
         <svg
           width="22"

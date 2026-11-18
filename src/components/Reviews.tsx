@@ -1,57 +1,54 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
+import type { Review } from "@/lib/types";
+import { useT } from "@/lib/i18n/use-t";
 
-interface Review {
-  _id: string;
-  name: string;
-  city?: string;
-  packageName?: string;
-  rating: number;
-  message: string;
-  avatar?: string;
-}
-
-const Reviews: React.FC = () => {
-  const [reviews, setReviews] = useState<Review[]>([]);
+/** Reviews are loaded on the server (F-02) and passed in already filtered for public visibility. */
+const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => {
+  const reviews = initialReviews;
+  const t = useT();
   const [current, setCurrent] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [slideDir, setSlideDir] = useState<"right" | "left">("right");
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // E-08 / Q-6 (WCAG 2.2.2): auto-advance pauses while the carousel is hovered or holds
+  // *keyboard* focus (mouse clicks don't count), never runs under prefers-reduced-motion, and
+  // can be stopped with the visible pause/play button (userPaused persists until play is pressed).
+  // Pressing play also clears the focus pause, so rotation resumes even though focus stays on
+  // the button (the usual carousel pattern).
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
+  const canRotate = reviews.length > 1 && !reducedMotion;
+  const rotating = canRotate && !userPaused && !hovered && !focused;
 
   useEffect(() => {
-    fetch("/api/reviews")
-      .then((r) => r.json())
-      .then((data) => {
-        setReviews(Array.isArray(data) ? data : data.reviews || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
   }, []);
 
+  // One timeout per slide: any change of slide (auto or manual) restarts the 5s countdown,
+  // and pausing clears it.
   useEffect(() => {
-    if (reviews.length <= 1) return;
-    intervalRef.current = setInterval(() => {
+    if (!rotating) return;
+    const timer = setTimeout(() => {
+      setSlideDir("right");
       setCurrent((p) => (p + 1) % reviews.length);
     }, 5000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [reviews.length]);
+    return () => clearTimeout(timer);
+  }, [rotating, current, reviews.length]);
 
   const goTo = (i: number, dir: "right" | "left" = "right") => {
     setSlideDir(dir);
     setCurrent(i);
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => {
-      setSlideDir("right");
-      setCurrent((p) => (p + 1) % reviews.length);
-    }, 5000);
   };
 
   const renderStars = (n: number) =>
     Array.from({ length: 5 }, (_, i) => (
-      <span key={i} style={{ color: i < n ? "#f39c12" : "#ddd", fontSize: 20 }}>
+      <span key={i} aria-hidden="true" style={{ color: i < n ? "#f39c12" : "#ddd", fontSize: 20 }}>
         &#9733;
       </span>
     ));
@@ -70,7 +67,7 @@ const Reviews: React.FC = () => {
     badge: {
       display: "inline-block",
       background: "rgba(243,156,18,0.2)",
-      color: "#f39c12",
+      color: "var(--gold-text)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,
@@ -116,7 +113,7 @@ const Reviews: React.FC = () => {
       fontSize: 28,
       fontWeight: 700,
       margin: "0 auto 16px",
-      color: "#fff",
+      color: "var(--on-accent)",
     },
     stars: {
       marginBottom: 16,
@@ -131,12 +128,12 @@ const Reviews: React.FC = () => {
     name: {
       fontSize: 18,
       fontWeight: 700,
-      color: "#f39c12",
+      color: "var(--gold-text)",
       marginBottom: 4,
     },
     meta: {
       fontSize: 13,
-      color: "rgba(255,255,255,0.5)",
+      color: "rgba(255,255,255,0.7)",
     },
     dots: {
       display: "flex",
@@ -173,21 +170,7 @@ const Reviews: React.FC = () => {
       justifyContent: "center",
       transition: "all 0.3s",
     },
-    loader: {
-      textAlign: "center",
-      padding: 60,
-      fontSize: 16,
-      color: "rgba(255,255,255,0.5)",
-    },
   };
-
-  if (loading) {
-    return (
-      <section id="reviews" style={styles.section}>
-        <div style={styles.loader}>Loading reviews...</div>
-      </section>
-    );
-  }
 
   if (reviews.length === 0) return null;
 
@@ -199,23 +182,48 @@ const Reviews: React.FC = () => {
         .review-arrow:hover { background: rgba(243,156,18,0.3) !important; border-color: #f39c12 !important; }
       `}</style>
       <div className="reveal" style={styles.header}>
-        <span style={styles.badge}>Testimonials</span>
-        <h2 style={styles.heading}>What Our Travellers Say</h2>
+        <span style={styles.badge}>{t("reviews.badge")}</span>
+        <h2 style={styles.heading}>{t("reviews.heading")}</h2>
         <p style={styles.subheading}>
-          Real experiences from our happy customers.
+          {t("reviews.subheading")}
         </p>
       </div>
 
-      <div style={styles.carousel}>
-        <div key={current} className={slideDir === "right" ? "slide-in-right" : "slide-in-left"} style={styles.card}>
-          <div style={styles.avatar}>
-            {review.name?.charAt(0).toUpperCase()}
-          </div>
-          <div style={styles.stars}>{renderStars(review.rating)}</div>
-          <p style={styles.message}>&ldquo;{review.message}&rdquo;</p>
-          <div style={styles.name}>{review.name}</div>
-          <div style={styles.meta}>
-            {[review.city, review.packageName].filter(Boolean).join(" | ")}
+      <div
+        style={styles.carousel}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label={t("reviews.carouselAria")}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onFocus={(e) => {
+          if ((e.target as HTMLElement).matches?.(":focus-visible")) setFocused(true);
+        }}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
+        }}
+      >
+        {/* Stable live region (the slide itself remounts via key); silent while auto-rotating. */}
+        <div aria-live={rotating ? "off" : "polite"} aria-atomic="true">
+          <div
+            key={current}
+            role="group"
+            aria-roledescription="slide"
+            aria-label={t("reviews.slideAria", { current: current + 1, total: reviews.length })}
+            className={slideDir === "right" ? "slide-in-right" : "slide-in-left"}
+            style={styles.card}
+          >
+            <div style={styles.avatar} aria-hidden="true">
+              {review.name?.charAt(0).toUpperCase()}
+            </div>
+            <div style={styles.stars} role="img" aria-label={t("reviews.starsAria", { rating: review.rating })}>
+              {renderStars(review.rating)}
+            </div>
+            <p style={styles.message}>&ldquo;{review.text}&rdquo;</p>
+            <div style={styles.name}>{review.name}</div>
+            <div style={styles.meta}>
+              {[review.city, review.packageName].filter(Boolean).join(" | ")}
+            </div>
           </div>
         </div>
 
@@ -224,15 +232,39 @@ const Reviews: React.FC = () => {
             className="review-arrow"
             style={styles.arrow}
             onClick={() => goTo((current - 1 + reviews.length) % reviews.length, "left")}
+            aria-label={t("reviews.previousAria")}
           >
-            &#8249;
+            <span aria-hidden="true">&#8249;</span>
           </button>
+          {canRotate && (
+            <button
+              className="review-arrow"
+              style={styles.arrow}
+              onClick={() => {
+                if (userPaused) setFocused(false);
+                setUserPaused(!userPaused);
+              }}
+              aria-label={userPaused ? t("reviews.playAria") : t("reviews.pauseAria")}
+            >
+              {userPaused ? (
+                <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false">
+                  <path d="M3 1.5v11l9-5.5z" fill="currentColor" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false">
+                  <rect x="2.5" y="1.5" width="3" height="11" rx="0.5" fill="currentColor" />
+                  <rect x="8.5" y="1.5" width="3" height="11" rx="0.5" fill="currentColor" />
+                </svg>
+              )}
+            </button>
+          )}
           <button
             className="review-arrow"
             style={styles.arrow}
             onClick={() => goTo((current + 1) % reviews.length)}
+            aria-label={t("reviews.nextAria")}
           >
-            &#8250;
+            <span aria-hidden="true">&#8250;</span>
           </button>
         </div>
 
@@ -242,15 +274,23 @@ const Reviews: React.FC = () => {
               key={i}
               style={{
                 ...styles.dot,
-                background: i === current ? "#f39c12" : "rgba(255,255,255,0.25)",
+                background: i === current ? "#f39c12" : "rgba(255,255,255,0.4)",
                 transform: i === current ? "scale(1.3)" : "scale(1)",
               }}
               onClick={() => goTo(i)}
-              aria-label={`Go to review ${i + 1}`}
+              aria-label={t("reviews.goToAria", { n: i + 1 })}
+              aria-current={i === current ? "true" : undefined}
             />
           ))}
         </div>
       </div>
+
+      {/* N-5: entry point to the public review form. */}
+      <p style={{ textAlign: "center", marginTop: 28, fontSize: 14 }}>
+        <a href="/reviews/new" style={{ color: "var(--gold-text)", fontWeight: 600, textDecoration: "underline", textUnderlineOffset: 3 }}>
+          {t("reviews.writeReview")}
+        </a>
+      </p>
     </section>
   );
 };

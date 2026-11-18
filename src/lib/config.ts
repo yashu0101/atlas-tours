@@ -4,10 +4,17 @@ export const SITE_CONFIG: SiteConfig = {
   name: "Atlas Tour & Travels",
   phone: "+916388360881",
   whatsapp: "916388360881",
-  email: "atlastourandtravels01@gmail.com",
+  // C-09: public email pending client confirmation — change only this line.
+  email: "info@atlastours.in",
   address: "Varanasi, Uttar Pradesh, India",
   tagline: "Spiritual Journey... Lifetime Memories",
 };
+
+/**
+ * Phone formatted for display ("+91 6388360881"), derived from SITE_CONFIG.phone.
+ * Kept out of SITE_CONFIG because that object is also the seeded DB `config` row (SiteConfig).
+ */
+export const PHONE_DISPLAY = SITE_CONFIG.phone.replace(/^\+91(\d+)$/, "+91 $1");
 
 export const DEFAULT_PACKAGES: TourPackage[] = [
   {
@@ -17,7 +24,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     duration: "4 Days / 3 Nights",
     price: 8999,
     originalPrice: 12999,
-    image: "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=800&q=75",
+    image: "https://images.unsplash.com/photo-1561359313-0639aad49ca6?w=800&q=75",
     description: "Experience the spiritual heart of India with Ganga Aarti, Kashi Vishwanath Temple, and holy dips.",
     highlights: ["Ganga Aarti at Dashashwamedh Ghat", "Kashi Vishwanath Temple", "Sarnath Buddhist Site", "Triveni Sangam Prayagraj", "Ram Mandir Ayodhya"],
     itinerary: ["Day 1: Arrival in Varanasi, Evening Ganga Aarti", "Day 2: Kashi Vishwanath, Sarnath, Local Temples", "Day 3: Prayagraj Sangam, Hanuman Mandir", "Day 4: Ayodhya Ram Mandir, Departure"],
@@ -47,7 +54,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     duration: "5 Days / 4 Nights",
     price: 11999,
     originalPrice: 16999,
-    image: "https://images.unsplash.com/photo-1621427642877-68e20cf5f770?w=800&q=75",
+    image: "https://images.unsplash.com/photo-1576235282476-debff2a4d0b9?w=800&q=75",
     description: "Visit Jagannath Temple, Sun Temple and ancient caves in the land of Lord Jagannath.",
     highlights: ["Jagannath Temple Puri", "Konark Sun Temple", "Lingaraj Temple", "Udayagiri & Khandagiri Caves", "Puri Beach & Chilika Lake"],
     itinerary: ["Day 1: Arrive Bhubaneswar, Lingaraj Temple", "Day 2: Udayagiri Caves, ISKCON Temple", "Day 3: Konark Sun Temple, Chandrabhaga Beach", "Day 4: Puri Jagannath Temple, Beach", "Day 5: Chilika Lake, Departure"],

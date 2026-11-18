@@ -1,33 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
+import React, { useState } from "react";
+import SmartImage from "@/components/SmartImage";
+import Link from "next/link";
+import type { BlogPost } from "@/lib/types";
+import { useT } from "@/lib/i18n/use-t";
+import { formatISTDate as formatBlogDate } from "@/app/blog/_lib/format-date";
 
-interface BlogPost {
-  _id: string;
-  title: string;
-  excerpt: string;
-  content?: string;
-  image: string;
-  category?: string;
-  date?: string;
-  author?: string;
-}
-
-const Blog: React.FC = () => {
-  const [blogs, setBlogs] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+/** Posts are loaded on the server (F-02) and passed in already filtered for public visibility. */
+const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
+  const blogs = initialBlogs;
+  const t = useT();
   const [expanded, setExpanded] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/blogs")
-      .then((r) => r.json())
-      .then((data) => {
-        setBlogs(Array.isArray(data) ? data : data.blogs || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
@@ -42,7 +26,7 @@ const Blog: React.FC = () => {
     badge: {
       display: "inline-block",
       background: "rgba(230,126,34,0.1)",
-      color: "#e67e22",
+      color: "var(--orange-text)",
       padding: "6px 18px",
       borderRadius: 20,
       fontSize: 13,
@@ -89,7 +73,7 @@ const Blog: React.FC = () => {
       top: 16,
       left: 16,
       background: "linear-gradient(135deg, #e67e22, #f39c12)",
-      color: "#fff",
+      color: "var(--on-accent)",
       padding: "4px 14px",
       borderRadius: 8,
       fontSize: 12,
@@ -105,7 +89,7 @@ const Blog: React.FC = () => {
     },
     date: {
       fontSize: 13,
-      color: "#aaa",
+      color: "var(--blog-muted, #767676)",
       marginBottom: 8,
     },
     title: {
@@ -133,7 +117,7 @@ const Blog: React.FC = () => {
     readMore: {
       background: "none",
       border: "none",
-      color: "#e67e22",
+      color: "var(--orange-text)",
       fontSize: 14,
       fontWeight: 600,
       cursor: "pointer",
@@ -145,11 +129,23 @@ const Blog: React.FC = () => {
       transition: "color 0.3s",
       marginTop: "auto",
     },
-    loader: {
-      textAlign: "center",
-      padding: 60,
-      fontSize: 16,
-      color: "#888",
+    actions: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12,
+      flexWrap: "wrap",
+      marginTop: "auto",
+    },
+    fullLink: {
+      color: "var(--orange-text)",
+      fontSize: 14,
+      fontWeight: 600,
+      textDecoration: "none",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 6,
+      transition: "color 0.3s",
     },
   };
 
@@ -157,75 +153,81 @@ const Blog: React.FC = () => {
     <section id="blog" style={styles.section}>
       <style>{`
         .blog-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(0,0,0,0.12) !important; }
-        .blog-read-more:hover { color: #1a3a6b !important; }
+        .blog-read-more:hover, .blog-full-link:hover { color: var(--primary) !important; }
+        /* E-02: dark-mode override. Light mode uses the inline fallback (colour unchanged). */
+        [data-theme="dark"] #blog { --blog-muted: var(--text2); }
         @media (max-width: 768px) {
           .blog-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
       <div className="reveal" style={styles.header}>
-        <span style={styles.badge}>Our Blog</span>
-        <h2 style={styles.heading}>Travel Stories & Tips</h2>
+        <span style={styles.badge}>{t("blog.badge")}</span>
+        <h2 style={styles.heading}>{t("blog.heading")}</h2>
         <p style={styles.subheading}>
-          Inspiration and insights for your next adventure.
+          {t("blog.subheading")}
         </p>
       </div>
 
-      {loading ? (
-        <div style={styles.loader}>Loading blogs...</div>
-      ) : (
-        <div className="blog-grid" style={styles.grid}>
-          {blogs.map((blog) => {
-            const isExpanded = expanded === blog._id;
-            return (
-              <div key={blog._id} className="blog-card card-hover reveal" style={styles.card}>
-                <div className="img-zoom" style={styles.imgWrap}>
-                  <Image
-                    src={blog.image || "/images/placeholder.jpg"}
-                    alt={blog.title}
-                    fill
-                    style={{ objectFit: "cover" }}
-                  />
-                  {blog.category && (
-                    <span style={styles.categoryBadge}>{blog.category}</span>
-                  )}
-                </div>
-                <div style={styles.body}>
-                  {blog.date && (
-                    <div style={styles.date}>
-                      {new Date(blog.date).toLocaleDateString("en-IN", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </div>
-                  )}
-                  <h3 style={styles.title}>{blog.title}</h3>
-                  <div
-                    style={{
-                      ...styles.content,
-                      maxHeight: isExpanded ? 1000 : 0,
-                    }}
-                  >
-                    {blog.content || blog.excerpt}
+      <div className="blog-grid" style={styles.grid}>
+        {blogs.map((blog) => {
+          const isExpanded = expanded === blog.id;
+          return (
+            <div key={blog.id} className="blog-card card-hover reveal" style={styles.card}>
+              <div className="img-zoom" style={styles.imgWrap}>
+                <SmartImage
+                  src={blog.image || "/images/placeholder.jpg"}
+                  alt={blog.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 380px"
+                  style={{ objectFit: "cover" }}
+                />
+                {blog.category && (
+                  <span style={styles.categoryBadge}>{blog.category}</span>
+                )}
+              </div>
+              <div style={styles.body}>
+                {blog.createdAt && (
+                  <div style={styles.date}>
+                    {formatBlogDate(blog.createdAt)}
                   </div>
-                  {!isExpanded && <p style={styles.excerpt}>{blog.excerpt}</p>}
+                )}
+                <h3 style={styles.title}>{blog.title}</h3>
+                <div
+                  style={{
+                    ...styles.content,
+                    maxHeight: isExpanded ? 1000 : 0,
+                  }}
+                >
+                  {blog.content || blog.excerpt}
+                </div>
+                {!isExpanded && <p style={styles.excerpt}>{blog.excerpt}</p>}
+                <div style={styles.actions}>
                   <button
                     className="blog-read-more"
-                    style={styles.readMore}
-                    onClick={() => setExpanded(isExpanded ? null : blog._id)}
+                    style={{ ...styles.readMore, marginTop: 0 }}
+                    onClick={() => setExpanded(isExpanded ? null : blog.id)}
                   >
-                    {isExpanded ? "Show Less" : "Read More"}{" "}
+                    {isExpanded ? t("blog.showLess") : t("blog.readMore")}{" "}
                     <span style={{ transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.3s", display: "inline-block" }}>
                       &#8595;
                     </span>
                   </button>
+                  {/* G-07: full article page; the inline expand above is kept as-is. */}
+                  <Link
+                    href={`/blog/${encodeURIComponent(blog.id)}`}
+                    className="blog-full-link"
+                    style={styles.fullLink}
+                    aria-label={t("blog.fullArticleAria", { title: blog.title })}
+                  >
+                    {t("blog.fullArticle")} <span aria-hidden="true">&#8594;</span>
+                  </Link>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 };

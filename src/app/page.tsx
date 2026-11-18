@@ -1,9 +1,8 @@
-"use client";
-import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
 import Packages from "@/components/Packages";
+import Offers from "@/components/Offers";
 import Gallery from "@/components/Gallery";
 import Counter from "@/components/Counter";
 import Reviews from "@/components/Reviews";
@@ -13,56 +12,87 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import WhatsApp from "@/components/WhatsApp";
 import BackToTop from "@/components/BackToTop";
+import ScrollProgress from "@/components/ScrollProgress";
+import RevealObserver from "@/components/RevealObserver";
+import CompareBar from "@/components/CompareBar";
+import { getBlogs, getFAQs, getGallery, getOffers, getPackages, getReviews } from "@/lib/db";
+import { isPublicBlog, isPublicFAQ, isPublicGalleryImage, isPublicOffer, isPublicPackage, isPublicReview, istDateKey } from "@/lib/visibility";
+import { faqPageJsonLd, jsonLdString } from "@/lib/seo";
+import { translate } from "@/lib/i18n";
+import type { BlogPost, FAQ as FAQItem, GalleryImage, Offer, Review, TourPackage } from "@/lib/types";
 
-export default function HomePage() {
-  const [scrollProgress, setScrollProgress] = useState(0);
+// F-02: content is read from the DB on every request so admin edits appear
+// immediately (and the JSON backend reads a local file that changes at runtime).
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const p = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-      setScrollProgress(p);
-    };
-    window.addEventListener("scroll", handleScroll);
+async function loadPublic<T>(label: string, load: () => Promise<T[]>, isPublic: (item: T) => boolean): Promise<T[]> {
+  try {
+    const items = await load();
+    return Array.isArray(items) ? items.filter(isPublic) : [];
+  } catch (err) {
+    console.error(`[home] failed to load ${label}:`, err);
+    return [];
+  }
+}
 
-    // Scroll reveal observer
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.classList.add("visible", "active");
-        }
-      }),
-      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
-    );
-    document.querySelectorAll(".fade-in, .reveal, .reveal-left, .reveal-right, .reveal-scale").forEach((el) => observer.observe(el));
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      observer.disconnect();
-    };
-  }, []);
+export default async function HomePage() {
+  const [packages, gallery, reviews, blogs, faqs, offers]:
+    [TourPackage[], GalleryImage[], Review[], BlogPost[], FAQItem[], Offer[]] =
+    await Promise.all([
+      loadPublic("packages", getPackages, isPublicPackage),
+      loadPublic("gallery", getGallery, isPublicGalleryImage),
+      loadPublic("reviews", getReviews, isPublicReview),
+      loadPublic("blogs", getBlogs, isPublicBlog),
+      loadPublic("faqs", getFAQs, isPublicFAQ),
+      // G-05: active and not expired (IST calendar date), same rule as GET /api/offers.
+      loadPublic("offers", getOffers, isPublicOffer),
+    ]);
 
   return (
     <>
-      <div className="scroll-progress" style={{ width: `${scrollProgress}%` }} />
+      {/* E-11: first focusable element; off-screen until it receives keyboard focus. */}
+      <a href="#main-content" className="skip-link">{translate("en", "common.skipToContent")}</a>
+      <ScrollProgress />
       <Header />
-      <Hero />
-      <WaveDivider fill="var(--bg2)" />
-      <About />
-      <WaveDivider fill="var(--bg)" />
-      <Packages />
-      <WaveDivider fill="var(--bg2)" />
-      <Gallery />
-      <Counter />
-      <WaveDivider fill="var(--bg)" />
-      <Reviews />
-      <WaveDivider fill="var(--bg2)" />
-      <Blog />
-      <WaveDivider fill="var(--bg)" />
-      <FAQ />
-      <Contact />
+      {/* Unstyled block wrapper (Header is position:fixed, no CSS targets sibling structure),
+          so wrapping the sections in <main> does not change layout. */}
+      <main id="main-content" tabIndex={-1}>
+        <Hero />
+        <WaveDivider fill="var(--bg2)" />
+        <About />
+        <WaveDivider fill="var(--bg)" />
+        <Packages initialPackages={packages} />
+        {/* G-05: only rendered when at least one offer is visible; --bg3 keeps the wave
+            colours distinct from Packages (--bg) above and Gallery (--bg2) below. */}
+        {offers.length > 0 && (
+          <>
+            <WaveDivider fill="var(--bg3)" />
+            <Offers initialOffers={offers} />
+          </>
+        )}
+        <WaveDivider fill="var(--bg2)" />
+        <Gallery initialImages={gallery} />
+        <Counter />
+        <WaveDivider fill="var(--bg)" />
+        <Reviews initialReviews={reviews} />
+        <WaveDivider fill="var(--bg2)" />
+        <Blog initialBlogs={blogs} />
+        <WaveDivider fill="var(--bg)" />
+        <FAQ initialFaqs={faqs} />
+        <Contact initialPackages={packages} minDate={istDateKey(new Date())} />
+      </main>
       <Footer />
+      <CompareBar />
       <WhatsApp />
       <BackToTop />
+      {/* Last child so its effect runs after every section's mount effects, like the old page-level effect. */}
+      <RevealObserver />
+      {faqs.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdString(faqPageJsonLd(faqs)) }}
+        />
+      )}
     </>
   );
 }
