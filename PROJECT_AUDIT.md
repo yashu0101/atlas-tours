@@ -2,7 +2,7 @@
 
 > **Single source of truth** for project status and the fix backlog.
 > Audit date: **2026-11-17** · Audited commit: `dd7e91d` · Rating at audit: **4.5 / 10**
-> Last updated: **2026-11-18** · PRs #1–#7, #9, #10 merged into `dev` (`607462b`) · `master` not yet updated (release PR #8 open) · Current rating: **8.5 / 10** · **84 / 89 done · 5 blocked on client decisions · 0 open**
+> Last updated: **2026-11-18** · PRs #1–#7, #9, #10 + the backend round (B-13…B-20, G-02, N-8, N-10) on `dev` (`31b139a`, pushed) · `master` not yet updated (release PR #8 open and updated) · Current rating: **8.5 / 10** · **84 / 89 done · 5 blocked on client decisions · 0 open**
 
 ---
 
