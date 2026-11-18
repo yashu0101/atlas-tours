@@ -5,6 +5,15 @@ Items marked **(provisional)** have been built with a placeholder answer that is
 
 Last updated: 2026-11-18
 
+## Client to-do before launch (emails and admin accounts)
+
+The email notifications (G-02 / N-10) and multiple admin logins (N-8) are built. To switch them on, the client needs to:
+
+- [ ] Create a **Resend** account and verify the sending domain.
+- [ ] Give us the values for `RESEND_API_KEY`, `NOTIFY_FROM` (the sender, e.g. `Atlas Tours <bookings@your-domain>`) and `NOTIFY_EMAIL` (the owner address or addresses that receive the alerts).
+- [ ] Approve the email wording (the owner alert and the customer confirmation emails).
+- [ ] Confirm that **"all admins have full access"** is OK, or tell us what staff should be limited to.
+
 ## Contact details
 
 | # | Question | Current provisional choice |
