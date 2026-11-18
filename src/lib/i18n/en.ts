@@ -307,12 +307,14 @@ export const en = {
     },
     paymentStatus: {
       pending: "Not paid yet",
+      verifying: "Verifying payment",
       paid: "Paid",
       failed: "Payment failed",
       refunded: "Refunded",
     },
     paymentStatusHelp: {
-      pending: "No payment is taken online. Our team will tell you how and when to pay.",
+      pending: "Once we confirm your booking, you can pay here by UPI.",
+      verifying: "We have your transaction ID and are checking the payment. This usually takes a few hours.",
       paid: "We have received your payment. Thank you!",
       failed: "Your payment did not go through. Please contact us to try again.",
       refunded: "Your payment has been refunded.",

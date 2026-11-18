@@ -16,7 +16,7 @@ export const INBOX_MAX_PAGE_SIZE = 100;
 
 // Runtime copies of the unions in types.ts; `satisfies` flags any drift.
 export const BOOKING_STATUS_VALUES = ["pending", "confirmed", "completed", "cancelled"] as const satisfies readonly Booking["bookingStatus"][];
-export const PAYMENT_STATUS_VALUES = ["pending", "paid", "failed", "refunded"] as const satisfies readonly Booking["paymentStatus"][];
+export const PAYMENT_STATUS_VALUES = ["pending", "verifying", "paid", "failed", "refunded"] as const satisfies readonly Booking["paymentStatus"][];
 export const ENQUIRY_STATUS_VALUES = ["new", "contacted", "confirmed", "cancelled"] as const satisfies readonly Enquiry["status"][];
 export const ENQUIRY_KINDS = ["contact", "trip-plan", "callback"] as const satisfies readonly EnquiryKind[];
 

@@ -6,7 +6,7 @@ type OptionalKeys<T> = { [K in keyof T]-?: undefined extends T[K] ? K : never }[
 export type Patch<T> = { [K in keyof T]?: K extends OptionalKeys<T> ? T[K] | null : T[K] };
 
 // Option values for the status <select>s; `satisfies` keeps them in step with the unions in types.ts.
-export const PAYMENT_STATUSES = ["pending", "paid", "failed", "refunded"] as const satisfies readonly Booking["paymentStatus"][];
+export const PAYMENT_STATUSES = ["pending", "verifying", "paid", "failed", "refunded"] as const satisfies readonly Booking["paymentStatus"][];
 export const BOOKING_STATUSES = ["pending", "confirmed", "completed", "cancelled"] as const satisfies readonly Booking["bookingStatus"][];
 export const ENQUIRY_STATUSES = ["new", "contacted", "confirmed", "cancelled"] as const satisfies readonly Enquiry["status"][];
 export const isOneOf = <T extends string>(list: readonly T[], value: string): value is T => list.some(v => v === value);

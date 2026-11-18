@@ -42,6 +42,7 @@ const BOOKING_TONE: Record<Booking["bookingStatus"], Tone> = {
 };
 const PAYMENT_TONE: Record<Booking["paymentStatus"], Tone> = {
   pending: "warn",
+  verifying: "warn",
   paid: "good",
   failed: "bad",
   refunded: "neutral",

@@ -181,6 +181,19 @@ END $$`,
       "CREATE INDEX audit_log_created_at_idx ON audit_log (created_at DESC, seq DESC)",
     ],
   },
+  {
+    // N-13: UPI payments. The customer submits a UTR (payment_status 'verifying'); the unique
+    // partial index stops one transaction id being claimed by two bookings.
+    version: 7,
+    name: "booking_payments",
+    statements: [
+      "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS utr TEXT",
+      "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_submitted_at TIMESTAMPTZ",
+      "ALTER TABLE bookings DROP CONSTRAINT bookings_payment_status_valid",
+      "ALTER TABLE bookings ADD CONSTRAINT bookings_payment_status_valid CHECK (payment_status IN ('pending','verifying','paid','failed','refunded'))",
+      "CREATE UNIQUE INDEX bookings_utr_unique ON bookings (utr) WHERE utr IS NOT NULL",
+    ],
+  },
 ];
 
 /**

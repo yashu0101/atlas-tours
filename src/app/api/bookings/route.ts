@@ -7,7 +7,7 @@ import { BOOKINGS_LIST, inboxList } from "@/lib/inbox-route";
 
 // Runtime copies of the status unions in types.ts; `satisfies` makes the compiler
 // flag any value added to or removed from the type but not here.
-const PAYMENT_STATUSES = Object.keys({ pending: 1, paid: 1, failed: 1, refunded: 1 } satisfies Record<Booking["paymentStatus"], 1>) as Booking["paymentStatus"][];
+const PAYMENT_STATUSES = Object.keys({ pending: 1, verifying: 1, paid: 1, failed: 1, refunded: 1 } satisfies Record<Booking["paymentStatus"], 1>) as Booking["paymentStatus"][];
 const BOOKING_STATUSES = Object.keys({ pending: 1, confirmed: 1, completed: 1, cancelled: 1 } satisfies Record<Booking["bookingStatus"], 1>) as Booking["bookingStatus"][];
 
 // Admin-only. No params: bare array; any filter/paging param: { items, total, page, pageSize } (src/lib/inbox-route.ts).

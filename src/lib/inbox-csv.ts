@@ -43,10 +43,10 @@ export const csvFilename = (name: "bookings" | "enquiries", now: Date) => `atlas
 
 export function bookingsCsv(bookings: readonly Booking[]): string {
   return toCsv(
-    ["Reference", "Booking ID", "Received (IST)", "Name", "Phone", "Email", "City", "Package ID", "Package", "Travel Date", "Travelers", "Amount (INR)", "Payment Status", "Booking Status"],
+    ["Reference", "Booking ID", "Received (IST)", "Name", "Phone", "Email", "City", "Package ID", "Package", "Travel Date", "Travelers", "Amount (INR)", "Payment Status", "utr", "payment_submitted_at", "Booking Status"],
     bookings.map(b => [
       bookingReference(b.id), b.id, istDateTime(b.createdAt), b.name, b.phone, b.email, b.city,
-      b.packageId, b.packageName, b.travelDate, b.travelers, b.amount, b.paymentStatus, b.bookingStatus,
+      b.packageId, b.packageName, b.travelDate, b.travelers, b.amount, b.paymentStatus, b.utr, b.paymentSubmittedAt ? istDateTime(b.paymentSubmittedAt) : "", b.bookingStatus,
     ]),
   );
 }
