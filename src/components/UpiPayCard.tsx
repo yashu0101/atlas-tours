@@ -2,7 +2,8 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import SmartImage from "@/components/SmartImage";
-import { UPI_CONFIG, UPI_PAY_LINK } from "@/lib/config";
+import { UPI_CONFIG } from "@/lib/config";
+import { UPI_PAY_LINK } from "@/lib/upi";
 import { useT } from "@/lib/i18n/use-t";
 
 /**

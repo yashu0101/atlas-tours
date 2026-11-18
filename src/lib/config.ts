@@ -83,6 +83,3 @@ export const UPI_CONFIG = {
   payee: "Dilip",
   qrImage: "/images/upi-qr.jpg",
 } as const;
-
-/** `upi://` deep link that opens the customer's UPI app with our UPI ID pre-filled (no amount). */
-export const UPI_PAY_LINK = `upi://pay?pa=${encodeURIComponent(UPI_CONFIG.id)}&pn=${encodeURIComponent(UPI_CONFIG.payee)}&cu=INR`;
