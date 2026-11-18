@@ -18,6 +18,7 @@ const API = "/api/bookings";
 export default function BookingsTab({ onChanged }: { onChanged: () => void }) {
   const [filters, setFilters] = useState<BookingFilters>(EMPTY_BOOKING_FILTERS);
   const [page, setPage] = useState(1);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   // Any filter change goes back to page 1.
   const update = (patch: Partial<BookingFilters>) => { setFilters(f => ({ ...f, ...patch })); setPage(1); };
 
@@ -25,11 +26,28 @@ export default function BookingsTab({ onChanged }: { onChanged: () => void }) {
   const rows = data?.items ?? [];
   const slice = data ? pageSlice(data, rows.length) : null;
 
-  const onUpdate = async (id: string, updates: Partial<Pick<Booking, "paymentStatus" | "bookingStatus">>) => {
+  const onUpdate = async (id: string, updates: Partial<Pick<Booking, "paymentStatus" | "bookingStatus" | "amount">>) => {
     const updated = await sendEntity<Booking>(API, "PATCH", { id, ...updates }, "booking");
     if (!updated) return;
     setData(d => d && { ...d, items: d.items.map(b => (b.id === id ? updated : b)) });
     reload(); onChanged();
+  };
+  const onEditAmount = async (b: Booking) => {
+    const input = window.prompt("New amount (₹)", String(b.amount));
+    if (input === null) return;
+    const text = input.trim();
+    const amount = Number(text);
+    if (!/^\d+$/.test(text) || !Number.isSafeInteger(amount) || amount < 1) {
+      alert("Enter a whole number of rupees, 1 or more.");
+      return;
+    }
+    await onUpdate(b.id, { amount });
+  };
+  const onCopyLink = async (b: Booking) => {
+    const link = `${location.origin}/track?ref=${bookingReference(b.id)}`;
+    try { await navigator.clipboard.writeText(link); } catch { window.prompt("Copy this link", link); return; }
+    setCopiedId(b.id);
+    setTimeout(() => setCopiedId(c => (c === b.id ? null : c)), 2000);
   };
   const onRemove = async (id: string) => {
     if (!confirm("Delete this booking?")) return;
@@ -64,7 +82,7 @@ export default function BookingsTab({ onChanged }: { onChanged: () => void }) {
         <label className="adm-field">Payment
           <select className="adm-input" value={filters.paymentStatus}
             onChange={e => { const v = e.target.value; update({ paymentStatus: isOneOf(PAYMENT_STATUSES, v) ? v : "" }); }}>
-            <option value="">All</option><option value="pending">Pending</option><option value="paid">Paid</option><option value="failed">Failed</option><option value="refunded">Refunded</option>
+            <option value="">All</option><option value="pending">Pending</option><option value="verifying">Verifying</option><option value="paid">Paid</option><option value="failed">Failed</option><option value="refunded">Refunded</option>
           </select>
         </label>
         <ReceivedRange from={filters.from} to={filters.to} onChange={update} />
@@ -83,18 +101,24 @@ export default function BookingsTab({ onChanged }: { onChanged: () => void }) {
                 <td data-label="Package">{b.packageName}</td>
                 <td data-label="Travel date" className="tnum" style={{ whiteSpace: "nowrap" }}>{b.travelDate}</td>
                 <td data-label="Travelers" className="tnum">{b.travelers}</td>
-                <td data-label="Amount" className="tnum" style={{ whiteSpace: "nowrap" }}>{"₹"}{b.amount?.toLocaleString("en-IN")}</td>
+                <td data-label="Amount" className="tnum" style={{ whiteSpace: "nowrap" }}>{"₹"}{b.amount?.toLocaleString("en-IN")}
+                  <button className="adm-btn" style={{ marginTop: 4 }} disabled={b.paymentStatus === "paid"} onClick={() => onEditAmount(b)}>Edit</button></td>
                 <td data-label="Payment">
                   <select className="adm-sel" aria-label="Payment status" data-value={b.paymentStatus} value={b.paymentStatus} onChange={e => { const v = e.target.value; if (isOneOf(PAYMENT_STATUSES, v)) onUpdate(b.id, { paymentStatus: v }); }}>
-                    <option value="pending">Pending</option><option value="paid">Paid</option><option value="failed">Failed</option><option value="refunded">Refunded</option>
+                    <option value="pending">Pending</option><option value="verifying">Verifying</option><option value="paid">Paid</option><option value="failed">Failed</option><option value="refunded">Refunded</option>
                   </select>
+                  {b.utr && <span className="adm-sub tnum">UTR {b.utr}</span>}
+                  {b.paymentSubmittedAt && <span className="adm-sub tnum">{istDateTime(b.paymentSubmittedAt)}</span>}
                 </td>
                 <td data-label="Status">
                   <select className="adm-sel" aria-label="Booking status" data-value={b.bookingStatus} value={b.bookingStatus} onChange={e => { const v = e.target.value; if (isOneOf(BOOKING_STATUSES, v)) onUpdate(b.id, { bookingStatus: v }); }}>
                     <option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option>
                   </select>
                 </td>
-                <td data-label=""><button className="adm-btn danger" onClick={() => onRemove(b.id)}>Delete</button></td>
+                <td data-label="">
+                  <button className="adm-btn" disabled={b.bookingStatus !== "confirmed"} onClick={() => onCopyLink(b)}>{copiedId === b.id ? "Copied!" : "Copy pay link"}</button>{" "}
+                  <button className="adm-btn danger" onClick={() => onRemove(b.id)}>Delete</button>
+                </td>
               </tr>
             ))}
           </tbody>

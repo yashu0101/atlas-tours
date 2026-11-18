@@ -165,3 +165,63 @@ test("reviews: approving a customer review publishes it on the home page", async
 
   expect(alerts, `unexpected alert() dialogs: ${alerts.join(" | ")}`).toEqual([]);
 });
+
+// N-13: payment verification in the admin Bookings tab.
+test("bookings: verifying filter, UTR display, edit amount and copy pay link", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  const tag = `Pay${Date.now()}`;
+  const phone = "9811122233";
+  const travelDate = new Date(Date.now() + 30 * 86400_000).toISOString().slice(0, 10);
+  const booking = await postPublic(page.request, "/api/book", {
+    name: `Payer ${tag}`, phone, email: "payer@example.com", city: "Pune",
+    travelers: 2, travelDate, packageId: "pkg-varanasi",
+  });
+  const reference = String(booking.id).slice(0, 8).toUpperCase();
+
+  // Confirm through the admin API, then the customer submits a UTR on the public endpoint.
+  await login(page);
+  const confirm = await page.request.patch("/api/bookings", { data: { id: booking.id, bookingStatus: "confirmed" } });
+  expect(confirm.ok()).toBeTruthy();
+  await postPublic(page.request, "/api/payment-claim", { reference, phone, utr: "712356789012" });
+
+  const alerts: string[] = [];
+  let promptValue = "9000";
+  page.on("dialog", async (dialog) => {
+    if (dialog.type() === "prompt") return dialog.accept(promptValue);
+    alerts.push(dialog.message());
+    return dialog.dismiss();
+  });
+
+  await page.getByRole("button", { name: "Bookings", exact: true }).click();
+  const rows = page.locator(".adm-table tbody tr");
+  await page.getByRole("searchbox", { name: "Search bookings" }).fill(tag);
+  const row = rows.filter({ hasText: `Payer ${tag}` });
+  await expect(row).toContainText("UTR 712356789012");
+
+  // Payment filter "Verifying" lists it.
+  await page.locator(".adm-filters select").nth(1).selectOption("verifying");
+  await expect(row).toHaveCount(1);
+  await expect(row).toContainText("UTR 712356789012");
+  await page.getByRole("button", { name: "Clear" }).click();
+  await page.getByRole("searchbox", { name: "Search bookings" }).fill(tag);
+
+  // Edit amount.
+  await row.getByRole("button", { name: "Edit" }).click();
+  await expect(row).toContainText("₹9,000");
+
+  // Copy pay link: enabled only for confirmed bookings.
+  await row.getByRole("button", { name: "Copy pay link" }).click();
+  await expect(row.getByRole("button", { name: "Copied!" })).toBeVisible();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toBe(`${new URL(page.url()).origin}/track?ref=${reference}`);
+
+  await row.getByRole("combobox", { name: "Booking status" }).selectOption("pending");
+  await expect(row.getByRole("button", { name: "Copy pay link" })).toBeDisabled();
+
+  // Invalid amount: alert and no change.
+  promptValue = "abc";
+  await row.getByRole("button", { name: "Edit" }).click();
+  await expect.poll(() => alerts.length).toBe(1);
+  await expect(row).toContainText("₹9,000");
+  expect(alerts.length).toBe(1);
+});

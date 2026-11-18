@@ -3,7 +3,7 @@
 Open decisions that block or affect work on the Atlas Tours site. IDs match `PROJECT_AUDIT.md`.
 Items marked **(provisional)** have been built with a placeholder answer that is a one-line change once the client confirms.
 
-Last updated: 2026-11-18
+Last updated: 2026-11-19
 
 ## Client to-do before launch (emails and admin accounts)
 
@@ -29,6 +29,7 @@ The email notifications (G-02 / N-10) and multiple admin logins (N-8) are built.
 |---|---|---|
 | Q-1 / G-01 | Are package prices **per person** or **per package**? | **(provisional)** per person: booking total = price × travelers |
 | G-01 | After a booking request is sent, what should happen next (call back, WhatsApp, payment link)? | Shows a "request received" message; the owner sees it in the admin |
+| N-13 | **UPI payment flow (built, please confirm).** After you confirm a booking, the customer gets an email with a link to `/track`, where a QR code for that booking (exact amount, UPI ID `d2095760-1@okicici`) is shown; they pay and enter the 12-digit transaction ID (UTR); you check your bank/UPI app and mark the booking Paid in the admin. Is this flow OK? Also: **the UPI QR is no longer shown under the booking-request message** (it only appears after you confirm) — is that OK? Note: Q-1 (per person or per package) now decides the amount on the QR; you can correct a booking amount in the admin before confirming. | **(provisional)** as described; per-person pricing |
 
 ## Features that need third-party accounts (not built yet)
 
