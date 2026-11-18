@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-import type { TourPackage, Booking, Enquiry, Review, GalleryImage, BlogPost, FAQ, Offer } from "@/lib/types";
+import type { TourPackage, Review, GalleryImage, BlogPost, FAQ, Offer } from "@/lib/types";
+import type { InboxSummary } from "@/lib/db";
 import { useApp } from "@/lib/context";
 import { loadList, type LoadResult } from "./_lib/api";
-import { entityCrud, useEntityTab } from "./_lib/crud";
+import { useEntityTab } from "./_lib/crud";
 import { isAwaitingApproval } from "./_lib/table";
 import type { Tab } from "./_lib/tabs";
 import AdminStyles from "./_components/AdminStyles";
@@ -42,8 +43,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("dashboard");
   const [packages, setPackages] = useState<TourPackage[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
+  // Bookings / enquiries are paged by the server inside their tabs; the page only keeps the summary (review point #6).
+  const [summary, setSummary] = useState<InboxSummary | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
@@ -57,9 +58,6 @@ export default function AdminPage() {
   const blogsTab = useEntityTab("/api/blogs", "blog post", blogs, setBlogs);
   const faqsTab = useEntityTab("/api/faqs", "FAQ", faqs, setFaqs);
   const offersTab = useEntityTab("/api/offers", "offer", offers, setOffers);
-  // Bookings and enquiries are only status-updated and deleted from the admin.
-  const bookingCrud = entityCrud("/api/bookings", "booking", setBookings);
-  const enquiryCrud = entityCrud("/api/enquiries", "enquiry", setEnquiries);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -67,12 +65,25 @@ export default function AdminPage() {
       .catch(err => { console.error("Session check failed", err); router.push("/login"); });
   }, [router]);
 
+  // Dashboard figures + sidebar counts for bookings/enquiries; refreshed after edits in those tabs.
+  const applySummary = useCallback((r: LoadResult) => {
+    if (r.status === 401) { router.push("/login"); return; }
+    if (r.status < 200 || r.status >= 300 || !r.data || typeof r.data !== "object") {
+      console.error("Admin summary load failed", r);
+      alert(`Failed to load: summary (${r.status || "network error"}${typeof r.data === "string" && r.data ? `: ${r.data}` : ""})`);
+      return;
+    }
+    setSummary(r.data as InboxSummary);
+  }, [router]);
+  const loadSummary = () => { loadList("/api/admin/summary", "summary").then(applySummary); };
+
   useEffect(() => {
     if (loading) return;
     let cancelled = false;
+    loadList("/api/admin/summary", "summary").then(r => { if (!cancelled) applySummary(r); });
     // Content entities use ?all=1 so the admin also sees hidden/inactive items (B-05).
     const sources = [
-      ["/api/packages?all=1", "packages"], ["/api/bookings", "bookings"], ["/api/enquiries", "enquiries"],
+      ["/api/packages?all=1", "packages"],
       ["/api/reviews?all=1", "reviews"], ["/api/gallery?all=1", "gallery"], ["/api/blogs?all=1", "blogs"],
       ["/api/faqs?all=1", "FAQs"], ["/api/offers?all=1", "offers"],
     ] as const;
@@ -85,12 +96,12 @@ export default function AdminPage() {
         alert(`Failed to load: ${failed.map(r => `${r.label} (${r.status || "network error"}${typeof r.data === "string" && r.data ? `: ${r.data}` : ""})`).join(", ")}`);
       }
       const arr = <T,>(r: LoadResult): T[] => (Array.isArray(r.data) ? (r.data as T[]) : []);
-      const [pk, bk, en, rv, gl, bl, fq, of] = results;
-      setPackages(arr<TourPackage>(pk)); setBookings(arr<Booking>(bk)); setEnquiries(arr<Enquiry>(en)); setReviews(arr<Review>(rv));
+      const [pk, rv, gl, bl, fq, of] = results;
+      setPackages(arr<TourPackage>(pk)); setReviews(arr<Review>(rv));
       setGallery(arr<GalleryImage>(gl)); setBlogs(arr<BlogPost>(bl)); setFaqs(arr<FAQ>(fq)); setOffers(arr<Offer>(of));
     });
     return () => { cancelled = true; };
-  }, [loading, router]);
+  }, [loading, router, applySummary]);
 
   const logout = async () => { await fetch("/api/auth/logout", { method: "POST" }); router.push("/login"); };
 
@@ -105,8 +116,8 @@ export default function AdminPage() {
 
   // Inbox counts: items waiting for the owner to act on.
   const counts: Partial<Record<Tab, number>> = {
-    bookings: bookings.filter(b => b.bookingStatus === "pending").length,
-    enquiries: enquiries.filter(e => e.status === "new").length,
+    bookings: summary?.bookings.pending,
+    enquiries: summary?.enquiries.new,
     reviews: reviews.filter(isAwaitingApproval).length,
   };
 
@@ -156,10 +167,10 @@ export default function AdminPage() {
 
         <main className="adm-main">
           <div className="adm-body">
-            {tab === "dashboard" && <Dashboard packages={packages} bookings={bookings} enquiries={enquiries} offers={offers} reviews={reviews} onNavigate={go} />}
+            {tab === "dashboard" && <Dashboard packages={packages} summary={summary} offers={offers} reviews={reviews} onNavigate={go} />}
             {tab === "packages" && <PackagesTab {...packagesTab} />}
-            {tab === "bookings" && <BookingsTab bookings={bookings} onUpdate={bookingCrud.update} onRemove={bookingCrud.remove} />}
-            {tab === "enquiries" && <EnquiriesTab enquiries={enquiries} onUpdateStatus={(id, status) => enquiryCrud.update(id, { status })} onRemove={enquiryCrud.remove} />}
+            {tab === "bookings" && <BookingsTab onChanged={loadSummary} />}
+            {tab === "enquiries" && <EnquiriesTab onChanged={loadSummary} />}
             {tab === "reviews" && <ReviewsTab {...reviewsTab} />}
             {tab === "gallery" && <GalleryTab {...galleryTab} />}
             {tab === "blogs" && <BlogsTab {...blogsTab} />}

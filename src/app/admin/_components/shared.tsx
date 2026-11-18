@@ -78,7 +78,7 @@ export function Modal({ onClose, children }: { onClose: () => void; children: Re
 }
 
 // N-1: Prev / Next pager under a filtered table ("Showing 1–25 of 80").
-export function Pager({ slice, onPage }: { slice: PageSlice<unknown>; onPage: (page: number) => void }) {
+export function Pager({ slice, onPage }: { slice: PageSlice; onPage: (page: number) => void }) {
   return (
     <div className="adm-pager">
       <span>{showingLabel(slice)}</span>
@@ -90,7 +90,7 @@ export function Pager({ slice, onPage }: { slice: PageSlice<unknown>; onPage: (p
   );
 }
 
-// N-1: "Received from / to" date inputs (inclusive, IST calendar date; filtering is in _lib/table.ts).
+// N-1: "Received from / to" date inputs (inclusive, IST calendar date; filtering is server-side, src/lib/inbox-filters.ts).
 export function ReceivedRange({ from, to, onChange }: {
   from: string; to: string; onChange: (range: { from: string; to: string }) => void;
 }) {
@@ -106,9 +106,9 @@ export function ReceivedRange({ from, to, onChange }: {
   );
 }
 
-// Browser download of a generated CSV (the content already starts with the UTF-8 BOM).
-export function downloadCsv(filename: string, csv: string) {
-  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+// Browser download of a CSV fetched from an export endpoint (the content already starts with the UTF-8 BOM).
+export function downloadBlob(filename: string, blob: Blob) {
+  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
