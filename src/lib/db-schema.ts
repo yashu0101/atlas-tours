@@ -173,9 +173,12 @@ END $$`,
   action TEXT NOT NULL CONSTRAINT audit_log_action_valid CHECK (action IN ('create','update','delete','login','logout','login_failed','signout_all','password_change')),
   entity TEXT,
   entity_id TEXT,
-  details JSONB NOT NULL DEFAULT '[]'::jsonb
+  details JSONB NOT NULL DEFAULT '[]'::jsonb,
+  -- Insertion order: breaks created_at ties (entries written in the same millisecond) so
+  -- "newest first" is deterministic, as it is in the JSON backend. Not mapped to a TS field.
+  seq BIGSERIAL NOT NULL
 )`,
-      "CREATE INDEX audit_log_created_at_idx ON audit_log (created_at DESC)",
+      "CREATE INDEX audit_log_created_at_idx ON audit_log (created_at DESC, seq DESC)",
     ],
   },
 ];

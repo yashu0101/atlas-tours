@@ -448,7 +448,7 @@ export const en = {
    * Customer emails never echo the free-text message; the owner emails show every field.
    */
   email: {
-    greeting: "Namaste {name},",
+    greeting: "Namaste,",
     signoff: "Warm regards,",
     team: "Team {site}",
     contactLine: "Questions? Call or WhatsApp us on {phone}, or email {email}.",

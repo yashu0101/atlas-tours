@@ -163,7 +163,7 @@ const ADMIN_SESSIONS: Entity<AdminSession> = {
   patchable: ["revokedAt"],
 };
 const AUDIT_LOG: Entity<AuditEntry> = {
-  table: "audit_log", key: "auditLog", file: "admin", orderBy: "created_at DESC",
+  table: "audit_log", key: "auditLog", file: "admin", orderBy: "created_at DESC, seq DESC",
   columns: {
     id, createdAt, actorEmail: c("actor_email"), action: c("action"),
     entity: c("entity", { optional: true }), entityId: c("entity_id", { optional: true }), details: c("details", { type: "array" }),
@@ -783,10 +783,26 @@ export async function pruneAdminSessions(now = new Date()): Promise<number> {
 }
 
 export async function addAuditEntry(e: Omit<AuditEntry, "id" | "createdAt">): Promise<AuditEntry> { return auditLog.add(stamp(e)); }
+/**
+ * Deletes audit entries older than `before` (retention; called opportunistically on login).
+ * Returns how many were removed.
+ */
+export async function pruneAuditLog(before: Date): Promise<number> {
+  if (isPostgres()) {
+    const rows = await getSQL().query(`DELETE FROM ${AUDIT_LOG.table} WHERE created_at < $1 RETURNING id`, [before.toISOString()]);
+    return rows.length;
+  }
+  const db = readAdminDB();
+  const keep = db.auditLog.filter(e => !(Date.parse(e.createdAt) < before.getTime()));
+  const n = db.auditLog.length - keep.length;
+  if (n) { db.auditLog = keep; writeJsonFile(adminDbPath(), db); }
+  return n;
+}
+
 /** Newest first, at most `limit` entries. */
 export async function getAuditLog(limit: number): Promise<AuditEntry[]> {
   if (isPostgres()) {
-    const rows = await getSQL().query(`SELECT * FROM ${AUDIT_LOG.table} ORDER BY created_at DESC, id LIMIT $1`, [limit]);
+    const rows = await getSQL().query(`SELECT * FROM ${AUDIT_LOG.table} ORDER BY created_at DESC, seq DESC LIMIT $1`, [limit]);
     return rows.map(r => fromRow(AUDIT_LOG, r));
   }
   // Appended in time order, so newest first is the reversed file order (stable for equal timestamps).

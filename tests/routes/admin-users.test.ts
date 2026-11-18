@@ -440,3 +440,47 @@ describe("audit log", () => {
     expect(content).not.toHaveProperty("adminUsers");
   });
 });
+
+describe("review fixes", () => {
+  it("rotating the env admin's password ends existing env-admin sessions", async () => {
+    const token = await signIn(ENV_EMAIL, ENV_PASSWORD);
+    expect((await meWith(token)).status).toBe(200);
+    vi.stubEnv("ADMIN_PASSWORD", "a-brand-new-password");
+    try {
+      expect((await meWith(token)).status).toBe(401);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+    // Same credentials again → the tag matches again (it is derived, not stored).
+    expect((await meWith(token)).status).toBe(200);
+  });
+
+  it("logging in again revokes the session the new cookie replaces", async () => {
+    const first = await signIn(ENV_EMAIL, ENV_PASSWORD);
+    const res = await as(first, () => login.POST(req("/api/auth/login", "POST", { email: ENV_EMAIL, password: ENV_PASSWORD })));
+    expect(res.status).toBe(200);
+    const second = sessionCookie(res)!.value;
+    expect((await meWith(first)).status).toBe(401);
+    expect((await meWith(second)).status).toBe(200);
+  });
+
+  it("stops auditing failed logins once the global hourly cap is reached", async () => {
+    const { consume } = await import("@/lib/rate-limit");
+    for (let i = 0; i < 60; i++) await consume("audit:login_failed", 50, 60 * 60 * 1000);
+    const before = auditLog().filter(e => e.action === "login_failed").length;
+    expect(await loginStatus("nobody@example.com", "wrong-password")).toBe(401);
+    expect(auditLog().filter(e => e.action === "login_failed").length).toBe(before);
+  });
+
+  it("pruneAuditLog deletes entries older than the cutoff only", async () => {
+    const { pruneAuditLog } = await import("@/lib/db");
+    const all = auditLog();
+    expect(all.length).toBeGreaterThan(1);
+    const cutoff = new Date(Date.parse(all.at(-1)!.createdAt)); // the newest entry is kept
+    const removed = await pruneAuditLog(cutoff);
+    const left = auditLog();
+    expect(removed).toBe(all.length - left.length);
+    expect(left.every(e => Date.parse(e.createdAt) >= cutoff.getTime())).toBe(true);
+    expect(left.length).toBeGreaterThan(0);
+  });
+});

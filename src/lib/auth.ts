@@ -1,6 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import { timingSafeEqual, createHash, randomUUID } from "crypto";
+import { timingSafeEqual, createHash, createHmac, randomUUID } from "crypto";
 import { compare as bcryptCompare, hash as bcryptHash } from "bcryptjs";
 import { addAdminSession, getAdminSession, getAdminUserByEmail, getAdminUserById, normalizeEmail } from "./db";
 import { ENV_ADMIN_ID } from "./types";
@@ -115,6 +115,27 @@ export interface AdminIdentity {
 
 export type SessionCheck = ({ authenticated: true } & AdminIdentity) | { authenticated: false };
 
+/**
+ * Env-admin credential tag (review finding): an HMAC (keyed with the JWT secret, so it reveals
+ * nothing about the password) of the env admin's email + password/hash. It is embedded in env
+ * sessions as the `ec` claim and re-checked on every request, so rotating ADMIN_PASSWORD or
+ * ADMIN_PASSWORD_HASH ends every env-admin session, just like a DB user's password change.
+ */
+function envCredentialTag(secret: Uint8Array, creds: AdminCredentials): string {
+  const cred = "passwordHash" in creds ? "h:" + creds.passwordHash : "p:" + creds.password;
+  return createHmac("sha256", Buffer.from(secret))
+    .update("env-cred\n" + normalizeEmail(creds.email) + "\n" + cred)
+    .digest("base64url")
+    .slice(0, 32);
+}
+
+/** Logs a deploy hint when the N-8 tables are missing (Postgres 42P01: migration v6 not applied). */
+function hintIfSchemaMissing(err: unknown): void {
+  if ((err as { code?: unknown } | null)?.code === "42P01") {
+    logConfigError("Admin session tables are missing: run POST /api/seed to apply the database migrations (v6). Admin login is unavailable until then.");
+  }
+}
+
 /** Longest User-Agent kept on a session row (the Postgres CHECK allows 512). */
 const MAX_USER_AGENT = 512;
 
@@ -134,12 +155,18 @@ export async function createSession(
   const userId = opts.userId ?? ENV_ADMIN_ID;
   const now = new Date();
   const expiresAt = new Date(now.getTime() + SESSION_MAX_AGE_SECONDS * 1000);
+  let ec: string | undefined;
+  if (userId === ENV_ADMIN_ID) {
+    const creds = resolveAdminCredentials();
+    if (!creds) throw new Error("Cannot create an env-admin session: admin credentials are not configured");
+    ec = envCredentialTag(secret, creds);
+  }
   await addAdminSession({
     id: jti, userId, email, createdAt: now.toISOString(), expiresAt: expiresAt.toISOString(),
     userAgent: opts.userAgent ? opts.userAgent.slice(0, MAX_USER_AGENT) : undefined,
     ip: opts.ip ? opts.ip.slice(0, 64) : undefined,
-  });
-  return new SignJWT({ email, role: "admin", sv: sessionVersion(), uid: userId })
+  }).catch((err) => { hintIfSchemaMissing(err); throw err; });
+  return new SignJWT({ email, role: "admin", sv: sessionVersion(), uid: userId, ...(ec ? { ec } : {}) })
     .setProtectedHeader({ alg: "HS256" })
     .setJti(jti)
     .setIssuer(JWT_ISSUER)
@@ -177,6 +204,8 @@ export async function verifySession(): Promise<SessionCheck> {
     if (session.userId === ENV_ADMIN_ID) {
       const creds = resolveAdminCredentials();
       if (!creds || normalizeEmail(creds.email) !== normalizeEmail(session.email)) return { authenticated: false };
+      // The env password/hash changed since this session was created: it no longer counts.
+      if (typeof payload.ec !== "string" || !safeEqual(payload.ec, envCredentialTag(secret, creds))) return { authenticated: false };
     } else {
       const user = await getAdminUserById(session.userId);
       if (!user || !user.active) return { authenticated: false };
@@ -185,7 +214,7 @@ export async function verifySession(): Promise<SessionCheck> {
   } catch (err) {
     // A bad token is normal; a DB failure is worth a log line (still fails closed).
     const code = (err as { code?: unknown } | null)?.code;
-    if (!(typeof code === "string" && code.startsWith("ERR_J"))) console.error("[auth] session check failed:", err);
+    if (!(typeof code === "string" && code.startsWith("ERR_J"))) { hintIfSchemaMissing(err); console.error("[auth] session check failed:", err); }
     return { authenticated: false };
   }
 }
@@ -206,9 +235,11 @@ const getDummyHash = () => (dummyHash ??= bcryptHash(randomUUID(), BCRYPT_COST))
  *   keeps its fail-closed production behaviour (no env admin when its vars are missing).
  * - Otherwise the e-mail is looked up in admin_users (case-insensitive); inactive users fail.
  * - Fails closed for everyone when JWT_SECRET is missing/invalid in production.
- * - Every path runs exactly one bcrypt compare (a dummy hash when nothing matches or the env
- *   admin uses a plaintext password), so timing reveals neither which accounts exist nor
- *   which half of the credentials was wrong.
+ * - Every path does the same DB lookup and exactly one bcrypt compare (a dummy hash when nothing
+ *   matches or the env admin uses a plaintext password), so timing reveals neither which
+ *   accounts exist (including whether an email is the env admin's) nor which half was wrong.
+ * - If ADMIN_EMAIL equals a DB user's email, the env admin wins (that DB user can only sign in
+ *   with the env password); this is logged as a configuration error.
  */
 export async function authenticateAdmin(email: unknown, password: unknown): Promise<{ email: string; userId: string } | null> {
   if (getJwtSecret() === null) return null;
@@ -222,14 +253,18 @@ export async function authenticateAdmin(email: unknown, password: unknown): Prom
     }
   };
 
+  // Always looked up, even for the env admin's email: skipping it would make that email
+  // measurably faster to reject and so reveal it (review finding).
+  const user = given ? await getAdminUserByEmail(given) : null;
+
   if (creds && given && safeEqual(given, normalizeEmail(creds.email))) {
+    if (user) logConfigError("ADMIN_EMAIL is also a DB admin user's email; that user can only sign in with the env password. Remove or rename one of them.");
     let ok: boolean;
     if ("passwordHash" in creds) ok = await compare(creds.passwordHash, "ADMIN_PASSWORD_HASH");
     else { await compare(await getDummyHash(), "dummy"); ok = safeEqual(password, creds.password); }
     return ok ? { email: creds.email, userId: ENV_ADMIN_ID } : null;
   }
 
-  const user = given ? await getAdminUserByEmail(given) : null;
   const ok = await compare(user?.passwordHash ?? (await getDummyHash()), "admin_users.password_hash");
   return ok && user && user.active ? { email: user.email, userId: user.id } : null;
 }

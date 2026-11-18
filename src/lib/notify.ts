@@ -2,6 +2,7 @@ import { after } from "next/server";
 import { formatISTDate } from "@/app/blog/_lib/format-date";
 import { formatPrice } from "@/app/packages/package-utils";
 import { bookingReference } from "./booking-ref";
+import { consume } from "./rate-limit";
 import { PHONE_DISPLAY, SITE_CONFIG } from "./config";
 import { getT, type MessageKey } from "./i18n";
 import { SITE_URL } from "./seo";
@@ -16,10 +17,11 @@ import type { Booking, Enquiry, Review } from "./types";
  *   and customer review. The owner is trusted, so these include every submitted field.
  * - Customer confirmations for bookings, enquiries and trip-plan/callback requests, only when
  *   the customer gave an email address. They NEVER echo the free-text message/notes, so the
- *   forms can't be used to relay arbitrary content to third-party inboxes; only the name
- *   (capped at 100 chars) and structured values are included. What bounds abuse of the
- *   customer mail (someone entering a stranger's address) is the existing public-form rate
- *   limit of 5 submissions per minute per IP (public-form.ts), plus the honeypot.
+ *   forms can't be used to relay arbitrary content to third-party inboxes. Not even the
+ *   customer's name is included (a name like "Claim your refund at evil.example" would be a
+ *   lure sent from our verified domain): only fixed copy and structured values (reference,
+ *   package, dates, counts). Abuse with a stranger's address is bounded by the public-form
+ *   rate limit (5/min/IP), the honeypot, and a per-recipient cap (CUSTOMER_MAIL_LIMIT).
  *
  * Env (all optional; everything stays off unless RESEND_API_KEY and NOTIFY_FROM are set):
  * - RESEND_API_KEY — Resend API key.
@@ -162,7 +164,6 @@ function layout(heading: string, inner: string, footer: string): string {
 interface CustomerParts {
   subject: string;
   heading: string;
-  name: string;
   intro: string;
   rows: Row[];
   extraHtml?: string;
@@ -170,7 +171,7 @@ interface CustomerParts {
 }
 
 function customerEmail(p: CustomerParts): EmailContent {
-  const greeting = t("email.greeting", { name: stripLineBreaks(p.name) });
+  const greeting = t("email.greeting");
   const contact = t("email.contactLine", { phone: PHONE_DISPLAY, email: SITE_CONFIG.email });
   const signoff = [t("email.signoff"), t("email.team", { site: SITE })];
   const footer = t("email.automated", { site: SITE });
@@ -282,7 +283,7 @@ export function buildOwnerEmail(event: NotifyEvent): EmailContent {
 
 /**
  * The customer confirmation, or null when there is none (no email given, or a review).
- * Deliberately built only from the name and structured fields — never the free-text message.
+ * Deliberately built only from fixed copy and structured fields — never the name or the free-text message.
  */
 export function buildCustomerEmail(event: NotifyEvent): EmailContent | null {
   switch (event.type) {
@@ -295,7 +296,6 @@ export function buildCustomerEmail(event: NotifyEvent): EmailContent | null {
       return customerEmail({
         subject: t("email.booking.customerSubject", { ref }),
         heading: t("email.booking.customerHeading"),
-        name: b.name,
         intro: t("email.booking.customerIntro", { site: SITE }),
         rows: [
           [t("email.labels.reference"), ref],
@@ -329,7 +329,6 @@ export function buildCustomerEmail(event: NotifyEvent): EmailContent | null {
       return customerEmail({
         subject: t(`email.${key}.customerSubject`),
         heading: t(`email.${key}.customerHeading`),
-        name: e.name,
         intro: t(`email.${key}.customerIntro`),
         rows,
       });
@@ -408,6 +407,10 @@ function customerAddress(event: NotifyEvent): string | undefined {
  * Sends the owner alert and the customer confirmation for a saved submission, in parallel.
  * Never throws. A no-op when notifications are not configured.
  */
+/** Customer emails per recipient address per 24 h (shared via Upstash when configured). */
+export const CUSTOMER_MAIL_LIMIT = 5;
+const CUSTOMER_MAIL_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 export async function notifySubmission(event: NotifyEvent): Promise<void> {
   try {
     const cfg = notifyConfig();
@@ -426,7 +429,10 @@ export async function notifySubmission(event: NotifyEvent): Promise<void> {
       );
     }
     const mail = customer ? buildCustomerEmail(event) : null;
-    if (customer && mail) {
+    // Per-recipient cap, so a stranger's address entered from many IPs can't be flooded.
+    if (customer && mail && (await consume(`notify:to:${customer.toLowerCase()}`, CUSTOMER_MAIL_LIMIT, CUSTOMER_MAIL_WINDOW_MS))) {
+      logOnce("recipient-cap", `Customer email skipped: recipient reached ${CUSTOMER_MAIL_LIMIT} emails in 24 h (logged once per process).`);
+    } else if (customer && mail) {
       jobs.push(
         sendEmail(cfg, mail, { to: [customer], idempotencyKey: `${event.type}-${id}-customer`, tag: `${event.type}/customer` }),
       );

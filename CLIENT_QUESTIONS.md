@@ -25,18 +25,22 @@ Last updated: 2026-11-18
 
 | # | Feature | What we need from the client |
 |---|---|---|
-| G-02 | Notify the owner on every new enquiry/booking | Choose **email** (e.g. Resend/SMTP: sender address, recipient address) and/or **WhatsApp** (WhatsApp Business API account) |
 | G-04 | Upload images from the admin instead of pasting URLs | Choose a storage provider (**Vercel Blob** if hosted on Vercel, or **Cloudinary**) and create the account |
 | G-09 | Online payments | A **Razorpay** account (KYC done), API keys, and a decision: full payment or advance/deposit? Refund policy text |
 | N-2 | Website analytics (visits, form conversions) | Choose **Vercel Analytics** (if hosted on Vercel) or **Plausible** (paid, privacy-friendly) or Google Analytics (needs a cookie notice); create the account |
-| N-10 | Booking confirmation sent to the customer by email or WhatsApp | Same provider decision as G-02, plus the message wording |
+
+## Built on provisional answers — please confirm
+
+| # | Feature | What was built | What we need from the client |
+|---|---|---|---|
+| G-02 / N-10 | Email to the owner on every booking, enquiry, trip/callback request and review; confirmation email to the customer from every form that has an email | Email via **Resend**. Switched off until the keys are set | Create a Resend account, verify the sending domain, and give us the sender address (`NOTIFY_FROM`) and the owner address(es) (`NOTIFY_EMAIL`). Approve the email wording. WhatsApp is not built. |
+| N-8 | Several admin logins, sign out of all devices, audit trail | Any number of admin accounts, **all with the same full access** (no staff role), plus a log of who changed what | Is "everyone has full access" OK, or should staff be limited (e.g. bookings only, no deletes)? |
 
 ## New features that need a decision (not built yet)
 
 | # | Feature | What we need from the client |
 |---|---|---|
 | N-3 | Departure dates and seats per package; the booking date picker only offers real departures | Do tours run on fixed departure dates or any day? Is there a seat/group-size limit per departure? |
-| N-8 | Several admin logins with roles and an audit trail | Who needs access (owner, staff)? What may staff do (e.g. bookings only, no content edits or deletes)? |
 
 ## Design and content approval
 

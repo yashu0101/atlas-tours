@@ -137,6 +137,17 @@ describe("notify: Resend request", () => {
       ["owner@example.com", "partner@example.com"],
     ]);
   });
+
+  it("caps customer mail per recipient (review finding); owner alerts are not capped", async () => {
+    enable();
+    const runs = notify.CUSTOMER_MAIL_LIMIT + 2;
+    for (let i = 0; i < runs; i++) {
+      await notify.notifySubmission({ type: "booking", booking: { ...BOOKING, id: `${i}${BOOKING.id.slice(1)}`, email: i % 2 ? "ASHA@example.com" : "asha@example.com" } });
+    }
+    const toCustomer = sent().filter((s) => (s.body.to as string[]).some((a) => a.toLowerCase() === "asha@example.com"));
+    expect(toCustomer).toHaveLength(notify.CUSTOMER_MAIL_LIMIT); // case-insensitive cap
+    expect(sent().filter((s) => (s.body.to as string[]).includes("owner@example.com"))).toHaveLength(runs);
+  });
 });
 
 describe("notify: content", () => {
@@ -158,11 +169,15 @@ describe("notify: content", () => {
   it("escapes user-supplied values in the HTML part", () => {
     const owner = notify.buildOwnerEmail({ type: "booking", booking: BOOKING });
     const customer = notify.buildCustomerEmail({ type: "booking", booking: BOOKING })!;
+    expect(owner.html).toContain("Asha &lt;b&gt;Verma&lt;/b&gt;");
     for (const html of [owner.html, customer.html]) {
-      expect(html).toContain("Asha &lt;b&gt;Verma&lt;/b&gt;");
       expect(html).not.toContain("<b>Verma");
       expect(html).toContain("Ganga &amp; Aarti Tour");
     }
+    // Review finding: the customer's name is attacker-controlled (any address can be entered),
+    // so customer mail never includes it — not even escaped.
+    expect(customer.html).not.toContain("Verma");
+    expect(customer.text).not.toContain("Verma");
     const enq = notify.buildOwnerEmail({ type: "enquiry", enquiry: ENQUIRY });
     expect(enq.html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     expect(enq.html).not.toContain("<script>");
