@@ -46,14 +46,14 @@ describe("CSV", () => {
   it("exports bookings with reference, received date and all fields", () => {
     const csv = bookingsCsv([booking({ city: "Delhi, NCR" })]);
     const [header, row] = csv.slice(1).split("\r\n");
-    expect(header).toBe("Reference,Booking ID,Received (IST),Name,Phone,Email,City,Package ID,Package,Travel Date,Travelers,Amount (INR),Payment Status,utr,payment_submitted_at,Booking Status");
+    expect(header).toBe("Reference,Booking ID,Received (IST),Name,Phone,Email,City,Package ID,Package,Travel Date,Travelers,Amount (INR),Payment Status,UTR,Payment Submitted (IST),Booking Status");
     expect(row).toBe("3F9A2C1B,3f9a2c1b-0000-4000-8000-000000000001,2026-11-10 11:30,Rahul Sharma,'+91 98765 43210,rahul@example.com,\"Delhi, NCR\",pkg-varanasi,Divine Varanasi & Prayagraj,2026-12-01,2,25998,pending,,,pending");
   });
 
   it("exports a verifying booking with its UTR and submission time", () => {
     const csv = bookingsCsv([booking({ paymentStatus: "verifying", utr: "412356789012", paymentSubmittedAt: "2026-11-10T20:00:00.000Z" })]);
     const [header, row] = csv.slice(1).split("\r\n");
-    expect(header).toContain("utr,payment_submitted_at");
+    expect(header).toContain("UTR,Payment Submitted (IST)");
     expect(row).toContain(",verifying,412356789012,2026-11-11 01:30,pending");
   });
 

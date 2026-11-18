@@ -34,6 +34,6 @@ describe("Postgres backend: booking payments (v7)", () => {
     const a = await addBooking(booking);
     const b = await addBooking(booking);
     await updateBooking(a.id, { utr: "412356789012" });
-    await expect(updateBooking(b.id, { utr: "412356789012" })).rejects.toThrow();
+    await expect(updateBooking(b.id, { utr: "412356789012" })).rejects.toThrow(/bookings_utr_unique|duplicate key|unique/i);
   });
 });
