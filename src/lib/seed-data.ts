@@ -21,7 +21,7 @@ export const SEED_REVIEWS: readonly Review[] = [
 ];
 
 export const SEED_GALLERY: readonly GalleryImage[] = [
-  { id: "g1", src: "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=600&q=75", caption: "Varanasi Ghats", category: "Varanasi", active: true, createdAt: EPOCH },
+  { id: "g1", src: "https://images.unsplash.com/photo-1561359313-0639aad49ca6?w=600&q=75", caption: "Varanasi Ghats", category: "Varanasi", active: true, createdAt: EPOCH },
   { id: "g2", src: "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=600&q=75", caption: "Hawa Mahal Jaipur", category: "Rajasthan", active: true, createdAt: EPOCH },
   { id: "g3", src: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=600&q=75", caption: "Taj Mahal", category: "Heritage", active: true, createdAt: EPOCH },
   { id: "g4", src: "https://images.unsplash.com/photo-1548013146-72479768bada?w=600&q=75", caption: "Amber Fort", category: "Rajasthan", active: true, createdAt: EPOCH },
@@ -30,7 +30,7 @@ export const SEED_GALLERY: readonly GalleryImage[] = [
 ];
 
 export const SEED_BLOGS: readonly BlogPost[] = [
-  { id: "b1", title: "Top 10 Temples to Visit in Varanasi", excerpt: "Discover the most sacred temples in the holy city of Varanasi, from Kashi Vishwanath to lesser-known gems.", content: "Varanasi is home to thousands of temples...", image: "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=600&q=75", category: "Spiritual", author: "Atlas Team", active: true, createdAt: "2024-06-01T00:00:00.000Z" },
+  { id: "b1", title: "Top 10 Temples to Visit in Varanasi", excerpt: "Discover the most sacred temples in the holy city of Varanasi, from Kashi Vishwanath to lesser-known gems.", content: "Varanasi is home to thousands of temples...", image: "https://images.unsplash.com/photo-1561359313-0639aad49ca6?w=600&q=75", category: "Spiritual", author: "Atlas Team", active: true, createdAt: "2024-06-01T00:00:00.000Z" },
   { id: "b2", title: "Rajasthan Travel Guide: Desert to Palace", excerpt: "Everything you need to know before your Rajasthan trip — best time, budget, must-visit places.", content: "Rajasthan is a land of kings...", image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=600&q=75", category: "Guide", author: "Atlas Team", active: true, createdAt: "2024-07-01T00:00:00.000Z" },
   { id: "b3", title: "Best Street Food in Indian Holy Cities", excerpt: "A foodie's guide to the best street food across India's pilgrimage destinations.", content: "Indian holy cities offer some of the best vegetarian food...", image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=75", category: "Food", author: "Atlas Team", active: true, createdAt: "2024-08-01T00:00:00.000Z" },
 ];

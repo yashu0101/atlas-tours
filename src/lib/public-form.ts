@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { Body, HttpError, badRequest, isEmail, isPhone, positiveInt, str } from "./api";
 import { clientIp, consume } from "./rate-limit";
+import { istDateKey } from "./visibility";
 
 /**
  * Guards shared by the unauthenticated form endpoints `/api/book` and `/api/enquiry` (B-04).
@@ -33,6 +34,14 @@ export function isDateKey(s: string): boolean {
   return DATE_RE.test(s) && !Number.isNaN(Date.parse(s));
 }
 
+/**
+ * Earliest travel date a public form accepts: yesterday in India (IST). The forms offer today (IST)
+ * as the minimum; the extra day is slack for visitors whose local date is behind India's.
+ */
+export function earliestTravelDate(now: Date = new Date()): string {
+  return istDateKey(new Date(now.getTime() - 24 * 60 * 60 * 1000));
+}
+
 /** N-5: length limits of the public review text (also used by the review form). */
 export const REVIEW_TEXT_MIN = 20;
 export const REVIEW_TEXT_MAX = 1000;
@@ -55,6 +64,9 @@ export function contactFields(body: Body) {
   const travelDate = str(body, "travelDate", 10);
   if (travelDate && !isDateKey(travelDate)) {
     throw badRequest("travelDate must be YYYY-MM-DD");
+  }
+  if (travelDate && travelDate < earliestTravelDate()) {
+    throw badRequest("travelDate cannot be in the past");
   }
   const travelers = positiveInt(body.travelers, "travelers", 1, 100);
   return { name, phone, email, travelDate, travelers };

@@ -19,7 +19,7 @@ async function createBooking(page: Page, phone: string) {
       name: "Track Tester",
       phone,
       travelers: 2,
-      travelDate: "2027-01-15",
+      travelDate: "2099-01-15",
     },
   });
   expect(res.ok()).toBeTruthy();
@@ -44,7 +44,7 @@ test("track page shows a booking found by reference + phone (N-4)", async ({ pag
   await expect(result).toBeVisible();
   await expect(result.getByText("Hi Track, here is the latest on your booking.")).toBeVisible();
   await expect(result.getByText("Divine Varanasi & Prayagraj")).toBeVisible();
-  await expect(result.getByText("15 Jan 2027")).toBeVisible();
+  await expect(result.getByText("15 Jan 2099")).toBeVisible();
   await expect(result.getByText(`₹${amount.toLocaleString("en-IN")}`)).toBeVisible();
   await expect(result.getByText("Pending", { exact: true })).toBeVisible();
   await expect(result.getByText("Not paid yet", { exact: true })).toBeVisible();

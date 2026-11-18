@@ -2,7 +2,7 @@
 
 > **Single source of truth** for project status and the fix backlog.
 > Audit date: **2026-11-17** · Audited commit: `dd7e91d` · Rating at audit: **4.5 / 10**
-> Last updated: **2026-11-18** · PRs #1–#7 merged into `dev` (`010334a`) · `master` not yet updated · Current rating: **8.5 / 10** · **68 / 77 done · 8 blocked on client decisions · 1 open (F-11, needs a replacement photo)**
+> Last updated: **2026-11-18** · PRs #1–#7 merged into `dev` (`010334a`) · `master` not yet updated · Current rating: **8.5 / 10** · **72 / 80 done · 8 blocked on client decisions · 0 open**
 
 ---
 
@@ -26,15 +26,15 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 |---|---|---|---|---|
 | A — Admin panel | `src/app/admin/**`, `src/app/login/page.tsx` | 8 | 8 | ✅ |
 | B — API, DB & auth | `src/lib/*` (db, auth, api, crud-route, seed-data, …), `src/app/api/**` | 12 | 12 | ✅ |
-| C — Public data contracts | `Packages.tsx`, `Reviews.tsx`, `Blog.tsx`, `FAQ.tsx`, `Contact.tsx`, `Gallery.tsx` | 9 | 9 | ✅ (C-09 email provisional) |
+| C — Public data contracts | `Packages.tsx`, `Reviews.tsx`, `Blog.tsx`, `FAQ.tsx`, `Contact.tsx`, `Gallery.tsx` | 11 | 11 | ✅ (C-09 email provisional) |
 | D — Page shell & animation | `src/app/page.tsx`, `src/app/globals.css`, `src/lib/context.tsx` | 5 | 5 | ✅ |
 | E — Dark mode & accessibility | all `src/components/*` | 12 | 12 | ✅ |
-| F — SEO, config, assets, tooling | `layout.tsx`, `next.config.ts`, `package.json`, `public/`, `eslint.config.mjs` | 10 | 10 | ✅ |
+| F — SEO, config, assets, tooling | `layout.tsx`, `next.config.ts`, `package.json`, `public/`, `eslint.config.mjs` | 12 | 12 | ✅ |
 | G — Missing features | new files, `tests/` | 10 | 6 | ⏸ G-02, G-04, G-08 (Hindi copy), G-09 blocked |
 | N — New features (2026-11-18 proposal) | new pages/routes, `src/app/admin/**`, `next.config.ts` | 10 | 6 | ✅ N-1, N-4…N-7, N-9 (PR #6) · ⏸ N-2, N-3, N-8, N-10 |
-| **Total** | | **77** | **68** | 8 blocked · 1 open (F-11) |
+| **Total** | | **80** | **72** | 8 blocked · 0 open |
 
-**By severity:** P0 ✅ 6/6 · P1 ✅ 21/21 · P2 ✅ 24/26 (2 ⏸: G-02, G-04) · P3 ✅ 11/13 (2 ⏸: G-08 copy, G-09).
+**By severity:** P0 ✅ 6/6 · P1 ✅ 21/21 · P2 ✅ 26/28 (2 ⏸: G-02, G-04) · P3 ✅ 13/15 (2 ⏸: G-08 copy, G-09).
 
 **Blocked on the client (⏸) — nothing else is left.** All open questions for the client are collected in **`CLIENT_QUESTIONS.md`**.
 - **G-02** — notifications: needs an email/WhatsApp provider and addresses.
@@ -46,7 +46,7 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 
 **Merge status:** PRs #1 → #2 → #3 → #4 → #5 → #6 → #7 are **merged into `dev`** (merge commits `f9a17c4`, `899fc03`, `e2bf268`, `3ebe2e9`, `ba4cd92`, `a508f04`, `010334a`; merge commits, not squash, so every hash in this file exists on `dev`). `master` is still at the audited commit `dd7e91d`; a `dev` → `master` PR is the step for production.
 
-**For future work:** every remaining numbered item except F-11 is blocked on a client decision; F-11 only needs a replacement photo chosen (§2 "Pending" lists the non-numbered items). When a decision arrives, set the item to 🔄, keep agents inside their workstream's files, and keep the server-props contract for section components (see CLAUDE.md → Frontend).
+**For future work:** every remaining numbered item is blocked on a client decision (§2 "Pending" lists the non-numbered items). When a decision arrives, set the item to 🔄, keep agents inside their workstream's files, and keep the server-props contract for section components (see CLAUDE.md → Frontend).
 
 ---
 
@@ -220,6 +220,8 @@ Rule: **delete local interfaces, import from `src/lib/types.ts`.** That alone fi
 | C-07 | P0 | ✅ | Claude | 6d1f665 | Contact form shows success on failure |
 | C-08 | P1 | ✅ | Claude | 2852416 | Contact sends `package` (name) not `packageId`; `travelers` may be `""` |
 | C-09 | P2 | ✅ | Claude (P4) | 5d45b93 (PR #4) — `SITE_CONFIG` single source; email **provisional** `info@atlastours.in` (see CLIENT_QUESTIONS.md) | Contact info / phone hardcoded in 5+ places, inconsistent |
+| C-10 | P2 | ✅ | Claude | 90e876c (PR #9) | Package cards did not open the detail page: the image and title were not clickable, **View Details** opened an in-page popup and **Book Now** went to WhatsApp, so only the small "Full details" text link reached `/packages/[id]`. **Fixed:** image (mouse-only overlay link, `aria-hidden`), title, **View Details** → `/packages/[id]`; **Book Now** → `/packages/[id]#book` (booking form; `scrollMarginTop` clears the fixed header). Popup + its focus trap removed from `Packages.tsx`; i18n `closeDetailsAria`/`viewFullDetails` → `viewDetailsAria`/`bookNowAria`. Card look unchanged. e2e: `packages.spec.ts` "package cards open the detail page" |
+| C-11 | P2 | ✅ | Claude | 90e876c (PR #9) | Booking and Contact forms accepted **past travel dates** (no `min` on the date input; server only checked the format). **Fixed:** `BookingForm`/`Contact` get a server-computed `minDate` (today, IST, same pattern as `/plan-trip`); `contactFields()` (book, enquiry, trip-request) rejects dates before `earliestTravelDate()` = yesterday IST (1 day slack for visitors behind IST) with 400 "travelDate cannot be in the past". Route/e2e tests moved off soon-to-expire fixed dates to 2099 |
 
 - **C-01** — `Packages.tsx:7,341`, `Blog.tsx:7,181`, `FAQ.tsx:6,178`, `Reviews.tsx:6`, `Contact.tsx:6,36,313`.
 - **C-02** — `Packages.tsx:16,430-435` expects `{day,title,description}`; data is `string[]`. **Fix:** render `itinerary.map((line, i) => …Day {i+1}: {line})`. Also drop non-existent `exclusions`/`slug`.
@@ -294,7 +296,8 @@ Owns: `src/app/layout.tsx`, `next.config.ts`, `package.json`, `public/`, new `sr
 | F-08 | P2 | ✅ | Claude | b20bb86 (PR #2) | Lint broken — add `eslint.config.mjs` |
 | F-09 | P3 | ✅ | Claude | 45792b5 (PR #3) | Remove dead deps (`tailwindcss`, `@tailwindcss/turbopack`), use or remove `bcryptjs` (see B-02) |
 | F-10 | P3 | ✅ | Claude | 45792b5 (PR #3) | Remove ~15 empty route folders or implement (see G) |
-| F-11 | P3 | ⬜ | — | — | Seed image for "Sacred Odisha Pilgrimage" (`photo-1621427642877-68e20cf5f770`, `src/lib/config.ts`/`seed-data`, `data/db.json`) returns **404 from Unsplash** — the card shows a broken image. Found by the N-9 e2e run (optimiser log). Replace with a working photo (content choice) |
+| F-11 | P3 | ✅ | Claude | 90e876c (PR #9) | Seed image for "Sacred Odisha Pilgrimage" (`photo-1621427642877-68e20cf5f770`, `src/lib/config.ts`/`seed-data`, `data/db.json`) returns **404 from Unsplash** — the card shows a broken image. Found by the N-9 e2e run (optimiser log). Replace with a working photo (content choice). **Fixed:** replaced with free Unsplash photo `photo-1576235282476-debff2a4d0b9` (Konark Sun Temple, verified HTTP 200) in `config.ts` (→ `seed-data.ts`) and `data/db.json`. A live Postgres DB keeps the old URL (seed never updates rows) — change it in Admin → Packages → Edit |
+| F-12 | P3 | ✅ | Claude | 90e876c (PR #9) | Seed image `photo-1561361513-2d000a50f0dc` used for **"Divine Varanasi & Prayagraj"**, gallery "Varanasi Ghats" and the site-wide OG image shows a **VW van on a beach**. Replaced with `photo-1561359313-0639aad49ca6` (Ganges ghats with boats, free Unsplash, HTTP 200) in `config.ts`, `seed-data.ts`, `seo.ts`, `data/db.json`. Postgres rows keep the old URL — update in the admin |
 
 - **F-01** — `npm i next@16.4.6 eslint-config-next@16.4.6`, rebuild.
 - **F-02** — fetch packages/reviews/faqs/blogs/gallery in a server component (`page.tsx` → server wrapper passing props to client sections). Coordinate with D (owns `page.tsx`) — do after D-01/D-02.
@@ -389,3 +392,5 @@ Done: ~~Day 1: D-01 · A-01 · A-02 · C-01…C-05 · C-07 · B-01~~ · ~~Day 2:
 | 2026-11-18 | Claude | **Merged PR #6 (`n-features`) into `dev`** (merge commit `a508f04`, merge commit not squash; after merging `dev`/PR #5 into the branch: `tsc` ✅, lint 0 errors ✅, `npm test` 294/294 ✅, `build` ✅, `test:e2e` 28/28 ✅ incl. PR #5's reviews spec; 3 Vercel checks passed; `dev` tree verified identical to `n-features`; `master` untouched). Status: 68/77 done, 8 ⏸, 1 open (F-11). |
 | 2026-11-18 | Claude, branch `fix-scroll-behavior` | **Fixed Next.js dev warning** "Detected `scroll-behavior: smooth` on the `<html>` element": added `data-scroll-behavior="smooth"` to `<html>` in `layout.tsx` (with a pairing note in `globals.css`), so Next disables smooth scrolling during route transitions while home-page hash links stay smooth. Verified on the running dev server with a headless route transition (`/` → `/packages/pkg-varanasi` → back): 0 scroll-behavior messages; `tsc` ✅, `lint` 0 errors ✅, `npm test` 294/294 ✅. **Found, not fixed (content):** the Unsplash photo for "Sacred Odisha Pilgrimage" (`photo-1621427642877-68e20cf5f770`, in `src/lib/config.ts` and `data/db.json`) returns 404 at Unsplash — dead since the initial commit; needs a replacement image chosen by the owner. |
 | 2026-11-18 | Claude | **Merged PR #7 (`fix-scroll-behavior`) into `dev`** (merge commit `010334a`; 3 Vercel checks passed; `dev` tree verified identical to the branch; `master` untouched). Tracker sync: header and §1 merge status now cover PRs #1–#7; §2 snapshot at `010334a`; V-2 extended with the N-round pages (PR #6); the "Odisha photo 404" noted in the PR #7 entry is the existing **F-11** (not a new item) and is now also asked in `CLIENT_QUESTIONS.md`. Status: 68/77 done, 8 ⏸, 1 open (F-11). |
+| 2026-11-18 | Claude, branch `fix-f11-odisha-photo`, PR #9 | **F-11 done.** "Sacred Odisha Pilgrimage" seed image (`photo-1621427642877-68e20cf5f770`, Unsplash 404) replaced with `photo-1576235282476-debff2a4d0b9` (free Unsplash photo of Konark Sun Temple, landscape, HTTP 200) in `src/lib/config.ts` (feeds `seed-data.ts`) and `data/db.json`. `/api/seed` never updates existing Postgres rows; if production already has the old URL, change it in the admin. Status: 69/77 done, 8 ⏸, 0 open. |
+| 2026-11-18 | Claude, branch `fix-f11-odisha-photo`, PR #9 | **C-10, C-11, F-12 done (found while checking the package → detail page flow).** C-10: every part of a package card (image, title, View Details, Book Now → `#book`) now opens `/packages/[id]`; popup removed. C-11: past travel dates blocked in the Booking/Contact forms (`min`) and rejected by the server (`earliestTravelDate`). F-12: Varanasi "van" photo replaced everywhere. Detail page reviewed at 1366px and 390px: hero, overview, highlights, itinerary, inclusions, booking form + WhatsApp all render, no broken images, no horizontal scroll, no console errors. Checks: `tsc` ✅, lint 0 errors ✅, `npm test` 297/297 ✅, `build` ✅, `test:e2e` against `next start`: 27/29 in parallel — 1 failure was a stale date in `public-forms.spec.ts` (fixed), 1 was the `reviews.spec.ts` carousel racing `admin-lists.spec.ts` (which adds a review to the shared DB) — the packages/forms/reviews specs then passed 15/15 serially. Status: 72/80 done, 8 ⏸, 0 open. |

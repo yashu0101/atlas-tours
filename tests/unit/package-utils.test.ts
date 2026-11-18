@@ -8,6 +8,7 @@ import {
   estimateTotal,
   filterByCategory,
   formatPrice,
+  packageBookingPath,
   packageCategories,
   packagePath,
   stripDayPrefix,
@@ -46,6 +47,7 @@ describe("formatting helpers", () => {
 
   it("builds encoded package paths and WhatsApp links from SITE_CONFIG", () => {
     expect(packagePath("pkg varanasi")).toBe("/packages/pkg%20varanasi");
+    expect(packageBookingPath("pkg varanasi")).toBe("/packages/pkg%20varanasi#book");
     const link = whatsappLink("Hi! I am interested");
     expect(link.startsWith(`https://wa.me/${SITE_CONFIG.whatsapp}?text=`)).toBe(true);
     expect(link).not.toContain(" ");

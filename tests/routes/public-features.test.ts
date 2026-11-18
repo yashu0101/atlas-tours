@@ -21,7 +21,7 @@ const BOOKING: Booking = {
   packageId: "pkg-1",
   packageName: "Ganga Aarti Tour",
   travelers: 2,
-  travelDate: "2026-12-01",
+  travelDate: "2099-12-01",
   amount: 5000,
   paymentStatus: "pending",
   bookingStatus: "confirmed",
@@ -86,7 +86,7 @@ describe("POST /api/booking-status", () => {
       reference: "3F9A2C1B",
       firstName: "Asha",
       packageName: "Ganga Aarti Tour",
-      travelDate: "2026-12-01",
+      travelDate: "2099-12-01",
       travelers: 2,
       amount: 5000,
       bookingStatus: "confirmed",
@@ -159,7 +159,7 @@ describe("POST /api/review", () => {
 describe("POST /api/trip-request", () => {
   // A fresh IP per call: several cases send more than the 5/min form limit.
   const send = (body: unknown) => { ip = uniqueIp(); return tripRoute.POST(req("/api/trip-request", body)); };
-  const contact = { name: "Meera", phone: "9876543210", email: "meera@example.com", travelers: 3, travelDate: "2027-01-10" };
+  const contact = { name: "Meera", phone: "9876543210", email: "meera@example.com", travelers: 3, travelDate: "2099-01-10" };
   const today = istDateKey(new Date());
   const lastEnquiry = () => db.read().enquiries.at(-1)!;
 

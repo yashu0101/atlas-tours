@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import SmartImage from "@/components/SmartImage";
 import { CompareToggle, SaveToggle } from "@/components/PackageToggles";
 import Link from "next/link";
@@ -12,15 +12,10 @@ import {
   filterByCategory,
   formatPrice,
   packageCategories,
-  packageEnquiryText,
+  packageBookingPath,
   packagePath,
-  stripDayPrefix,
-  whatsappLink,
   type CategoryFilter,
 } from "@/app/packages/package-utils";
-
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /** Packages are loaded on the server (F-02) and passed in already filtered for public visibility. */
 const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackages }) => {
@@ -31,46 +26,6 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
   const categories = packageCategories(packages);
   const [category, setCategory] = useState<CategoryFilter>("all");
   const visiblePackages = filterByCategory(packages, category);
-  const [selectedPkg, setSelectedPkg] = useState<TourPackage | null>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
-  const closeBtnRef = useRef<HTMLButtonElement>(null);
-  const triggerRef = useRef<HTMLElement | null>(null);
-  const isModalOpen = selectedPkg !== null;
-
-  // Dialog behaviour: focus close button on open, Esc closes, Tab is trapped, focus returns to the trigger on close.
-  useEffect(() => {
-    if (!isModalOpen) return;
-    closeBtnRef.current?.focus({ preventScroll: true });
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setSelectedPkg(null);
-        return;
-      }
-      const root = modalRef.current;
-      if (e.key !== "Tab" || !root) return;
-      const nodes = Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE));
-      if (nodes.length === 0) {
-        e.preventDefault();
-        return;
-      }
-      const first = nodes[0];
-      const last = nodes[nodes.length - 1];
-      const active = document.activeElement;
-      if (e.shiftKey && (active === first || !root.contains(active))) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && (active === last || !root.contains(active))) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      triggerRef.current?.focus({ preventScroll: true });
-      triggerRef.current = null;
-    };
-  }, [isModalOpen]);
 
   const discount = (orig: number, curr: number) =>
     Math.round(((orig - curr) / orig) * 100);
@@ -180,6 +135,23 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
       height: 220,
       overflow: "hidden",
     },
+    cardImgLink: {
+      position: "absolute",
+      inset: 0,
+      display: "block",
+    },
+    cardTitleLink: {
+      color: "inherit",
+      textDecoration: "none",
+    },
+    btnLink: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+      textDecoration: "none",
+      boxSizing: "border-box",
+    },
     priceBadge: {
       position: "absolute",
       top: 16,
@@ -192,6 +164,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
       fontWeight: 700,
       zIndex: 2,
       boxShadow: "0 4px 12px rgba(230,126,34,0.4)",
+      pointerEvents: "none",
     },
     discountBadge: {
       position: "absolute",
@@ -204,6 +177,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
       fontSize: 12,
       fontWeight: 700,
       zIndex: 2,
+      pointerEvents: "none",
     },
     cardBody: {
       padding: "20px 24px",
@@ -283,118 +257,6 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
       fontSize: 11,
       marginTop: 2,
     },
-    modalOverlay: {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      background: "rgba(0,0,0,0.6)",
-      zIndex: 2000,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 24,
-    },
-    modal: {
-      background: "var(--card-bg)",
-      borderRadius: 20,
-      maxWidth: 700,
-      width: "100%",
-      maxHeight: "85vh",
-      overflow: "auto",
-      padding: 0,
-      position: "relative",
-    },
-    modalHeader: {
-      position: "relative",
-      height: 260,
-      overflow: "hidden",
-    },
-    modalClose: {
-      position: "absolute",
-      top: 16,
-      right: 16,
-      width: 40,
-      height: 40,
-      borderRadius: "50%",
-      background: "rgba(0,0,0,0.5)",
-      border: "none",
-      color: "#fff",
-      fontSize: 20,
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 3,
-    },
-    modalBody: {
-      padding: "28px 32px",
-    },
-    modalTitle: {
-      fontSize: 26,
-      fontWeight: 800,
-      color: "var(--primary)",
-      marginBottom: 8,
-    },
-    modalMeta: {
-      display: "flex",
-      gap: 20,
-      marginBottom: 20,
-      fontSize: 14,
-      color: "var(--pkg-muted, #6e6e6e)",
-    },
-    modalDesc: {
-      fontSize: 15,
-      lineHeight: 1.8,
-      color: "var(--text2)",
-      marginBottom: 24,
-    },
-    itineraryDay: {
-      padding: "16px 0",
-      borderBottom: "1px solid var(--pkg-divider, #eee)",
-    },
-    dayNum: {
-      display: "inline-block",
-      background: "linear-gradient(135deg, #e67e22, #f39c12)",
-      color: "var(--on-accent)",
-      padding: "3px 12px",
-      borderRadius: 6,
-      fontSize: 12,
-      fontWeight: 700,
-      marginRight: 10,
-    },
-    dayTitle: {
-      fontSize: 15,
-      fontWeight: 600,
-      color: "var(--primary)",
-    },
-    dayDesc: {
-      fontSize: 14,
-      color: "var(--text2)",
-      marginTop: 6,
-      lineHeight: 1.6,
-    },
-    inclusionList: {
-      listStyle: "none",
-      padding: 0,
-      margin: 0,
-    },
-    inclusionItem: {
-      padding: "6px 0",
-      fontSize: 14,
-      color: "var(--text2)",
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-    },
-    sectionTitle: {
-      fontSize: 18,
-      fontWeight: 700,
-      color: "var(--primary)",
-      marginBottom: 12,
-      marginTop: 24,
-    },
   };
 
   return (
@@ -403,7 +265,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
         .pkg-card:hover { transform: translateY(-8px); box-shadow: 0 16px 50px rgba(0,0,0,0.12) !important; }
         .pkg-btn:hover { transform: translateY(-2px); }
         .pkg-filter:hover { border-color: var(--orange) !important; color: var(--orange-text) !important; }
-        .pkg-details-link:hover { text-decoration: underline; }
+        .pkg-details-link:hover, .pkg-title-link:hover { text-decoration: underline; }
         /* E-02: dark-mode overrides. Light mode uses the inline fallbacks (colours unchanged). */
         [data-theme="dark"] #packages {
           --pkg-muted: var(--text2);
@@ -463,13 +325,16 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
           // changes when the filter changes (React would otherwise drop the observer-added `active`).
           <div key={pkg.id} className={`pkg-card card-hover reveal stagger-${(packages.indexOf(pkg) % 3) + 1}`} style={styles.card}>
             <div className="img-zoom" style={styles.cardImgWrap}>
-              <SmartImage
-                src={pkg.image || "/images/placeholder.jpg"}
-                alt={pkg.name}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 380px"
-                style={{ objectFit: "cover" }}
-              />
+              {/* Whole image opens the detail page; mouse-only duplicate of the title link, so hidden from AT/Tab. */}
+              <Link href={packagePath(pkg.id)} tabIndex={-1} aria-hidden="true" style={styles.cardImgLink}>
+                  <SmartImage
+                  src={pkg.image || "/images/placeholder.jpg"}
+                  alt={pkg.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 380px"
+                  style={{ objectFit: "cover" }}
+                />
+              </Link>
               <SaveToggle id={pkg.id} name={pkg.name} />
               <div style={styles.priceBadge}>
                 <div>&#8377;{formatPrice(pkg.price)}</div>
@@ -491,7 +356,9 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
                 <span style={styles.metaItem}>{pkg.duration}</span>
                 <span style={styles.metaItem}>{pkg.destination}</span>
               </div>
-              <h3 style={styles.cardTitle}>{pkg.name}</h3>
+              <h3 style={styles.cardTitle}>
+                <Link href={packagePath(pkg.id)} className="pkg-title-link" style={styles.cardTitleLink}>{pkg.name}</Link>
+              </h3>
               <ul style={styles.highlightsList}>
                 {(pkg.highlights || []).slice(0, 4).map((h, i) => (
                   <li key={i} style={styles.highlightItem}>{h}</li>
@@ -509,108 +376,28 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
                 <CompareToggle id={pkg.id} name={pkg.name} />
               </div>
               <div style={styles.cardActions}>
-                <button
+                <Link
+                  href={packagePath(pkg.id)}
                   className="pkg-btn"
-                  style={styles.btnView}
-                  onClick={(e) => {
-                    triggerRef.current = e.currentTarget;
-                    setSelectedPkg(pkg);
-                  }}
+                  style={{ ...styles.btnView, ...styles.btnLink }}
+                  aria-label={t("packages.viewDetailsAria", { name: pkg.name })}
                 >
                   {t("packages.viewDetails")}
-                </button>
-                <a
+                </Link>
+                <Link
+                  href={packageBookingPath(pkg.id)}
                   className="pkg-btn"
-                  href={whatsappLink(packageEnquiryText(pkg.name, lang))}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ ...styles.btnBook, textDecoration: "none", textAlign: "center" }}
+                  style={{ ...styles.btnBook, ...styles.btnLink }}
+                  aria-label={t("packages.bookNowAria", { name: pkg.name })}
                 >
                   {t("packages.bookNow")}
-                </a>
+                </Link>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Detail Modal */}
-      {selectedPkg && (
-        <div style={styles.modalOverlay} onClick={() => setSelectedPkg(null)}>
-          <div
-            ref={modalRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label={selectedPkg.name}
-            style={styles.modal}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={styles.modalHeader}>
-              <SmartImage
-                src={selectedPkg.image || "/images/placeholder.jpg"}
-                alt={selectedPkg.name}
-                fill
-                sizes="(max-width: 748px) 100vw, 700px"
-                style={{ objectFit: "cover" }}
-              />
-              <button
-                ref={closeBtnRef}
-                style={styles.modalClose}
-                aria-label={t("packages.closeDetailsAria")}
-                onClick={() => setSelectedPkg(null)}
-              >
-                &#10005;
-              </button>
-            </div>
-            <div style={styles.modalBody}>
-              <h2 style={styles.modalTitle}>{selectedPkg.name}</h2>
-              <div style={styles.modalMeta}>
-                <span>{selectedPkg.duration}</span>
-                <span>{selectedPkg.destination}</span>
-                <span style={{ color: "var(--orange-text)", fontWeight: 700 }}>
-                  &#8377;{formatPrice(selectedPkg.price)}
-                </span>
-              </div>
-              {selectedPkg.description && (
-                <p style={styles.modalDesc}>{selectedPkg.description}</p>
-              )}
-
-              {selectedPkg.itinerary && selectedPkg.itinerary.length > 0 && (
-                <>
-                  <h3 style={styles.sectionTitle}>{t("common.itinerary")}</h3>
-                  {selectedPkg.itinerary.map((line, i) => (
-                    <div key={i} style={styles.itineraryDay}>
-                      <span style={styles.dayNum}>{t("common.day", { n: i + 1 })}</span>
-                      <span style={styles.dayTitle}>{stripDayPrefix(line)}</span>
-                    </div>
-                  ))}
-                </>
-              )}
-
-              {selectedPkg.inclusions && selectedPkg.inclusions.length > 0 && (
-                <>
-                  <h3 style={styles.sectionTitle}>{t("common.inclusions")}</h3>
-                  <ul style={styles.inclusionList}>
-                    {selectedPkg.inclusions.map((item, i) => (
-                      <li key={i} style={styles.inclusionItem}>
-                        <span style={{ color: "#27ae60" }}>&#10003;</span> {item}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-
-              <Link
-                href={packagePath(selectedPkg.id)}
-                className="pkg-btn"
-                style={{ ...styles.btnBook, display: "block", textAlign: "center", padding: "12px 0", marginTop: 28 }}
-              >
-                {t("packages.viewFullDetails")}
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 };

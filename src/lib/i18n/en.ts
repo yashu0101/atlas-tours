@@ -106,9 +106,9 @@ export const en = {
     detailsLinkAria: "{name}: full details and online booking",
     detailsLink: "Full details & online booking →",
     viewDetails: "View Details",
+    viewDetailsAria: "View details: {name}",
     bookNow: "Book Now",
-    closeDetailsAria: "Close package details",
-    viewFullDetails: "View full details & book online",
+    bookNowAria: "Book {name}",
     /** Prefilled WhatsApp message for a package enquiry. */
     enquiryMessage: "Hi! I'm interested in the {name} package.",
   },

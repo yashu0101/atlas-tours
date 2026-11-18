@@ -16,7 +16,7 @@ import ScrollProgress from "@/components/ScrollProgress";
 import RevealObserver from "@/components/RevealObserver";
 import CompareBar from "@/components/CompareBar";
 import { getBlogs, getFAQs, getGallery, getOffers, getPackages, getReviews } from "@/lib/db";
-import { isPublicBlog, isPublicFAQ, isPublicGalleryImage, isPublicOffer, isPublicPackage, isPublicReview } from "@/lib/visibility";
+import { isPublicBlog, isPublicFAQ, isPublicGalleryImage, isPublicOffer, isPublicPackage, isPublicReview, istDateKey } from "@/lib/visibility";
 import { faqPageJsonLd, jsonLdString } from "@/lib/seo";
 import { translate } from "@/lib/i18n";
 import type { BlogPost, FAQ as FAQItem, GalleryImage, Offer, Review, TourPackage } from "@/lib/types";
@@ -79,7 +79,7 @@ export default async function HomePage() {
         <Blog initialBlogs={blogs} />
         <WaveDivider fill="var(--bg)" />
         <FAQ initialFaqs={faqs} />
-        <Contact initialPackages={packages} />
+        <Contact initialPackages={packages} minDate={istDateKey(new Date())} />
       </main>
       <Footer />
       <CompareBar />

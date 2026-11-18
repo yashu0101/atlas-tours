@@ -27,7 +27,8 @@ const contactCards = [
 ] as const;
 
 /** Package options come from the server-rendered page (F-02), already filtered for public visibility. */
-const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackages }) => {
+/** `minDate`: earliest selectable travel date (today in IST, "YYYY-MM-DD"), computed on the server. */
+const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> = ({ initialPackages, minDate }) => {
   const packages = initialPackages;
   const t = useT();
   const [formData, setFormData] = useState(EMPTY_FORM);
@@ -338,6 +339,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[] }> = ({ initialPackag
                 style={inputStyle}
                 name="travelDate"
                 type="date"
+                min={minDate}
                 value={formData.travelDate}
                 onChange={handleChange}
               />
