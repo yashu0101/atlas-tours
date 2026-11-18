@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { addReview, getPackageById } from "@/lib/db";
 import { badRequest, readJson, str, withHandler } from "@/lib/api";
 import { REVIEW_TEXT_MAX, REVIEW_TEXT_MIN, guardPublicForm, isHoneypotTripped } from "@/lib/public-form";
+import { notifyAfterResponse } from "@/lib/notify";
 import { isPublicPackage } from "@/lib/visibility";
 
 /**
@@ -32,6 +33,8 @@ export const POST = withHandler(async (req) => {
     packageName = pkg && isPublicPackage(pkg) ? pkg.name : undefined;
   }
 
-  await addReview({ name, city, text, rating, packageName, active: false, source: "customer" });
+  const review = await addReview({ name, city, text, rating, packageName, active: false, source: "customer" });
+  // G-02: owner alert that a review awaits approval (no customer email: the form collects none).
+  notifyAfterResponse({ type: "review", review });
   return NextResponse.json({ success: true });
 });

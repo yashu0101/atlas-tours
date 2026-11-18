@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { addEnquiry, getPackageById, getPackages } from "@/lib/db";
 import { readJson, withHandler } from "@/lib/api";
 import { contactFields, guardPublicForm, isHoneypotTripped, str } from "@/lib/public-form";
+import { notifyAfterResponse } from "@/lib/notify";
 
 /** Public enquiry form (Contact section). Unauthenticated; see public-form.ts for the guards (B-04). */
 export const POST = withHandler(async (req) => {
@@ -16,10 +17,12 @@ export const POST = withHandler(async (req) => {
   // An unknown package is dropped rather than rejected so the enquiry still gets through.
   const wanted = str(body, "packageId", 100) || str(body, "package", 200);
   let packageId: string | undefined;
+  let packageName: string | undefined;
   if (wanted) {
     // Id first (one-row lookup); only the legacy name form needs the full list.
     const match = (await getPackageById(wanted)) ?? (await getPackages()).find((p) => p.name.toLowerCase() === wanted.toLowerCase());
     packageId = match?.id;
+    packageName = match?.name;
   }
 
   const enquiry = await addEnquiry({
@@ -32,5 +35,7 @@ export const POST = withHandler(async (req) => {
     message,
     packageId,
   });
+  // G-02 / N-10: owner alert + customer acknowledgement, sent after the response (notify.ts).
+  notifyAfterResponse({ type: "enquiry", enquiry, packageName });
   return NextResponse.json(enquiry);
 });

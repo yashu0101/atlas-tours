@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { addEnquiry } from "@/lib/db";
 import { badRequest, oneOf, positiveInt, readJson, str, withHandler } from "@/lib/api";
 import { contactFields, guardPublicForm, isDateKey, isHoneypotTripped } from "@/lib/public-form";
+import { notifyAfterResponse } from "@/lib/notify";
 import { istDateKey } from "@/lib/visibility";
 import {
   BUDGETS,
@@ -67,7 +68,7 @@ export const POST = withHandler(async (req) => {
     throw badRequest("Tell us where you'd like to go (destinations) or add a message");
   }
 
-  await addEnquiry({
+  const enquiry = await addEnquiry({
     kind,
     name: contact.name,
     phone: contact.phone,
@@ -84,6 +85,13 @@ export const POST = withHandler(async (req) => {
       callbackSlot,
       notes,
     }),
+  });
+  // G-02 / N-10: owner alert + customer acknowledgement (with the chosen callback slot, if any),
+  // sent after the response (notify.ts).
+  notifyAfterResponse({
+    type: "enquiry",
+    enquiry,
+    callback: callbackDate && callbackSlot ? { date: callbackDate, slot: callbackSlot } : undefined,
   });
   return NextResponse.json({ success: true });
 });

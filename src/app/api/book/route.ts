@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { addBooking, getPackageById } from "@/lib/db";
 import { badRequest, notFound, readJson, withHandler } from "@/lib/api";
 import { contactFields, guardPublicForm, isHoneypotTripped, str } from "@/lib/public-form";
+import { notifyAfterResponse } from "@/lib/notify";
 
 /**
  * Public booking endpoint. Unauthenticated; see public-form.ts for the guards (B-04).
@@ -34,5 +35,7 @@ export const POST = withHandler(async (req) => {
     packageName: pkg.name,
     amount: pkg.price * contact.travelers,
   });
+  // G-02 / N-10: owner alert + customer confirmation, sent after the response (notify.ts).
+  notifyAfterResponse({ type: "booking", booking });
   return NextResponse.json(booking);
 });
