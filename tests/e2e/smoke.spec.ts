@@ -23,3 +23,19 @@ test("/robots.txt is served", async ({ request }) => {
   expect(res.status()).toBe(200);
   expect(await res.text()).toMatch(/User-Agent/i);
 });
+
+test("home page shows the team section and UPI payment details", async ({ page }) => {
+  await page.goto("/");
+  const team = page.locator("#team");
+  await expect(team.getByRole("heading", { name: /The People Behind/ })).toBeVisible();
+  for (const role of ["Founder", "General Manager", "Front Desk Team"]) {
+    await expect(team.getByRole("heading", { name: role })).toBeVisible();
+  }
+  await expect(team.getByText("Hotel Ganga Imperial")).toBeVisible();
+  await expect(team.locator("img")).toHaveCount(3);
+
+  const contact = page.locator("#contact");
+  await expect(contact.getByText("Pay via UPI")).toBeVisible();
+  await expect(contact.getByText("d2095760-1@okicici")).toBeVisible();
+  await expect(contact.getByRole("link", { name: "Open UPI app" })).toHaveAttribute("href", /^upi:\/\/pay\?pa=d2095760-1%40okicici/);
+});

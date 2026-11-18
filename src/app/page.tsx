@@ -6,6 +6,7 @@ import Offers from "@/components/Offers";
 import Gallery from "@/components/Gallery";
 import Counter from "@/components/Counter";
 import Reviews from "@/components/Reviews";
+import Team from "@/components/Team";
 import Blog from "@/components/Blog";
 import FAQ from "@/components/FAQ";
 import Contact from "@/components/Contact";
@@ -76,6 +77,8 @@ export default async function HomePage() {
         <WaveDivider fill="var(--bg)" />
         <Reviews initialReviews={reviews} />
         <WaveDivider fill="var(--bg2)" />
+        <Team />
+        <WaveDivider fill="var(--bg)" />
         <Blog initialBlogs={blogs} />
         <WaveDivider fill="var(--bg)" />
         <FAQ initialFaqs={faqs} />

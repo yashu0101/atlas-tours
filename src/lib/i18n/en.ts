@@ -183,6 +183,37 @@ export const en = {
     /** N-5: link under the carousel to /reviews/new. */
     writeReview: "Travelled with us? Write a review",
   },
+  /** "Our Team" section (Team.tsx); members are listed in src/lib/team.ts. */
+  team: {
+    badge: "Our Team",
+    heading: "The People Behind",
+    headingAccent: "Your Journey",
+    subheading: "Meet the team that plans your trip and welcomes you in Varanasi.",
+    founderRole: "Founder",
+    founderOrg: "Atlas Tour & Travels",
+    founderDesc: "Started Atlas Tours to share the spiritual heart of India with every traveller.",
+    founderAlt: "Founder of Atlas Tours at the office desk",
+    gmRole: "General Manager",
+    gmOrg: "Hotel Ganga Imperial",
+    gmDesc: "Looks after your stay at our partner hotel, from check-in to your last morning in Varanasi.",
+    gmAlt: "General Manager of Hotel Ganga Imperial",
+    frontDeskRole: "Front Desk Team",
+    frontDeskDesc: "Your first point of contact for check-in, bookings and help during your trip.",
+    frontDeskAlt: "The three members of the front desk team at the reception counter",
+  },
+  /** UPI payment card (UpiPayCard.tsx) in Contact and after a booking request. */
+  upi: {
+    heading: "Pay via UPI",
+    scanText: "Scan with any UPI app (Google Pay, PhonePe, Paytm, BHIM).",
+    idLabel: "UPI ID",
+    payeeLabel: "Payee",
+    copy: "Copy",
+    copied: "Copied!",
+    openApp: "Open UPI app",
+    qrAlt: "UPI QR code for paying {payee}, UPI ID {id}",
+    viewFull: "View full-size QR code",
+    note: "Please pay only after our team has confirmed your booking, then share the payment screenshot with us on WhatsApp.",
+  },
   blog: {
     badge: "Our Blog",
     heading: "Travel Stories & Tips",

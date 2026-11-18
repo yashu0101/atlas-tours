@@ -73,3 +73,16 @@ export const NAV_ITEMS = [
   { label: "FAQ", href: "#faq" },
   { label: "Contact", href: "#contact" },
 ];
+
+/**
+ * UPI payment details shown in the Contact section and after a booking request
+ * (QR supplied by the client: Hotel Ganga Imperial, payee "Dilip"). Change only here.
+ */
+export const UPI_CONFIG = {
+  id: "d2095760-1@okicici",
+  payee: "Dilip",
+  qrImage: "/images/upi-qr.jpg",
+} as const;
+
+/** `upi://` deep link that opens the customer's UPI app with our UPI ID pre-filled (no amount). */
+export const UPI_PAY_LINK = `upi://pay?pa=${encodeURIComponent(UPI_CONFIG.id)}&pn=${encodeURIComponent(UPI_CONFIG.payee)}&cu=INR`;

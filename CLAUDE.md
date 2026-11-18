@@ -154,6 +154,7 @@ Images (N-9): public components render images through `src/components/SmartImage
 ### Contact info, routes and colours (P4)
 
 - **Contact details come only from `SITE_CONFIG` / `PHONE_DISPLAY` in `src/lib/config.ts`** — `tests/unit/site-config.test.ts` fails if a component hardcodes the phone or email. The email `info@atlastours.in` is provisional (C-09, see `CLIENT_QUESTIONS.md`).
+- **Our Team** (N-12, `Team.tsx`, after Reviews) is fixed in code: members in `src/lib/team.ts` (optional `name` — role is the heading while unset; photo-beside-text rows, alternating sides), photos in `public/images/team/`. **UPI payment** details come only from `UPI_CONFIG` in `config.ts` (`UpiPayCard.tsx`, shown in Contact and under the booking success message; manual payment, not G-09).
 - Detail routes: `/packages/[id]` (with `BookingForm` → `/api/book`) and `/blog/[id]`, both server components that `notFound()` on hidden/inactive items and reuse the home chrome. `Header`/`Footer` turn section links into `/#x` off the home page via `usePathname()`. The sitemap lists both.
 - Form pages (N-4…N-6): `/track` (noindex), `/reviews/new`, `/plan-trip` — shared chrome in `FormPageShell.tsx`, shared form styles in `public-form-ui.tsx`; linked from the footer, Reviews, Contact and the booking success message.
 - Wishlist/compare (N-7): ids in `localStorage` (`atlas-wishlist`, `atlas-compare`, max 3) via `src/lib/wishlist.ts` (`useSyncExternalStore`, empty server snapshot); `/wishlist` and `/compare?ids=` are noindex; `CompareBar` sits bottom-left (WhatsApp is bottom-right).

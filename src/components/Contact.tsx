@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import type { TourPackage } from "@/lib/types";
 import { SITE_CONFIG, PHONE_DISPLAY } from "@/lib/config";
 import { useT } from "@/lib/i18n/use-t";
+import UpiPayCard from "@/components/UpiPayCard";
 
 type PackageOption = Pick<TourPackage, "id" | "name">;
 
@@ -433,6 +434,8 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
               </div>
             </a>
           ))}
+
+          <UpiPayCard />
 
           <div style={styles.mapWrap}>
             <iframe

@@ -68,6 +68,8 @@ test("booking form shows the estimate and submits to /api/book (G-01)", async ({
   expect(sent).not.toHaveProperty("amount");
 
   await expect(form.getByText(/booking request has been received/)).toBeVisible();
+  // UPI payment details are shown after a successful booking request.
+  await expect(form.getByText("d2095760-1@okicici")).toBeVisible();
   await expect(form.getByLabel("Full Name *")).toHaveValue("");
 });
 
