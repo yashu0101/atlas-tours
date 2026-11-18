@@ -1,9 +1,13 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import type { NotifyEvent } from "@/lib/notify";
 import "../helpers/no-upstash";
 import { makePackage, uniqueIp, useTempDb } from "../helpers/temp-db";
 import { bookingReference } from "@/lib/booking-ref";
 import type { Booking } from "@/lib/types";
+
+const { notifyAfterResponse } = vi.hoisted(() => ({ notifyAfterResponse: vi.fn<(e: NotifyEvent) => void>() }));
+vi.mock("@/lib/notify", () => ({ notifyAfterResponse }));
 
 type Route = typeof import("@/app/api/payment-claim/route");
 
@@ -29,6 +33,8 @@ const PENDING = mk("bbbbbbbb-1111-4222-8333-444455556666", { bookingStatus: "pen
 const PAID = mk("cccccccc-1111-4222-8333-444455556666", { paymentStatus: "paid" });
 const SECOND = mk("dddddddd-1111-4222-8333-444455556666");
 const HONEY = mk("eeeeeeee-1111-4222-8333-444455556666");
+const HOLDER_UTR = "777766665555";
+const HOLDER = mk("ffffffff-1111-4222-8333-444455556666", { paymentStatus: "verifying", utr: HOLDER_UTR });
 
 let route: Route;
 let db: ReturnType<typeof useTempDb>;
@@ -37,7 +43,7 @@ let dbm: typeof import("@/lib/db");
 beforeAll(async () => {
   db = useTempDb({
     packages: [makePackage({ id: "pkg-1", name: "Ganga Aarti Tour" })],
-    bookings: [CONFIRMED, PENDING, PAID, SECOND, HONEY],
+    bookings: [CONFIRMED, PENDING, PAID, SECOND, HONEY, HOLDER],
   });
   route = await import("@/app/api/payment-claim/route");
   dbm = await import("@/lib/db");
@@ -47,6 +53,7 @@ afterAll(() => db.cleanup());
 let ip: string;
 beforeEach(() => {
   ip = uniqueIp();
+  notifyAfterResponse.mockClear();
 });
 
 const post = (body: unknown) =>
@@ -68,6 +75,8 @@ describe("POST /api/payment-claim", () => {
     const saved = await dbm.getBookingById(CONFIRMED.id);
     expect(saved).toMatchObject({ utr: "412356789012", paymentStatus: "verifying" });
     expect(saved?.paymentSubmittedAt).toBeTruthy();
+    expect(notifyAfterResponse).toHaveBeenCalledTimes(1);
+    expect(notifyAfterResponse).toHaveBeenCalledWith({ type: "payment-claim", booking: saved });
   });
 
   it("rejects a booking the owner has not confirmed", async () => {
@@ -91,11 +100,11 @@ describe("POST /api/payment-claim", () => {
   });
 
   it("rejects a UTR already used by another booking", async () => {
-    // CONFIRMED already holds 412356789012 from the first test.
-    const res = await claim(SECOND);
+    const res = await claim(SECOND, { utr: HOLDER_UTR });
     expect(res.status).toBe(409);
     expect((await res.json()).error).toBe("This transaction ID has already been submitted.");
     expect((await dbm.getBookingById(SECOND.id))?.paymentStatus).toBe("pending");
+    expect(notifyAfterResponse).not.toHaveBeenCalled();
   });
 
   it("ignores honeypot submissions", async () => {

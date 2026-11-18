@@ -487,6 +487,7 @@ export const en = {
     contactLine: "Questions? Call or WhatsApp us on {phone}, or email {email}.",
     automated: "This is an automated message from {site}. You received it because this email address was entered on our website.",
     notSet: "Not specified",
+    amount: "₹{amount}",
     adminCta: "Open the admin panel",
     ownerFooter: "Sent automatically by the {site} website.",
     labels: {
@@ -505,6 +506,26 @@ export const en = {
       rating: "Rating",
       review: "Review",
       submitted: "Submitted",
+      utr: "UTR (UPI transaction ID)",
+      amountDue: "Amount due",
+      amountPaid: "Amount paid",
+    },
+    paymentClaim: {
+      ownerSubject: "Payment submitted: {ref} – UTR {utr}",
+      ownerHeading: "Payment submitted for verification",
+      ownerIntro: "A customer says they have paid by UPI. Check the UTR against your bank statement, then mark the booking as paid in the admin Bookings tab.",
+    },
+    bookingConfirmed: {
+      customerSubject: "Booking {ref} confirmed – please complete your payment",
+      customerHeading: "Your booking is confirmed",
+      customerIntro: "Good news: your booking is confirmed. Please complete the payment by UPI to secure it.",
+      payText: "Pay by UPI here (you'll need your phone number):",
+      payCta: "Pay by UPI",
+    },
+    paymentReceived: {
+      customerSubject: "Payment received for booking {ref}",
+      customerHeading: "Payment received",
+      customerIntro: "Thank you, we have received your payment. Your booking is fully paid.",
     },
     kinds: {
       contact: "Contact enquiry",

@@ -5,6 +5,8 @@ import { clientIp, consume } from "@/lib/rate-limit";
 import { isHoneypotTripped } from "@/lib/public-form";
 import { findBookingByReferenceAndPhone } from "@/lib/booking-lookup";
 import { normalizeUtr } from "@/lib/upi";
+import { notifyAfterResponse } from "@/lib/notify";
+import type { Booking } from "@/lib/types";
 
 // Each attempt is a guess at a (reference, phone) pair, so same limit as the status lookup.
 const CLAIM_LIMIT = 10;
@@ -40,8 +42,9 @@ export const POST = withHandler(async (req) => {
   const existing = await findBookingByUtr(utr);
   if (existing && existing.id !== booking.id) throw new HttpError(409, UTR_TAKEN);
 
+  let updated: Booking | null = null;
   try {
-    await updateBooking(booking.id, {
+    updated = await updateBooking(booking.id, {
       paymentStatus: "verifying",
       utr,
       paymentSubmittedAt: new Date().toISOString(),
@@ -50,5 +53,6 @@ export const POST = withHandler(async (req) => {
     if (isUtrConflict(err)) throw new HttpError(409, UTR_TAKEN);
     throw err;
   }
+  if (updated) notifyAfterResponse({ type: "payment-claim", booking: updated });
   return NextResponse.json({ success: true, paymentStatus: "verifying" });
 });

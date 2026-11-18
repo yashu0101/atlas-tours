@@ -167,7 +167,7 @@ describe("notify: content", () => {
   });
 
   it("escapes user-supplied values in the HTML part", () => {
-    const owner = notify.buildOwnerEmail({ type: "booking", booking: BOOKING });
+    const owner = notify.buildOwnerEmail({ type: "booking", booking: BOOKING })!;
     const customer = notify.buildCustomerEmail({ type: "booking", booking: BOOKING })!;
     expect(owner.html).toContain("Asha &lt;b&gt;Verma&lt;/b&gt;");
     for (const html of [owner.html, customer.html]) {
@@ -178,14 +178,14 @@ describe("notify: content", () => {
     // so customer mail never includes it — not even escaped.
     expect(customer.html).not.toContain("Verma");
     expect(customer.text).not.toContain("Verma");
-    const enq = notify.buildOwnerEmail({ type: "enquiry", enquiry: ENQUIRY });
+    const enq = notify.buildOwnerEmail({ type: "enquiry", enquiry: ENQUIRY })!;
     expect(enq.html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     expect(enq.html).not.toContain("<script>");
-    expect(notify.buildOwnerEmail({ type: "review", review: REVIEW }).html).toContain("Lovely &lt;i&gt;trip&lt;/i&gt;");
+    expect(notify.buildOwnerEmail({ type: "review", review: REVIEW })!.html).toContain("Lovely &lt;i&gt;trip&lt;/i&gt;");
   });
 
   it("strips CR/LF from subjects", async () => {
-    const subject = notify.buildOwnerEmail({ type: "enquiry", enquiry: ENQUIRY }).subject;
+    const subject = notify.buildOwnerEmail({ type: "enquiry", enquiry: ENQUIRY })!.subject;
     expect(subject).toBe("New enquiry from Meera Bcc: victim@example.com");
     expect(subject).not.toMatch(/[\r\n]/);
     expect(notify.safeSubject("a\r\nb\nc d")).toBe("a b c d");
@@ -200,7 +200,7 @@ describe("notify: content", () => {
       const customer = notify.buildCustomerEmail(ev)!;
       expect(customer.text + customer.html).not.toContain("evil.example");
       expect(customer.text + customer.html).not.toContain("alert(1)");
-      const owner = notify.buildOwnerEmail(ev);
+      const owner = notify.buildOwnerEmail(ev)!;
       expect(owner.text).toContain(SECRET_NOTE);
       expect(owner.text).toContain(`${SITE_URL}/admin`);
     }
@@ -208,14 +208,56 @@ describe("notify: content", () => {
 
   it("subjects and intros per enquiry kind; callback ack shows the chosen slot", () => {
     expect(notify.buildCustomerEmail({ type: "enquiry", enquiry: ENQUIRY })!.subject).toBe("We have received your enquiry");
-    expect(notify.buildOwnerEmail({ type: "enquiry", enquiry: { ...ENQUIRY, kind: "trip-plan" } }).subject).toMatch(/^New trip plan request from/);
+    expect(notify.buildOwnerEmail({ type: "enquiry", enquiry: { ...ENQUIRY, kind: "trip-plan" } })!.subject).toMatch(/^New trip plan request from/);
     const cb = notify.buildCustomerEmail({
       type: "enquiry",
       enquiry: { ...ENQUIRY, kind: "callback" },
       callback: { date: "2026-11-20", slot: "evening" },
     })!;
     expect(cb.text).toContain("20 Nov 2026, Evening (4 PM – 8 PM IST)");
-    expect(notify.buildOwnerEmail({ type: "review", review: REVIEW }).subject).toBe("New review awaiting approval – 5/5 from Ravi");
+    expect(notify.buildOwnerEmail({ type: "review", review: REVIEW })!.subject).toBe("New review awaiting approval – 5/5 from Ravi");
+  });
+});
+
+describe("notify: N-13 payment emails", () => {
+  const CONFIRMED_B: Booking = { ...BOOKING, bookingStatus: "confirmed", utr: "412356789012", paymentSubmittedAt: "2026-11-02T00:00:00.000Z" };
+
+  it("payment-claim: owner mail carries the UTR and amount; no customer mail", () => {
+    const ev = { type: "payment-claim" as const, booking: CONFIRMED_B };
+    const owner = notify.buildOwnerEmail(ev)!;
+    expect(owner.subject).toBe("Payment submitted: 3F9A2C1B – UTR 412356789012");
+    for (const part of [owner.html, owner.text]) {
+      expect(part).toContain("412356789012");
+      expect(part).toContain("₹7,500");
+    }
+    expect(notify.buildCustomerEmail(ev)).toBeNull();
+  });
+
+  it("booking-confirmed / payment-received: customer only, no name, track link and amount", () => {
+    for (const type of ["booking-confirmed", "payment-received"] as const) {
+      expect(notify.buildOwnerEmail({ type, booking: CONFIRMED_B })).toBeNull();
+    }
+    const conf = notify.buildCustomerEmail({ type: "booking-confirmed", booking: CONFIRMED_B })!;
+    expect(conf.subject).toBe("Booking 3F9A2C1B confirmed – please complete your payment");
+    expect(conf.text).toContain(`Pay by UPI here (you'll need your phone number): ${SITE_URL}/track?ref=3F9A2C1B`);
+    expect(conf.html).toContain(`href="${SITE_URL}/track?ref=3F9A2C1B"`);
+    const paid = notify.buildCustomerEmail({ type: "payment-received", booking: CONFIRMED_B })!;
+    expect(paid.subject).toBe("Payment received for booking 3F9A2C1B");
+    for (const mail of [conf, paid]) {
+      expect(mail.text + mail.html).toContain("₹7,500");
+      expect(mail.text + mail.html).not.toContain("Verma");
+      expect(mail.text + mail.html).not.toContain("412356789012");
+    }
+    expect(notify.buildCustomerEmail({ type: "booking-confirmed", booking: { ...CONFIRMED_B, email: "" } })).toBeNull();
+  });
+
+  it("sends only the owner mail for a claim and only the customer mail for a confirmation", async () => {
+    enable();
+    await notify.notifySubmission({ type: "payment-claim", booking: CONFIRMED_B });
+    expect(sent().map((s) => s.body.to)).toEqual([["owner@example.com", "partner@example.com"]]);
+    fetchMock.mockClear();
+    await notify.notifySubmission({ type: "booking-confirmed", booking: CONFIRMED_B });
+    expect(sent().map((s) => s.body.to)).toEqual([["asha@example.com"]]);
   });
 });
 

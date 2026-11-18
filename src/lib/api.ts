@@ -168,14 +168,16 @@ export function isSafeImageUrl(s: string): boolean {
   }
 }
 
+/** Validates one INTEGER-column value (same rules as an `int(min, max)` field spec). */
+export function intValue(v: unknown, key: string, min: number, max: number): number {
+  const n = typeof v === "number" ? v : typeof v === "string" && v.trim() ? Number(v) : NaN;
+  if (!Number.isInteger(n) || n < min || n > max) throw badRequest(`${key} must be a whole number from ${min} to ${max}`);
+  return n;
+}
+
 function coerceField(key: string, type: BaseFieldType, v: unknown): unknown {
   if (Array.isArray(type)) return oneOf(v, type as readonly string[], key);
-  if (typeof type === "object" && "int" in type) {
-    const [min, max] = type.int;
-    const n = typeof v === "number" ? v : typeof v === "string" && v.trim() ? Number(v) : NaN;
-    if (!Number.isInteger(n) || n < min || n > max) throw badRequest(`${key} must be a whole number from ${min} to ${max}`);
-    return n;
-  }
+  if (typeof type === "object" && "int" in type) return intValue(v, key, type.int[0], type.int[1]);
   switch (type) {
     case "string":
     case "text": {

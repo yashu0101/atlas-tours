@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { getBookings, updateBooking, deleteBooking } from "@/lib/db";
+import { getBookings, getBookingById, updateBooking, deleteBooking } from "@/lib/db";
+import type { Patch } from "@/lib/db";
 import { Booking } from "@/lib/types";
 import { audit } from "@/lib/audit";
-import { badRequest, notFound, oneOf, readJson, requireAdmin, requireId, withHandler } from "@/lib/api";
+import { notifyAfterResponse } from "@/lib/notify";
+import { badRequest, intValue, notFound, oneOf, readJson, requireAdmin, requireId, withHandler } from "@/lib/api";
 import { BOOKINGS_LIST, inboxList } from "@/lib/inbox-route";
 
 // Runtime copies of the status unions in types.ts; `satisfies` makes the compiler
@@ -17,13 +19,30 @@ export const PATCH = withHandler(async (req) => {
   const admin = await requireAdmin();
   const body = await readJson(req);
   const id = requireId(body);
-  const updates: Partial<Pick<Booking, "paymentStatus" | "bookingStatus">> = {};
+  const updates: Patch<Pick<Booking, "paymentStatus" | "bookingStatus" | "amount" | "utr" | "paymentSubmittedAt">> = {};
   if (body.paymentStatus !== undefined) updates.paymentStatus = oneOf(body.paymentStatus, PAYMENT_STATUSES, "paymentStatus");
   if (body.bookingStatus !== undefined) updates.bookingStatus = oneOf(body.bookingStatus, BOOKING_STATUSES, "bookingStatus");
-  if (!updates.paymentStatus && !updates.bookingStatus) throw badRequest("Provide paymentStatus and/or bookingStatus");
+  if (body.amount !== undefined) updates.amount = intValue(body.amount, "amount", 1, 10_000_000);
+  if (!updates.paymentStatus && !updates.bookingStatus && updates.amount === undefined) {
+    throw badRequest("Provide paymentStatus, bookingStatus and/or amount");
+  }
+  const before = await getBookingById(id);
+  if (!before) throw notFound();
+  const auditFields = Object.keys(updates);
+  // Owner rejected a wrong UTR: back to pending so the customer can resubmit.
+  if (updates.paymentStatus === "pending") {
+    updates.utr = null;
+    updates.paymentSubmittedAt = null;
+  }
   const result = await updateBooking(id, updates);
   if (!result) throw notFound();
-  await audit(admin, "update", { entity: "bookings", entityId: id, fields: Object.keys(updates) });
+  await audit(admin, "update", { entity: "bookings", entityId: id, fields: auditFields });
+  if (result.bookingStatus === "confirmed" && before.bookingStatus !== "confirmed" && result.paymentStatus === "pending") {
+    notifyAfterResponse({ type: "booking-confirmed", booking: result });
+  }
+  if (result.paymentStatus === "paid" && before.paymentStatus !== "paid") {
+    notifyAfterResponse({ type: "payment-received", booking: result });
+  }
   return NextResponse.json(result);
 });
 
