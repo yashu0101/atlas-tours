@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
+import "../helpers/no-upstash";
 import { makePackage, uniqueIp, useTempDb } from "../helpers/temp-db";
 import { EMPTY_BOOKING_FORM, buildBookingPayload } from "@/app/packages/package-utils";
 

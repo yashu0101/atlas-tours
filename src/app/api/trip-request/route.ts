@@ -25,7 +25,7 @@ import {
  * include them too, as a preferred time to be called.
  */
 export const POST = withHandler(async (req) => {
-  guardPublicForm(req, "trip-request");
+  await guardPublicForm(req, "trip-request");
   const body = await readJson(req);
   if (isHoneypotTripped(body)) return NextResponse.json({ success: true });
 

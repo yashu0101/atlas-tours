@@ -9,12 +9,12 @@ import { istDateKey } from "./visibility";
 
 export { str };
 
-// 5 submissions per IP per minute, per route. In-memory and per instance — see rate-limit.ts.
+// 5 submissions per IP per minute, per route. Shared via Upstash when configured, else in memory per instance — see rate-limit.ts.
 const FORM_LIMIT = 5;
 const FORM_WINDOW_MS = 60 * 1000;
 
-export function guardPublicForm(req: NextRequest, route: string): void {
-  if (consume(`${route}:${clientIp(req)}`, FORM_LIMIT, FORM_WINDOW_MS)) {
+export async function guardPublicForm(req: NextRequest, route: string): Promise<void> {
+  if (await consume(`${route}:${clientIp(req)}`, FORM_LIMIT, FORM_WINDOW_MS)) {
     throw new HttpError(429, "Too many requests. Please try again in a minute.");
   }
 }

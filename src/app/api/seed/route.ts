@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { initDB } from "@/lib/db-schema";
 import { seedContent } from "@/lib/db";
 import { safeEqual } from "@/lib/auth";
+import { clientIp, consume } from "@/lib/rate-limit";
 
 // Dev-only fallback (documented in CLAUDE.md). Never accepted in production.
 const DEV_SEED_SECRET = "atlas-seed-2024";
+
+// B-14: caps guesses at SEED_SECRET (and repeated seeding). Shared via Upstash or in memory per instance — see rate-limit.ts.
+const SEED_LIMIT = 5;
+const SEED_WINDOW_MS = 15 * 60 * 1000;
 
 /**
  * POST { secret, content? } — creates the Postgres tables and (unless `content: false`)
@@ -15,6 +20,9 @@ const DEV_SEED_SECRET = "atlas-seed-2024";
  * `content: false`.
  */
 export async function POST(req: NextRequest) {
+  if (await consume(`seed:${clientIp(req)}`, SEED_LIMIT, SEED_WINDOW_MS)) {
+    return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
+  }
   // Resolved at request time so `next build` (NODE_ENV=production) is unaffected.
   let expected = process.env.SEED_SECRET;
   if (!expected) {

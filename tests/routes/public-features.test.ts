@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
+import "../helpers/no-upstash";
 import { makePackage, uniqueIp, useTempDb } from "../helpers/temp-db";
 import { bookingReference, parseBookingReference } from "@/lib/booking-ref";
 import { tripRequestMessage } from "@/lib/trip-request";

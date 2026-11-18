@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { addEnquiry, getPackages } from "@/lib/db";
+import { addEnquiry, getPackageById, getPackages } from "@/lib/db";
 import { readJson, withHandler } from "@/lib/api";
 import { contactFields, guardPublicForm, isHoneypotTripped, str } from "@/lib/public-form";
 
 /** Public enquiry form (Contact section). Unauthenticated; see public-form.ts for the guards (B-04). */
 export const POST = withHandler(async (req) => {
-  guardPublicForm(req, "enquiry");
+  await guardPublicForm(req, "enquiry");
   const body = await readJson(req);
   if (isHoneypotTripped(body)) return NextResponse.json({ success: true });
 
@@ -17,8 +17,8 @@ export const POST = withHandler(async (req) => {
   const wanted = str(body, "packageId", 100) || str(body, "package", 200);
   let packageId: string | undefined;
   if (wanted) {
-    const packages = await getPackages();
-    const match = packages.find((p) => p.id === wanted) ?? packages.find((p) => p.name.toLowerCase() === wanted.toLowerCase());
+    // Id first (one-row lookup); only the legacy name form needs the full list.
+    const match = (await getPackageById(wanted)) ?? (await getPackages()).find((p) => p.name.toLowerCase() === wanted.toLowerCase());
     packageId = match?.id;
   }
 

@@ -1,6 +1,6 @@
 import { getReviews, addReview, updateReview, deleteReview } from "@/lib/db";
 import { crudRoute } from "@/lib/crud-route";
-import { nullable } from "@/lib/api";
+import { int, nullable } from "@/lib/api";
 import { isPublicReview } from "@/lib/visibility";
 
 const route = crudRoute({
@@ -9,7 +9,7 @@ const route = crudRoute({
   update: updateReview,
   remove: deleteReview,
   isPublic: isPublicReview,
-  fields: { name: "string", rating: "number", text: "text", city: "string", packageName: nullable("string"), active: "boolean" },
+  fields: { name: "string", rating: int(1, 5), text: "text", city: "string", packageName: nullable("string"), active: "boolean" },
   required: ["name", "rating"],
   defaults: { text: "", city: "", active: true },
 });

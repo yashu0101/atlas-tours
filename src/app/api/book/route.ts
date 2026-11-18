@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { addBooking, getPackages } from "@/lib/db";
+import { addBooking, getPackageById } from "@/lib/db";
 import { badRequest, notFound, readJson, withHandler } from "@/lib/api";
 import { contactFields, guardPublicForm, isHoneypotTripped, str } from "@/lib/public-form";
 
@@ -9,7 +9,7 @@ import { contactFields, guardPublicForm, isHoneypotTripped, str } from "@/lib/pu
  * any client-supplied values are ignored. Amount = package price × travelers.
  */
 export const POST = withHandler(async (req) => {
-  guardPublicForm(req, "book");
+  await guardPublicForm(req, "book");
   const body = await readJson(req);
   if (isHoneypotTripped(body)) return NextResponse.json({ success: true });
 
@@ -18,7 +18,8 @@ export const POST = withHandler(async (req) => {
   const packageId = str(body, "packageId", 100);
   if (!packageId) throw badRequest("packageId is required");
 
-  const pkg = (await getPackages()).find((p) => p.id === packageId && !p.hidden);
+  const found = await getPackageById(packageId);
+  const pkg = found && !found.hidden ? found : null;
   if (!pkg) throw notFound("Package not found");
   if (typeof pkg.price !== "number" || !Number.isFinite(pkg.price)) throw new Error(`Package ${pkg.id} has no valid price`);
 

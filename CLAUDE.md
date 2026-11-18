@@ -23,9 +23,9 @@ Before finishing a change, run `npx tsc --noEmit`, `npm run lint` and `npm test`
 
 **Tests never touch `data/db.json`.** `vitest.config.mts` forces `DATABASE_URL=""`; DB-backed tests use `tests/helpers/temp-db.ts`, which points `JSON_DB_PATH` at a fresh temp file seeded from `src/lib/seed-data.ts`. Route tests call handlers directly with `new NextRequest(...)` and mock `next/headers` cookies (see `tests/routes/packages.test.ts`). Playwright's `webServer` also uses a temp `JSON_DB_PATH`. Vitest is pinned to 4.x because 5.x requires `@types/node` ≥ 22.
 
-**Manual testing against `npm run dev` does mutate `data/db.json`, which is git-tracked.** After manual POST/PATCH/DELETE testing, run `git checkout -- data/db.json` (or start the dev server with `JSON_DB_PATH` pointing at a scratch file). Public form endpoints and login are rate-limited in memory, so repeated curl testing can return `429` until the dev server restarts or the window passes.
+**Manual testing against `npm run dev` does mutate `data/db.json`, which is git-tracked.** After manual POST/PATCH/DELETE testing, run `git checkout -- data/db.json` (or start the dev server with `JSON_DB_PATH` pointing at a scratch file). Public form endpoints, login and `/api/seed` are rate-limited (in memory unless Upstash is configured), so repeated curl testing can return `429` until the dev server restarts or the window passes.
 
-Seeding Postgres (after `DATABASE_URL` is set) creates the tables **and** inserts the default content from `src/lib/seed-data.ts`. It is idempotent and non-destructive (`ON CONFLICT (id) DO NOTHING`; never updates/deletes; never seeds bookings/enquiries). Response: `{ "tables": "ok", "inserted": { "packages": n, … } }`. Pass `"content": false` to only create tables. In JSON mode it returns 400 (the JSON file seeds itself when missing).
+Seeding Postgres (after `DATABASE_URL` is set) creates the tables **and** inserts the default content from `src/lib/seed-data.ts`. It is idempotent and non-destructive (`ON CONFLICT (id) DO NOTHING`; never updates/deletes; never seeds bookings/enquiries). Response: `{ "tables": "ok", "inserted": { "packages": n, … } }`. Pass `"content": false` to only create tables. In JSON mode it returns 400 (the JSON file seeds itself when missing). Rate-limited to 5 requests / 15 min per IP (429).
 
 ```bash
 curl -X POST http://host/api/seed -H 'Content-Type: application/json' -d '{"secret":"<SEED_SECRET>"}'
@@ -46,6 +46,7 @@ In **development** every var is optional and the fallbacks below apply. In **pro
 | `SESSION_VERSION` | `"1"` | optional | embedded in session tokens; change it to log every admin out |
 | `NEXT_PUBLIC_SITE_URL` | `https://atlastours.in` | should be set (domain unconfirmed) | `metadataBase`, canonical, OG, sitemap, robots |
 | `JSON_DB_PATH` | `data/db.json` | — (JSON backend only) | overrides the JSON file path; resolved on every call; used by tests |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | unset (in-memory limits) | recommended | both set → rate-limit counters shared across serverless instances via Upstash Redis REST (B-18) |
 
 ## Architecture
 
@@ -53,21 +54,22 @@ Single-page marketing site for a Varanasi tour operator, plus a password-gated a
 
 ### Dual storage backend (`src/lib/db.ts`)
 
-The single most important thing to know. One module exports an async CRUD API (`getPackages`, `addBooking`, …) that dispatches on `IS_POSTGRES = !!process.env.DATABASE_URL`:
+The single most important thing to know. One module exports an async CRUD API (`getPackages`, `getPackageById`, `addBooking`, …) that dispatches on `isPostgres()` (true when `DATABASE_URL` is set, or a test client is installed):
 
-- **No `DATABASE_URL`** → JSON file at `data/db.json`. Reseeds from `DEFAULT_PACKAGES` + `SITE_CONFIG` (`src/lib/config.ts`) **only when the file is missing** (ENOENT); a corrupt file throws instead of being overwritten. Writes are atomic (temp file + rename, with retries for Windows locks). Logs a loud error if used with `NODE_ENV=production` — it does not work on read-only serverless filesystems.
+- **No `DATABASE_URL`** → JSON file at `data/db.json`. Reseeds from `src/lib/seed-data.ts` **only when the file is missing** (ENOENT); a corrupt file throws instead of being overwritten. Writes are atomic (temp file + rename, with retries for Windows locks). Logs a loud error if used with `NODE_ENV=production` — it does not work on read-only serverless filesystems.
 - **`DATABASE_URL` set** → Neon serverless Postgres, `require`d lazily inside `getSQL()` so the JSON path never loads the driver.
 
-Two conventions cross this boundary and must be kept in sync by hand when adding a field:
+**One definition per entity (B-15).** Each entity is an `Entity<T>` in `db.ts` (`PACKAGES` … `OFFERS`): table, JSON key, a `columns` map (camelCase field → snake_case column, e.g. `originalPrice` → `original_price`, `FAQ.order` → `sort_order`; `type: "array"` for JSONB arrays, `"timestamp"` for TIMESTAMPTZ, `optional` for NULL → `undefined`), the `patchable` whitelist and `orderBy`. Generic `fromRow`/`pgInsert`/`pgList`/`pgGet`/`pgUpdate`/`pgDelete` and `jsonCRUD` are driven by it — there is no ORM and no per-entity SQL. `columns` is a mapped type over the TS type, so a field added to `types.ts` fails `tsc` until it has a column. Postgres returns `createdAt` as an ISO string (Date → `toISOString`); array columns are JSONB in Postgres (written as `JSON.stringify` params, read with `safeParseArray`, bad data → `[]`) and real arrays in the JSON file.
 
-1. **camelCase ↔ snake_case.** TS types use `originalPrice`, `packageId`, `travelDate`; Postgres columns are `original_price`, `package_id`, `travel_date`. `FAQ.order` maps to `sort_order`. Every `pg*` function hand-maps rows in both directions — there is no ORM.
-2. **Array fields are JSON strings in Postgres.** `highlights`, `itinerary`, `inclusions` are `TEXT` columns holding `JSON.stringify`'d arrays, parsed back on read. In the JSON backend they're real arrays.
+IDs and `createdAt` are always generated server-side and are never patchable. FAQs are sorted by `order` in both backends.
 
-IDs and `createdAt` are always generated server-side; JSON-backend updates strip `id`/`createdAt` from the patch. FAQs are sorted by `order` in both backends.
+**Schema and migrations (`src/lib/db-schema.ts`, B-16).** `initDB(sql)` (run by `/api/seed`) applies the pending entries of `MIGRATIONS` and records them in `schema_migrations`; each migration runs as one `sql.transaction([...])`, so it applies fully or not at all. v1 = the original schema; v2 `created_at` → TIMESTAMPTZ; v3 package arrays → JSONB; v4 repairs out-of-range old rows (unknown status → default, rating/discount clamped, negative price → 0) and then adds validated CHECK constraints (statuses, kind, source, rating 1–5, price ≥ 0, discount 0–100); v5 indexes. **Never edit a shipped migration — append one.** If a status/kind union in `types.ts` gains a value, add a migration that drops and re-adds its CHECK. No foreign keys from bookings/enquiries to packages on purpose (historical records keep `package_name`). After deploying a new migration, re-run `/api/seed`.
 
-Updates only touch keys **present** in the body. Postgres updates are built by `pgUpdate()` from a fixed per-entity field→column map (`PACKAGE_COLS` … `OFFER_COLS` in `db.ts`) with every value parameterised via `sql.query(text, params)` — never interpolate identifiers from input. The JSON backend applies the same maps. Fields declared `nullable(...)` in a route config (package `originalPrice`, review `packageName`, FAQ `questionHi`/`answerHi`, offer `code`) are **cleared by sending `null` or `""`**; `null` for any other field is a 400. The admin edit forms send `null` for emptied optional fields — `undefined` is dropped by `JSON.stringify` and changes nothing. Package array columns are parsed with `safeParseArray` (bad data → `[]`).
+**Postgres tests (B-17).** `tests/pg/**` run the real `db.ts` Postgres path on in-process PGlite (`@electric-sql/pglite`) through `tests/helpers/pglite-sql.ts`, which gives PGlite neon's interface and is installed with `setSqlClientForTests()` (throws in production). Includes an old-schema → latest migration test (`tests/pg/fixtures/old-schema.ts`). PGlite is not Neon: type parsing and HTTP-transaction behaviour are verified against PGlite only.
 
-Adding an entity means touching `types.ts`, `db-schema.ts`, the `pg*` block, the `jsonCRUD` registration, the exported wrappers, a visibility rule in `src/lib/visibility.ts` (if public), and a route config.
+Updates only touch keys **present** in the body, filtered by the entity's `patchable` list, with every value parameterised via `sql.query(text, params)` — never interpolate identifiers from input. Fields declared `nullable(...)` in a route config (package `originalPrice`, review `packageName`, FAQ `questionHi`/`answerHi`, offer `code`) are **cleared by sending `null` or `""`**; `null` for any other field is a 400. The admin edit forms send `null` for emptied optional fields — `undefined` is dropped by `JSON.stringify` and changes nothing.
+
+Adding a field means `types.ts` + the entity's definition in `db.ts` + a migration + the route config. Adding an entity means `types.ts`, a new `Entity` + `store()` + exported wrappers in `db.ts`, a migration, a visibility rule in `src/lib/visibility.ts` (if public), and a route config.
 
 ### API layer (`src/lib/api.ts`, `src/lib/crud-route.ts`)
 
@@ -94,7 +96,7 @@ Public, unauthenticated write endpoints (`src/lib/public-form.ts`) — do not co
 
 `Enquiry.kind` and `Review.source` were added after launch: `db-schema.ts` adds their Postgres columns with `ALTER TABLE … ADD COLUMN IF NOT EXISTS`, so re-run `/api/seed` (idempotent) after deploying.
 
-Rate limiting (`src/lib/rate-limit.ts`) is **in-memory and per instance** — it resets on restart/cold start and isn't shared across serverless instances. Client IP comes from `x-forwarded-for`.
+Rate limiting (`src/lib/rate-limit.ts`, B-18) is async (`await consume(...)`, `await guardPublicForm(...)`). With both `UPSTASH_REDIS_REST_*` vars set, counters live in Upstash Redis (one `/multi-exec` call: `SET key 0 PX window NX` + `INCR`, keys `atlas:rl:*`, 1.5 s timeout) and are shared across instances; on any Upstash error that call falls back to the in-memory limiter (logged once per outage, never fails closed). Without them it is **in-memory and per instance** (resets on cold start). Client IP: on Vercel (`VERCEL` env set) `x-vercel-forwarded-for` → `x-real-ip` → `x-forwarded-for`; elsewhere only the first `x-forwarded-for` entry, because other proxies pass the Vercel headers through from the client. Tests clear the Upstash vars in `vitest.config.mts`.
 
 There is no middleware. Auth is enforced per route handler; the `/admin` page guards itself client-side via `/api/auth/me` and redirects to `/login` on any 401.
 
@@ -117,6 +119,8 @@ Single source for default content (3 packages, 3 reviews, 6 gallery images, 3 bl
 `verifyAdminCredentials(email, password)` (async) is the single login check: bcrypt when `ADMIN_PASSWORD_HASH` is set, otherwise a constant-time compare (`safeEqual`, SHA-256 + `timingSafeEqual`). The login route locks an IP out after 5 failures per 15 min (429). Success signs a 24h HS256 JWT (jose) with issuer `atlas-tours`, audience `atlas-tours-admin`, `role: "admin"` and `sv` = `SESSION_VERSION`, stored in the httpOnly `admin_session` cookie built by `sessionCookieOptions()` (`sameSite: strict`, `secure` in production; logout clears it with the same options). `verifySession()` rejects tokens with the wrong alg/issuer/audience/role/`sv`. Tokens are stateless: logout clears the browser cookie, but a copied token stays valid until expiry unless `SESSION_VERSION` is changed.
 
 Image URL fields (package `image`, gallery `src`, blog `image`) use the `"image"` field type: only `https:` URLs or site-relative paths starting with a single `/` are accepted.
+
+Fields stored in Postgres `INTEGER` columns (package `price`/`originalPrice`, review `rating`, offer `discount`, FAQ `order`) use `int(min, max)` from `api.ts`, never plain `"number"`: plain `"number"` accepts decimals, which the JSON backend stores but Postgres rejects with a 500 (B-13).
 
 ### Platform config
 

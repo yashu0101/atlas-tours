@@ -15,11 +15,11 @@ const NOT_FOUND = "No booking matches that reference and phone number.";
  * N-4: public booking-status lookup by reference + phone. Both must match: the reference
  * alone is not enough, and the response is the same 404 whether the reference or the phone
  * is wrong, so it doesn't reveal which references exist. Only status fields are returned —
- * never the email, full name, city or internal id. Rate-limited per IP (in memory, per
- * instance; see rate-limit.ts). POST, not GET, so the phone number stays out of URLs and logs.
+ * never the email, full name, city or internal id. Rate-limited per IP (shared via Upstash or in
+ * memory per instance; see rate-limit.ts). POST, not GET, so the phone number stays out of URLs and logs.
  */
 export const POST = withHandler(async (req) => {
-  if (consume(`booking-status:${clientIp(req)}`, LOOKUP_LIMIT, LOOKUP_WINDOW_MS)) {
+  if (await consume(`booking-status:${clientIp(req)}`, LOOKUP_LIMIT, LOOKUP_WINDOW_MS)) {
     throw new HttpError(429, "Too many lookups. Please try again in 15 minutes.");
   }
   const body = await readJson(req);

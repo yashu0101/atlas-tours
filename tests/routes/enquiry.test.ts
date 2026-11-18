@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
+import "../helpers/no-upstash";
 import { makePackage, uniqueIp, useTempDb } from "../helpers/temp-db";
 
 type Route = typeof import("@/app/api/enquiry/route");

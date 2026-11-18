@@ -1,6 +1,6 @@
 import { getOffers, addOffer, updateOffer, deleteOffer } from "@/lib/db";
 import { crudRoute } from "@/lib/crud-route";
-import { nullable } from "@/lib/api";
+import { int, nullable } from "@/lib/api";
 import { isPublicOffer } from "@/lib/visibility";
 
 const route = crudRoute({
@@ -9,7 +9,7 @@ const route = crudRoute({
   update: updateOffer,
   remove: deleteOffer,
   isPublic: isPublicOffer,
-  fields: { title: "string", description: "text", discount: "number", code: nullable("string"), validFrom: "string", validTo: "string", active: "boolean" },
+  fields: { title: "string", description: "text", discount: int(0, 100), code: nullable("string"), validFrom: "string", validTo: "string", active: "boolean" },
   required: ["title"],
   defaults: { description: "", discount: 0, validFrom: "", validTo: "", active: true },
 });

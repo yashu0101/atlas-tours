@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   HttpError,
+  int,
   isEmail,
   isPhone,
   isSafeImageUrl,
@@ -125,6 +126,8 @@ describe("pickFields", () => {
     originalPrice: nullable("number"),
     note: nullable("string"),
     cover: nullable("image"),
+    rating: int(1, 5),
+    cost: nullable(int(0, 1000)),
   } as const;
 
   it("whitelists known keys and omits absent ones", () => {
@@ -164,6 +167,27 @@ describe("pickFields", () => {
     expect(pickFields({ originalPrice: 2000, note: "hi" }, spec)).toEqual({ originalPrice: 2000, note: "hi" });
     expectHttpError(() => pickFields({ originalPrice: "abc" }, spec));
     expectHttpError(() => pickFields({ cover: "http://x.com/a.png" }, spec), 400, /https/);
+  });
+
+  describe("int fields (B-13)", () => {
+    it("accepts whole numbers in range, including numeric strings", () => {
+      expect(pickFields({ rating: 1 }, spec)).toEqual({ rating: 1 });
+      expect(pickFields({ rating: "5" }, spec)).toEqual({ rating: 5 });
+      expect(pickFields({ cost: 0 }, spec)).toEqual({ cost: 0 });
+    });
+
+    it("rejects decimals, out-of-range values and non-numbers", () => {
+      for (const bad of [2.5, "2.5", 0, 6, -1, "", "abc", true, NaN, Infinity]) {
+        expectHttpError(() => pickFields({ rating: bad }, spec), 400, /rating must be a whole number from 1 to 5/);
+      }
+      expectHttpError(() => pickFields({ cost: 1001 }, spec), 400, /from 0 to 1000/);
+    });
+
+    it("can be nullable", () => {
+      expect(pickFields({ cost: null }, spec)).toEqual({ cost: null });
+      expect(pickFields({ cost: "" }, spec)).toEqual({ cost: null });
+      expectHttpError(() => pickFields({ cost: -5 }, spec), 400, /cost must be a whole number/);
+    });
   });
 
   describe('"image" type', () => {

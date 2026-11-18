@@ -95,6 +95,11 @@ describe("admin writes", () => {
   it("POST validates fields and requires name and price", async () => {
     expect((await route.POST(jsonReq("POST", JSON.stringify({ name: "No price" })))).status).toBe(400);
     expect((await route.POST(jsonReq("POST", JSON.stringify({ name: "x", price: 1, image: "javascript:alert(1)" })))).status).toBe(400);
+    // B-13: price is an INTEGER column — decimals and negatives are a 400, not a Postgres 500.
+    for (const price of [1999.5, -1, 10_000_001]) {
+      expect((await route.POST(jsonReq("POST", JSON.stringify({ name: "x", price })))).status).toBe(400);
+    }
+    expect((await route.PATCH(jsonReq("PATCH", JSON.stringify({ id: "visible", originalPrice: 0.5 })))).status).toBe(400);
   });
 
   it("POST ignores client ids, applies defaults and persists", async () => {

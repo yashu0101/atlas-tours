@@ -1,6 +1,9 @@
 import { getPackages, addPackage, updatePackage, deletePackage } from "@/lib/db";
 import { crudRoute } from "@/lib/crud-route";
-import { nullable } from "@/lib/api";
+import { int, nullable } from "@/lib/api";
+
+// B-13: INR, stored in an INTEGER column.
+const MAX_PRICE = 10_000_000;
 import { isPublicPackage } from "@/lib/visibility";
 
 const route = crudRoute({
@@ -10,7 +13,7 @@ const route = crudRoute({
   remove: deletePackage,
   isPublic: isPublicPackage,
   fields: {
-    name: "string", destination: "string", duration: "string", price: "number", originalPrice: nullable("number"),
+    name: "string", destination: "string", duration: "string", price: int(0, MAX_PRICE), originalPrice: nullable(int(0, MAX_PRICE)),
     image: "image", description: "text", highlights: "string[]", itinerary: "string[]", inclusions: "string[]",
     category: ["spiritual", "cultural", "adventure", "heritage"], hidden: "boolean",
   },

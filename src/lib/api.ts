@@ -121,7 +121,16 @@ export function positiveInt(value: unknown, key: string, fallback: number, max: 
  *   site-relative paths starting with a single `/` are accepted (B-09); `""` means
  *   "no image". Anything else (`http:`, `javascript:`, `data:`, `//host`, …) is a 400.
  */
-export type BaseFieldType = "string" | "text" | "number" | "boolean" | "string[]" | "image" | readonly string[];
+export type BaseFieldType = "string" | "text" | "number" | "boolean" | "string[]" | "image" | readonly string[] | IntField;
+
+/**
+ * B-13: a whole number within [min, max] (inclusive). Use it for every field stored in a
+ * Postgres INTEGER column: plain `"number"` accepts 1999.5 or -5, which the JSON backend
+ * stores but Postgres rejects with a 500 (and a negative price makes negative booking amounts).
+ * Numeric strings are coerced like `"number"`.
+ */
+export type IntField = { readonly int: readonly [min: number, max: number] };
+export const int = (min: number, max: number): IntField => ({ int: [min, max] });
 
 /**
  * A field that may be cleared (B-07). On write, `null` — or `""` for string-like
@@ -159,6 +168,12 @@ export function isSafeImageUrl(s: string): boolean {
 
 function coerceField(key: string, type: BaseFieldType, v: unknown): unknown {
   if (Array.isArray(type)) return oneOf(v, type as readonly string[], key);
+  if (typeof type === "object" && "int" in type) {
+    const [min, max] = type.int;
+    const n = typeof v === "number" ? v : typeof v === "string" && v.trim() ? Number(v) : NaN;
+    if (!Number.isInteger(n) || n < min || n > max) throw badRequest(`${key} must be a whole number from ${min} to ${max}`);
+    return n;
+  }
   switch (type) {
     case "string":
     case "text": {

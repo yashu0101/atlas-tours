@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { addReview, getPackages } from "@/lib/db";
+import { addReview, getPackageById } from "@/lib/db";
 import { badRequest, readJson, str, withHandler } from "@/lib/api";
 import { REVIEW_TEXT_MAX, REVIEW_TEXT_MIN, guardPublicForm, isHoneypotTripped } from "@/lib/public-form";
 import { isPublicPackage } from "@/lib/visibility";
@@ -12,7 +12,7 @@ import { isPublicPackage } from "@/lib/visibility";
  * ids are dropped. The response deliberately does not echo the stored review.
  */
 export const POST = withHandler(async (req) => {
-  guardPublicForm(req, "review");
+  await guardPublicForm(req, "review");
   const body = await readJson(req);
   if (isHoneypotTripped(body)) return NextResponse.json({ success: true });
 
@@ -28,7 +28,8 @@ export const POST = withHandler(async (req) => {
   const packageId = str(body, "packageId", 100);
   let packageName: string | undefined;
   if (packageId) {
-    packageName = (await getPackages()).find((p) => p.id === packageId && isPublicPackage(p))?.name;
+    const pkg = await getPackageById(packageId);
+    packageName = pkg && isPublicPackage(pkg) ? pkg.name : undefined;
   }
 
   await addReview({ name, city, text, rating, packageName, active: false, source: "customer" });
