@@ -24,11 +24,11 @@ function isUtrConflict(err: unknown): boolean {
  * reference + phone proof as the booking-status lookup. Public, unauthenticated.
  */
 export const POST = withHandler(async (req) => {
-  const body = await readJson(req);
-  if (isHoneypotTripped(body)) return NextResponse.json({ success: true });
   if (await consume(`payment-claim:${clientIp(req)}`, CLAIM_LIMIT, CLAIM_WINDOW_MS)) {
     throw new HttpError(429, "Too many attempts. Please try again in 15 minutes.");
   }
+  const body = await readJson(req);
+  if (isHoneypotTripped(body)) return NextResponse.json({ success: true });
 
   const booking = await findBookingByReferenceAndPhone(body);
   const utr = normalizeUtr(str(body, "utr", 40, true));
