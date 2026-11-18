@@ -2,7 +2,7 @@
 
 > **Single source of truth** for project status and the fix backlog.
 > Audit date: **2026-11-17** · Audited commit: `dd7e91d` · Rating at audit: **4.5 / 10**
-> Last updated: **2026-11-18** · PRs #1–#7 merged into `dev` (`010334a`) · `master` not yet updated · Current rating: **8.5 / 10** · **72 / 80 done · 8 blocked on client decisions · 0 open**
+> Last updated: **2026-11-18** · PRs #1–#7, #9, #10 merged into `dev` (`607462b`) · `master` not yet updated (release PR #8 open) · Current rating: **8.5 / 10** · **73 / 81 done · 8 blocked on client decisions · 0 open**
 
 ---
 
@@ -34,17 +34,21 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 | N — New features (2026-11-18 proposal) | new pages/routes, `src/app/admin/**`, `next.config.ts` | 11 | 7 | ✅ N-1, N-4…N-7, N-9 (PR #6), N-11 · ⏸ N-2, N-3, N-8, N-10 |
 | **Total** | | **81** | **73** | 8 blocked · 0 open |
 
-**By severity:** P0 ✅ 6/6 · P1 ✅ 21/21 · P2 ✅ 26/28 (2 ⏸: G-02, G-04) · P3 ✅ 14/16 (2 ⏸: G-08 copy, G-09).
+**By severity:** P0 ✅ 6/6 · P1 ✅ 21/21 · P2 ✅ 27/29 (2 ⏸: G-02, G-04) · P3 ✅ 19/25 (6 ⏸: G-08 copy, G-09, N-2, N-3, N-8, N-10).
 
 **Blocked on the client (⏸) — nothing else is left.** All open questions for the client are collected in **`CLIENT_QUESTIONS.md`**.
 - **G-02** — notifications: needs an email/WhatsApp provider and addresses.
 - **G-04** — admin image upload: needs a storage provider account (Vercel Blob / Cloudinary).
 - **G-08** — message catalog is built; needs the Hindi copy (170 strings, `docs/hindi-strings-needed.md`).
 - **G-09** — payments: needs a Razorpay account and deposit/full-payment decision.
+- **N-2** — analytics: needs a provider choice and account.
+- **N-3** — departure dates/seats: needs the departure and seat model.
+- **N-8** — multiple admin users: needs the roles/permissions decision.
+- **N-10** — customer booking confirmation: needs the G-02 provider.
 
-**Built with provisional answers (one-line changes once the client confirms):** C-09 email `info@atlastours.in`; G-01/Q-1 per-person pricing; E-10 dark text on orange buttons (visible change — needs a design sign-off).
+**Built with provisional answers (one-line changes once the client confirms):** C-09 email `info@atlastours.in`; G-01/Q-1 per-person pricing; E-10 dark text on orange buttons (visible change — needs a design sign-off); N-11 admin/login redesign (owner sign-off on the look pending).
 
-**Merge status:** PRs #1 → #2 → #3 → #4 → #5 → #6 → #7 are **merged into `dev`** (merge commits `f9a17c4`, `899fc03`, `e2bf268`, `3ebe2e9`, `ba4cd92`, `a508f04`, `010334a`; merge commits, not squash, so every hash in this file exists on `dev`). `master` is still at the audited commit `dd7e91d`; a `dev` → `master` PR is the step for production.
+**Merge status:** PRs #1 → #2 → #3 → #4 → #5 → #6 → #7 → #9 → #10 are **merged into `dev`** (merge commits `f9a17c4`, `899fc03`, `e2bf268`, `3ebe2e9`, `ba4cd92`, `a508f04`, `010334a`, `6f8ae21`, `607462b`; merge commits, not squash, so every hash in this file exists on `dev`). `master` is still at the audited commit `dd7e91d`; **PR #8 (`dev` → `master`) is open** and is the step for production.
 
 **For future work:** every remaining numbered item is blocked on a client decision (§2 "Pending" lists the non-numbered items). When a decision arrives, set the item to 🔄, keep agents inside their workstream's files, and keep the server-props contract for section components (see CLAUDE.md → Frontend).
 
@@ -52,10 +56,10 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 
 ## 2. Where the project stands
 
-### Current (2026-11-18, branch `dev` @ `010334a`)
+### Current (2026-11-18, branch `dev` @ `607462b`)
 
 - **Stack:** Next.js **16.4.6** App Router, React 19.3, TypeScript strict, Neon Postgres or JSON-file storage (`DATABASE_URL` switches).
-- **Checks (recorded after the PR #6 merge, `a508f04`):** `npx tsc --noEmit` ✅ · `npm run lint` 0 errors ✅ · `npm test` 294/294 ✅ · `npm run test:e2e` 28/28 ✅ · `npm run build` ✅. PR #6 Vercel preview deployments passed. PR #7 (`010334a`, `<html data-scroll-behavior>`): `tsc` ✅, `lint` 0 errors ✅, `npm test` 294/294 ✅, Vercel ✅.
+- **Checks (recorded after the PR #6 merge, `a508f04`):** `npx tsc --noEmit` ✅ · `npm run lint` 0 errors ✅ · `npm test` 294/294 ✅ · `npm run test:e2e` 28/28 ✅ · `npm run build` ✅. PR #6 Vercel preview deployments passed. PR #7 (`010334a`, `<html data-scroll-behavior>`): `tsc` ✅, `lint` 0 errors ✅, `npm test` 294/294 ✅, Vercel ✅. **Latest — PR #10 (`607462b`, N-11):** `tsc` ✅ · lint 0 errors (3 existing `<img>` warnings) ✅ · `npm test` 297/297 ✅ · `test:e2e` 29/29 ✅ (against `next start`).
 - **Client questions:** collected in **`CLIENT_QUESTIONS.md`** — keep it and the table below in sync.
 - **`npm audit --omit=dev`:** 0 vulnerabilities. Dev deps still report some (untriaged).
 - **Verdict:** **launchable after configuration and a staging check** — set `JWT_SECRET` (≥32 chars), `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH` (or `ADMIN_PASSWORD`), `DATABASE_URL`, `SEED_SECRET`, `NEXT_PUBLIC_SITE_URL`; run `/api/seed` and admin edits on staging Postgres; do the manual browser pass below. Every remaining numbered item needs a client decision.
@@ -65,7 +69,7 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 | # | Item | Type | Why it matters |
 |---|---|---|---|
 | V-1 | Postgres staging test: `/api/seed` twice (3/3/6/3/5/0 then all zeros — no seed offers since Q-5), admin create/edit/clear-field/delete | **Verify** | Postgres update (P2) and seed (P3) paths were reviewed but never executed |
-| V-2 | Browser pass: package modal & gallery lightbox (focus trap, Esc, Enter/Space), closed mobile menu/WhatsApp skipped by Tab, carousel pauses on hover, reduced-motion mode, dark-mode colours, login lock icon, skip link + focus rings; **P4:** `/packages/[id]` and `/blog/[id]` pages, booking form, package/gallery filters, offers section with a live (unexpired) offer, new button text colour; **N-round (PR #6):** admin search/filters/pagination/CSV export, `/track`, `/reviews/new` + admin approval, `/plan-trip` (incl. callback mode), wishlist heart / compare bar / `/wishlist` / `/compare`, optimised images and click-to-play hero video | **Verify** | Covered by code review, curl, headless/Playwright runs — not by a person clicking through |
+| V-2 | Browser pass: package modal & gallery lightbox (focus trap, Esc, Enter/Space), closed mobile menu/WhatsApp skipped by Tab, carousel pauses on hover, reduced-motion mode, dark-mode colours, login lock icon, skip link + focus rings; **P4:** `/packages/[id]` and `/blog/[id]` pages, booking form, package/gallery filters, offers section with a live (unexpired) offer, new button text colour; **N-round (PR #6):** admin search/filters/pagination/CSV export, `/track`, `/reviews/new` + admin approval, `/plan-trip` (incl. callback mode), wishlist heart / compare bar / `/wishlist` / `/compare`, optimised images and click-to-play hero video; **PR #9/#10:** package card → detail page, past travel dates blocked, redesigned admin + login (light/dark, phone layout) | **Verify** | Covered by code review, curl, headless/Playwright runs — not by a person clicking through |
 | V-3 | CSP: check DevTools for report-only violations on `/`, `/login`, `/admin`, then switch to enforcing | **Verify** | CSP currently blocks nothing |
 | V-4 | Production env vars (list above) and `SESSION_VERSION` policy | **Configure** | Production auth fails closed without them |
 | Q-1 | `/api/book` pricing: `amount = price × travelers` | **Decide** (provisional, built) | P4's booking form (G-01) shows this estimate. Correct only if prices are **per person**; if per package, change to `price` in the route and the form |
@@ -397,3 +401,4 @@ Done: ~~Day 1: D-01 · A-01 · A-02 · C-01…C-05 · C-07 · B-01~~ · ~~Day 2:
 | 2026-11-18 | Claude, branch `fix-f11-odisha-photo`, PR #9 | **C-10, C-11, F-12 done (found while checking the package → detail page flow).** C-10: every part of a package card (image, title, View Details, Book Now → `#book`) now opens `/packages/[id]`; popup removed. C-11: past travel dates blocked in the Booking/Contact forms (`min`) and rejected by the server (`earliestTravelDate`). F-12: Varanasi "van" photo replaced everywhere. Detail page reviewed at 1366px and 390px: hero, overview, highlights, itinerary, inclusions, booking form + WhatsApp all render, no broken images, no horizontal scroll, no console errors. Checks: `tsc` ✅, lint 0 errors ✅, `npm test` 297/297 ✅, `build` ✅, `test:e2e` against `next start`: 27/29 in parallel — 1 failure was a stale date in `public-forms.spec.ts` (fixed), 1 was the `reviews.spec.ts` carousel racing `admin-lists.spec.ts` (which adds a review to the shared DB) — the packages/forms/reviews specs then passed 15/15 serially. Status: 72/80 done, 8 ⏸, 0 open. |
 | 2026-11-18 | Claude, branch `admin-redesign`, PR #10 | **N-11 admin redesign (visual + small UX).** Files: `src/app/admin/**`, `src/app/login/page.tsx`, `tests/e2e/admin.spec.ts` (button now "Add FAQ"). "Del" buttons renamed "Delete" (tests match by substring). Verified: `tsc` ✅, lint ✅ (3 existing `<img>` warnings), `npm test` 297/297 ✅, e2e against `next start` 28/29 — the failure is `reviews.spec.ts` carousel count ("1 of 4") racing the parallel admin-lists approval test on the shared temp DB; passes 3/3 alone. Screenshots checked at 1440px and 390px (no horizontal scroll). |
 | 2026-11-18 | Claude, branch `admin-redesign`, PR #10 | **N-11 follow-up: full admin audit.** Scripted browser pass over every admin flow against `next start` with a scratch DB (login error/show-password, dashboard cards + counts, bookings search/status/payment/CSV/delete, enquiries view/status, review approval, create → edit → toggle → delete in all 6 content tabs, modals, keyboard, logout), screenshots in light/dark at 1440, 768 and 390px. **Fixed:** (1) empty required fields now block Save with the browser message (forms are real `<form>`s, `required` on starred fields, Enter saves); (2) modal keeps Tab inside, locks page scroll, is named by its heading, and Escape/backdrop ask "Discard your unsaved changes?" once something was typed (✕/Cancel close directly); (3) a 401 on any admin action now says the session expired and goes to `/login` instead of a bare "Unauthorized" alert; (4) network failures on save/delete now alert instead of failing silently; (5) on phones, bookings/enquiries/dashboard tables become one card per row (`.adm-table.stack` + `data-label`); names and action buttons no longer wrap mid-word on desktop. Also made `tests/e2e/reviews.spec.ts` match "N of <any>" — it raced `admin-lists.spec.ts` approving a 4th review. Verified: `tsc` ✅, lint ✅ (3 existing `<img>` warnings), `npm test` 297/297 ✅, e2e 29/29 ✅ twice. |
+| 2026-11-18 | Claude, branch `dev` | **Tracker sync after PRs #9 and #10 merged** (`6f8ae21`, `607462b`). Header, §1 merge status and §2 snapshot now point at `dev` @ `607462b` with PR #10's checks; severity line recounted from the issue rows (P2 27/29, P3 19/25 — it had not counted N-round items); §1 blocked list now includes N-2, N-3, N-8, N-10; N-11 owner sign-off added to the provisional list and `CLIENT_QUESTIONS.md`; V-2 extended with the PR #9/#10 UI; PR #8 (`dev` → `master`) noted as open. `CLAUDE.md` status line corrected (8 blocked, not 11). Docs only. Status: 73/81 done, 8 ⏸, 0 open. |
