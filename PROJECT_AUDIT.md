@@ -34,7 +34,7 @@ Severity: **P0** launch blocker · **P1** must fix before launch · **P2** shoul
 | N — New features (2026-11-18 proposal) | new pages/routes, `src/app/admin/**`, `next.config.ts` | 13 | 11 | ✅ N-1, N-4…N-7, N-9 (PR #6), N-11, N-8 + N-10 (provisional), N-12 (names/UPI pending), N-13 (awaiting client sign-off) · ⏸ N-2, N-3 |
 | **Total** | | **91** | **86** | 5 blocked · 0 open |
 
-**By severity:** P0 ✅ 6/6 · P1 ✅ 21/21 · P2 ✅ 31/32 (1 ⏸: G-04) · P3 ✅ 26/30 (4 ⏸: G-08 copy, G-09, N-2, N-3).
+**By severity:** P0 ✅ 6/6 · P1 ✅ 21/21 · P2 ✅ 31/32 (1 ⏸: G-04) · P3 ✅ 27/31 (4 ⏸: G-08 copy, G-09, N-2, N-3).
 
 **Blocked on the client (⏸) — nothing else is left.** All open questions for the client are collected in **`CLIENT_QUESTIONS.md`**.
 - **G-04** — admin image upload: needs a storage provider account (Vercel Blob / Cloudinary).
