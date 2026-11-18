@@ -457,6 +457,24 @@ export async function sendEmail(cfg: NotifyConfig, content: EmailContent, opts: 
   }
 }
 
+/**
+ * Idempotency key prefix. Resend de-duplicates identical keys for 24 h, so the N-13 events that
+ * can legitimately recur for one booking carry a per-occurrence part: the UTR for a claim, a
+ * timestamp taken once per send (shared by that send's owner/customer mails) otherwise. Existing
+ * events keep `${type}-${id}`.
+ */
+function idempotencyBase(event: NotifyEvent, id: string): string {
+  switch (event.type) {
+    case "payment-claim":
+      return `${event.type}-${id}-${event.booking.utr ?? "none"}`;
+    case "booking-confirmed":
+    case "payment-received":
+      return `${event.type}-${id}-${Date.now()}`;
+    default:
+      return `${event.type}-${id}`;
+  }
+}
+
 function recordId(event: NotifyEvent): string {
   switch (event.type) {
     case "enquiry":
@@ -496,6 +514,7 @@ export async function notifySubmission(event: NotifyEvent): Promise<void> {
     const cfg = notifyConfig();
     if (!cfg) return;
     const id = recordId(event);
+    const keyBase = idempotencyBase(event, id);
     const customer = customerAddress(event);
     const jobs: Promise<boolean>[] = [];
     const ownerMail = cfg.owners.length ? buildOwnerEmail(event) : null;
@@ -504,7 +523,7 @@ export async function notifySubmission(event: NotifyEvent): Promise<void> {
         sendEmail(cfg, ownerMail, {
           to: cfg.owners,
           replyTo: customer,
-          idempotencyKey: `${event.type}-${id}-owner`,
+          idempotencyKey: `${keyBase}-owner`,
           tag: `${event.type}/owner`,
         }),
       );
@@ -515,7 +534,7 @@ export async function notifySubmission(event: NotifyEvent): Promise<void> {
       logOnce("recipient-cap", `Customer email skipped: recipient reached ${CUSTOMER_MAIL_LIMIT} emails in 24 h (logged once per process).`);
     } else if (customer && mail) {
       jobs.push(
-        sendEmail(cfg, mail, { to: [customer], idempotencyKey: `${event.type}-${id}-customer`, tag: `${event.type}/customer` }),
+        sendEmail(cfg, mail, { to: [customer], idempotencyKey: `${keyBase}-customer`, tag: `${event.type}/customer` }),
       );
     }
     await Promise.all(jobs);

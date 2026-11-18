@@ -261,6 +261,37 @@ describe("notify: N-13 payment emails", () => {
   });
 });
 
+describe("notify: idempotency keys", () => {
+  const keys = () => sent().map((s) => (s.init.headers as Record<string, string>)["Idempotency-Key"]);
+
+  it("payment claims with different UTRs use different keys; the booking key is unchanged", async () => {
+    enable();
+    const claim = (utr: string) => notify.notifySubmission({ type: "payment-claim", booking: { ...BOOKING, utr } });
+    await claim("412356789012");
+    await claim("412356789013");
+    const [a, b] = keys();
+    expect(a).toBe(`payment-claim-${BOOKING.id}-412356789012-owner`);
+    expect(b).not.toBe(a);
+    fetchMock.mockClear();
+    await notify.notifySubmission({ type: "booking", booking: BOOKING });
+    expect(keys()).toEqual([`booking-${BOOKING.id}-owner`, `booking-${BOOKING.id}-customer`]);
+  });
+
+  it("booking-confirmed shares one key per send and differs across sends", async () => {
+    enable();
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(1000);
+      await notify.notifySubmission({ type: "booking-confirmed", booking: BOOKING });
+      vi.setSystemTime(2000);
+      await notify.notifySubmission({ type: "booking-confirmed", booking: BOOKING });
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(new Set(keys()).size).toBe(2);
+  });
+});
+
 describe("notify: failures never throw", () => {
   it("logs HTTP errors without secrets or customer data", async () => {
     enable();
