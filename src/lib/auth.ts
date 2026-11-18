@@ -1,7 +1,9 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import { timingSafeEqual, createHash } from "crypto";
-import { compare as bcryptCompare } from "bcryptjs";
+import { timingSafeEqual, createHash, randomUUID } from "crypto";
+import { compare as bcryptCompare, hash as bcryptHash } from "bcryptjs";
+import { addAdminSession, getAdminSession, getAdminUserByEmail, getAdminUserById, normalizeEmail } from "./db";
+import { ENV_ADMIN_ID } from "./types";
 
 const COOKIE_NAME = "admin_session";
 const MIN_PROD_SECRET_LENGTH = 32;
@@ -102,19 +104,58 @@ export function sessionCookieOptions(maxAge: number = SESSION_MAX_AGE_SECONDS) {
   return { httpOnly: true, secure: isProduction(), sameSite: "strict" as const, path: "/", maxAge };
 }
 
-export async function createSession(email: string) {
+/** Who is acting: returned by `verifySession()` / `requireAdmin()` for attribution (N-8). */
+export interface AdminIdentity {
+  email: string;
+  /** AdminUser id, or `ENV_ADMIN_ID` ("env") for the env-var admin. */
+  userId: string;
+  /** The session row id (= the JWT's jti). */
+  sessionId: string;
+}
+
+export type SessionCheck = ({ authenticated: true } & AdminIdentity) | { authenticated: false };
+
+/** Longest User-Agent kept on a session row (the Postgres CHECK allows 512). */
+const MAX_USER_AGENT = 512;
+
+/**
+ * Signs a session JWT and stores its server-side row (N-8). The token carries a random
+ * `jti` = the `admin_sessions` row id; `verifySession` requires that row to exist and to be
+ * neither revoked nor expired, so logout and "sign out all devices" take effect at once.
+ * `userId` defaults to the env admin.
+ */
+export async function createSession(
+  email: string,
+  opts: { userId?: string; userAgent?: string | null; ip?: string | null } = {},
+): Promise<string> {
   const secret = getJwtSecret();
   if (!secret) throw new Error("Cannot create session: JWT_SECRET is not configured");
-  return new SignJWT({ email, role: "admin", sv: sessionVersion() })
+  const jti = randomUUID();
+  const userId = opts.userId ?? ENV_ADMIN_ID;
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + SESSION_MAX_AGE_SECONDS * 1000);
+  await addAdminSession({
+    id: jti, userId, email, createdAt: now.toISOString(), expiresAt: expiresAt.toISOString(),
+    userAgent: opts.userAgent ? opts.userAgent.slice(0, MAX_USER_AGENT) : undefined,
+    ip: opts.ip ? opts.ip.slice(0, 64) : undefined,
+  });
+  return new SignJWT({ email, role: "admin", sv: sessionVersion(), uid: userId })
     .setProtectedHeader({ alg: "HS256" })
+    .setJti(jti)
     .setIssuer(JWT_ISSUER)
     .setAudience(JWT_AUDIENCE)
-    .setExpirationTime(`${SESSION_MAX_AGE_SECONDS}s`)
-    .setIssuedAt()
+    .setExpirationTime(Math.floor(expiresAt.getTime() / 1000))
+    .setIssuedAt(Math.floor(now.getTime() / 1000))
     .sign(secret);
 }
 
-export async function verifySession(): Promise<{ authenticated: boolean; email?: string }> {
+/**
+ * Checks the session cookie: a valid JWT (alg/iss/aud/role/sv, B-08) AND a matching
+ * `admin_sessions` row that is not revoked or expired AND an account that may still log in
+ * (an active DB user, or the env admin while ADMIN_EMAIL still names it). One DB read for the
+ * session plus one for a DB user per admin request. Any error = unauthenticated.
+ */
+export async function verifySession(): Promise<SessionCheck> {
   try {
     const secret = getJwtSecret();
     if (!secret) return { authenticated: false };
@@ -125,40 +166,83 @@ export async function verifySession(): Promise<{ authenticated: boolean; email?:
       algorithms: ["HS256"],
       issuer: JWT_ISSUER,
       audience: JWT_AUDIENCE,
-      requiredClaims: ["exp", "iat"],
+      requiredClaims: ["exp", "iat", "jti"],
     });
-    if (payload.role !== "admin" || payload.sv !== sessionVersion() || typeof payload.email !== "string") {
+    if (payload.role !== "admin" || payload.sv !== sessionVersion() || typeof payload.email !== "string" || typeof payload.jti !== "string") {
       return { authenticated: false };
     }
-    return { authenticated: true, email: payload.email };
-  } catch {
+    const session = await getAdminSession(payload.jti);
+    if (!session || session.revokedAt || !(Date.parse(session.expiresAt) > Date.now())) return { authenticated: false };
+    if (session.email !== payload.email || session.userId !== payload.uid) return { authenticated: false };
+    if (session.userId === ENV_ADMIN_ID) {
+      const creds = resolveAdminCredentials();
+      if (!creds || normalizeEmail(creds.email) !== normalizeEmail(session.email)) return { authenticated: false };
+    } else {
+      const user = await getAdminUserById(session.userId);
+      if (!user || !user.active) return { authenticated: false };
+    }
+    return { authenticated: true, email: session.email, userId: session.userId, sessionId: session.id };
+  } catch (err) {
+    // A bad token is normal; a DB failure is worth a log line (still fails closed).
+    const code = (err as { code?: unknown } | null)?.code;
+    if (!(typeof code === "string" && code.startsWith("ERR_J"))) console.error("[auth] session check failed:", err);
     return { authenticated: false };
   }
 }
 
+/** bcrypt cost for DB admin passwords. */
+export const BCRYPT_COST = 12;
+export const hashPassword = (password: string) => bcryptHash(password, BCRYPT_COST);
+
+// bcrypt hash compared against when no account matches, so an unknown e-mail costs the same
+// time as a wrong password (no user enumeration by timing). Created once, lazily.
+let dummyHash: Promise<string> | null = null;
+const getDummyHash = () => (dummyHash ??= bcryptHash(randomUUID(), BCRYPT_COST));
+
 /**
- * Single entry point for admin login checks. Fails closed in production when
- * ADMIN_EMAIL / ADMIN_PASSWORD(_HASH) / JWT_SECRET are missing or invalid.
- * With ADMIN_PASSWORD_HASH set, the password is verified with bcrypt; otherwise
- * it falls back to a constant-time plaintext comparison. Email and password are
- * always both checked so timing doesn't reveal which one was wrong.
+ * Single entry point for admin login checks (N-8). Returns who logged in, or null.
+ *
+ * - The env admin (ADMIN_EMAIL + ADMIN_PASSWORD(_HASH)) is the bootstrap/recovery login and
+ *   keeps its fail-closed production behaviour (no env admin when its vars are missing).
+ * - Otherwise the e-mail is looked up in admin_users (case-insensitive); inactive users fail.
+ * - Fails closed for everyone when JWT_SECRET is missing/invalid in production.
+ * - Every path runs exactly one bcrypt compare (a dummy hash when nothing matches or the env
+ *   admin uses a plaintext password), so timing reveals neither which accounts exist nor
+ *   which half of the credentials was wrong.
  */
-export async function verifyAdminCredentials(email: unknown, password: unknown): Promise<boolean> {
+export async function authenticateAdmin(email: unknown, password: unknown): Promise<{ email: string; userId: string } | null> {
+  if (getJwtSecret() === null) return null;
   const creds = resolveAdminCredentials();
-  const secretOk = getJwtSecret() !== null;
-  if (!creds || !secretOk) return false;
-  const emailOk = safeEqual(email, creds.email);
-  let passwordOk = false;
-  if ("passwordHash" in creds) {
-    try {
-      passwordOk = typeof password === "string" && (await bcryptCompare(password, creds.passwordHash));
-    } catch (err) {
-      logConfigError(`ADMIN_PASSWORD_HASH is not a valid bcrypt hash (${err instanceof Error ? err.message : String(err)}).`);
+  const given = typeof email === "string" ? normalizeEmail(email) : "";
+  const pw = typeof password === "string" ? password : "";
+  const compare = async (hash: string, what: string) => {
+    try { return await bcryptCompare(pw, hash); } catch (err) {
+      logConfigError(`${what} is not a valid bcrypt hash (${err instanceof Error ? err.message : String(err)}).`);
+      return false;
     }
-  } else {
-    passwordOk = safeEqual(password, creds.password);
+  };
+
+  if (creds && given && safeEqual(given, normalizeEmail(creds.email))) {
+    let ok: boolean;
+    if ("passwordHash" in creds) ok = await compare(creds.passwordHash, "ADMIN_PASSWORD_HASH");
+    else { await compare(await getDummyHash(), "dummy"); ok = safeEqual(password, creds.password); }
+    return ok ? { email: creds.email, userId: ENV_ADMIN_ID } : null;
   }
-  return emailOk && passwordOk;
+
+  const user = given ? await getAdminUserByEmail(given) : null;
+  const ok = await compare(user?.passwordHash ?? (await getDummyHash()), "admin_users.password_hash");
+  return ok && user && user.active ? { email: user.email, userId: user.id } : null;
+}
+
+/** Back-compat wrapper: true when `authenticateAdmin` accepts the credentials. */
+export async function verifyAdminCredentials(email: unknown, password: unknown): Promise<boolean> {
+  return (await authenticateAdmin(email, password)) !== null;
+}
+
+/** The env admin's e-mail (lower-case), or null when it is not configured (production without vars). */
+export function envAdminEmail(): string | null {
+  const creds = resolveAdminCredentials();
+  return creds ? normalizeEmail(creds.email) : null;
 }
 
 export { COOKIE_NAME };

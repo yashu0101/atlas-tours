@@ -135,6 +135,49 @@ END $$`,
       "CREATE INDEX IF NOT EXISTS bookings_id_prefix_idx ON bookings (id text_pattern_ops)",
     ],
   },
+  {
+    // N-8: database admin users, revocable server-side sessions and the audit log.
+    // admin_sessions.user_id is an admin_users id or 'env' (the env-var admin), so it has no
+    // foreign key; deleting a user revokes its sessions in code. audit_log keeps the actor's
+    // e-mail as text, so entries outlive the user. `action` values come from AuditAction.
+    version: 6,
+    name: "admin_users_sessions_audit",
+    statements: [
+      `CREATE TABLE admin_users (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL CONSTRAINT admin_users_email_lowercase CHECK (email = lower(email) AND email <> ''),
+  name TEXT NOT NULL,
+  password_hash TEXT NOT NULL CONSTRAINT admin_users_password_hash_bcrypt CHECK (char_length(password_hash) = 60),
+  active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL,
+  last_login_at TIMESTAMPTZ
+)`,
+      "CREATE UNIQUE INDEX admin_users_email_unique ON admin_users (lower(email))",
+      `CREATE TABLE admin_sessions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  email TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  revoked_at TIMESTAMPTZ,
+  user_agent TEXT CONSTRAINT admin_sessions_user_agent_length CHECK (char_length(user_agent) <= 512),
+  ip TEXT CONSTRAINT admin_sessions_ip_length CHECK (char_length(ip) <= 64),
+  CONSTRAINT admin_sessions_expiry_after_creation CHECK (expires_at > created_at)
+)`,
+      "CREATE INDEX admin_sessions_user_id_idx ON admin_sessions (user_id)",
+      "CREATE INDEX admin_sessions_expires_at_idx ON admin_sessions (expires_at)",
+      `CREATE TABLE audit_log (
+  id TEXT PRIMARY KEY,
+  created_at TIMESTAMPTZ NOT NULL,
+  actor_email TEXT NOT NULL,
+  action TEXT NOT NULL CONSTRAINT audit_log_action_valid CHECK (action IN ('create','update','delete','login','logout','login_failed','signout_all','password_change')),
+  entity TEXT,
+  entity_id TEXT,
+  details JSONB NOT NULL DEFAULT '[]'::jsonb
+)`,
+      "CREATE INDEX audit_log_created_at_idx ON audit_log (created_at DESC)",
+    ],
+  },
 ];
 
 /**

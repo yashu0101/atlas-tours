@@ -19,6 +19,10 @@ const PATHS = {
   arrow: "M5 12h14M13 6l6 6-6 6",
   eye: "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
   eyeOff: "M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a9.6 9.6 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2",
+  // N-8
+  users: "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1M16 3.5a4 4 0 0 1 0 7M18 14a6 6 0 0 1 4 6v1",
+  audit: "M5 3h14v18H5zM9 8h6M9 12h6M9 16h3",
+  devices: "M3 5h14v10H3zM7 19h6M10 15v4M17 9h4v10h-4z",
 } as const;
 
 export type IconName = keyof typeof PATHS;

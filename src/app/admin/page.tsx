@@ -6,7 +6,7 @@ import Link from "next/link";
 
 import type { TourPackage, Booking, Enquiry, Review, GalleryImage, BlogPost, FAQ, Offer } from "@/lib/types";
 import { useApp } from "@/lib/context";
-import { loadList, type LoadResult } from "./_lib/api";
+import { loadList, reportFailure, type LoadResult } from "./_lib/api";
 import { entityCrud, useEntityTab } from "./_lib/crud";
 import { isAwaitingApproval } from "./_lib/table";
 import type { Tab } from "./_lib/tabs";
@@ -21,6 +21,8 @@ import GalleryTab from "./_components/GalleryTab";
 import BlogsTab from "./_components/BlogsTab";
 import FaqsTab from "./_components/FaqsTab";
 import OffersTab from "./_components/OffersTab";
+import UsersTab from "./_components/UsersTab";
+import AuditTab from "./_components/AuditTab";
 
 const NAV: Record<Tab, { label: string; icon: IconName }> = {
   dashboard: { label: "Dashboard", icon: "dashboard" },
@@ -32,14 +34,18 @@ const NAV: Record<Tab, { label: string; icon: IconName }> = {
   blogs: { label: "Blogs", icon: "blogs" },
   faqs: { label: "FAQs", icon: "faqs" },
   offers: { label: "Offers", icon: "offers" },
+  users: { label: "Users", icon: "users" },
+  audit: { label: "Audit log", icon: "audit" },
 };
 const INBOX_TABS: Tab[] = ["bookings", "enquiries", "reviews"];
 const CONTENT_TABS: Tab[] = ["packages", "gallery", "blogs", "faqs", "offers"];
+const ADMIN_TABS: Tab[] = ["users", "audit"];
 
 export default function AdminPage() {
   const router = useRouter();
   const { theme, setTheme } = useApp();
   const [loading, setLoading] = useState(true);
+  const [me, setMe] = useState<{ email: string; userId: string } | null>(null);
   const [tab, setTab] = useState<Tab>("dashboard");
   const [packages, setPackages] = useState<TourPackage[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -63,7 +69,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetch("/api/auth/me")
-      .then(r => { if (!r.ok) router.push("/login"); else setLoading(false); })
+      .then(async r => { if (!r.ok) { router.push("/login"); return; } setMe(await r.json()); setLoading(false); })
       .catch(err => { console.error("Session check failed", err); router.push("/login"); });
   }, [router]);
 
@@ -93,6 +99,13 @@ export default function AdminPage() {
   }, [loading, router]);
 
   const logout = async () => { await fetch("/api/auth/logout", { method: "POST" }); router.push("/login"); };
+  // N-8: revokes every session of this admin (all browsers/devices, this one included).
+  const signOutAll = async () => {
+    if (!confirm("Sign out of the admin on all devices, including this one?")) return;
+    const res = await fetch("/api/auth/signout-all", { method: "POST" }).catch(() => null);
+    if (res && !res.ok && res.status !== 401) { await reportFailure("Sign out all devices", res); return; }
+    router.push("/login");
+  };
 
   if (loading) {
     return (
@@ -138,6 +151,8 @@ export default function AdminPage() {
             {INBOX_TABS.map(navItem)}
             <div className="adm-nav-group">Website content</div>
             {CONTENT_TABS.map(navItem)}
+            <div className="adm-nav-group">Administration</div>
+            {ADMIN_TABS.map(navItem)}
           </nav>
           <div className="adm-side-foot">
             <button type="button" className="adm-nav-item" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -150,6 +165,9 @@ export default function AdminPage() {
             </Link>
             <button type="button" className="adm-nav-item" onClick={logout}>
               <Icon name="logout" /><span className="adm-nav-label">Log out</span>
+            </button>
+            <button type="button" className="adm-nav-item" onClick={signOutAll}>
+              <Icon name="devices" /><span className="adm-nav-label">Sign out all devices</span>
             </button>
           </div>
         </aside>
@@ -165,6 +183,8 @@ export default function AdminPage() {
             {tab === "blogs" && <BlogsTab {...blogsTab} />}
             {tab === "faqs" && <FaqsTab {...faqsTab} />}
             {tab === "offers" && <OffersTab {...offersTab} />}
+            {tab === "users" && <UsersTab currentUserId={me?.userId ?? ""} />}
+            {tab === "audit" && <AuditTab />}
           </div>
         </main>
       </div>
