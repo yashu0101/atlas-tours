@@ -44,9 +44,10 @@ Last updated: 2026-11-18
 |---|---|
 | E-10 | **Already applied (please sign off):** for readability/accessibility, grey and orange text is slightly darker, and **text on the orange buttons is now dark navy instead of white** (white on orange was too faint to pass accessibility standards). Keep this, or prefer a darker orange button with white text? |
 | Q-3 | Contact form errors currently use the same green box as success. OK to show errors in red? |
-| F-11 | The photo for **"Sacred Odisha Pilgrimage"** no longer exists online, so that package shows a broken image. Please send a photo (or pick one in Admin → Packages → Edit → Image URL). |
+| F-11 | **Resolved — stock photo applied.** The old "Sacred Odisha Pilgrimage" photo no longer existed online; the package now shows a free stock photo of the Konark Sun Temple. If you have your own photo, send it (or set it in Admin → Packages → Edit → Image URL). |
 | Q-5 | **Resolved — sample offers removed.** When you have real offers (title, discount, code, start and end date), add them in Admin → Offers; the Offers section on the home page appears automatically while an offer is valid. |
 | G-06 | Package filter/search and gallery category tabs: review the new UI |
 | G-08 | Full Hindi translation: please send the Hindi text for every section (the site has a translation file ready for it) |
 | G-03 / G-07 | Package and blog detail pages: review the new pages |
 | N-4…N-9 | **Built, please review:** booking status page (`/track`, reference + phone), customer reviews (`/reviews/new`, shown only after you approve them in the admin), "Plan my trip" / callback form (`/plan-trip`), wishlist (`/wishlist`) and package comparison (`/compare`) with a heart and a "Compare" button on each package card, new footer links, and the hero video now plays automatically only on larger screens with a good connection (otherwise a "Play video" button) |
+| C-10 | **Built, please review:** clicking a package (photo, name or "View Details") now opens its full page instead of a pop-up, and **"Book Now" opens the online booking form** on that page (it used to open WhatsApp; WhatsApp is still on the page and in the corner button). Travel dates in the past can no longer be chosen. The Varanasi package photo (it showed a van on a beach) is now a photo of the Varanasi ghats. |

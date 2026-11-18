@@ -13,12 +13,13 @@ import ScrollProgress from "@/components/ScrollProgress";
 import RevealObserver from "@/components/RevealObserver";
 import BookingForm from "@/components/BookingForm";
 import { getPackages } from "@/lib/db";
-import { isPublicPackage } from "@/lib/visibility";
+import { isPublicPackage, istDateKey } from "@/lib/visibility";
 import { SITE_CONFIG } from "@/lib/config";
 import { OG_IMAGE, SITE_URL, jsonLdString } from "@/lib/seo";
 import type { TourPackage } from "@/lib/types";
 import { getT } from "@/lib/i18n";
 import {
+  BOOKING_ANCHOR,
   categoryLabel,
   discountPercent,
   formatPrice,
@@ -270,7 +271,8 @@ const styles: Record<string, React.CSSProperties> = {
   dayTitle: { fontSize: 15, fontWeight: 600, color: "var(--primary)", lineHeight: 1.6 },
   inclusionList: { listStyle: "none", padding: 0, margin: 0, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 20px" },
   inclusionItem: { padding: "6px 0", fontSize: 14, color: "var(--text2)", display: "flex", alignItems: "center", gap: 8 },
-  aside: { position: "sticky", top: 96 },
+  // scrollMarginTop keeps the fixed header off the form when "Book Now" jumps to #book.
+  aside: { position: "sticky", top: 96, scrollMarginTop: 96 },
   bookingCard: {
     background: "var(--card-bg)",
     borderRadius: 20,
@@ -474,11 +476,11 @@ export default async function PackageDetailPage({ params }: Params) {
                 </Link>
               </div>
 
-              <aside className="pkgd-aside" style={styles.aside} aria-labelledby="pkgd-book">
+              <aside id={BOOKING_ANCHOR} className="pkgd-aside" style={styles.aside} aria-labelledby="pkgd-book">
                 <div className="pkgd-card" style={styles.bookingCard}>
                   <h2 id="pkgd-book" style={styles.bookingTitle}>{t("packageDetail.bookTitle")}</h2>
                   <p style={styles.bookingSub}>{t("packageDetail.bookSubtitle")}</p>
-                  <BookingForm packageId={pkg.id} packageName={pkg.name} price={pkg.price} />
+                  <BookingForm packageId={pkg.id} packageName={pkg.name} price={pkg.price} minDate={istDateKey(new Date())} />
                   <p style={styles.orDivider}>{t("packageDetail.orAsk")}</p>
                   <a
                     className="pkgd-wa"

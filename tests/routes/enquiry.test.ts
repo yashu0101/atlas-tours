@@ -28,7 +28,7 @@ const post = (body: unknown, raw?: string) =>
     }),
   );
 
-const valid = { name: "Asha", phone: "+91 98765 43210", email: "asha@example.com", travelers: 2, travelDate: "2026-12-01", message: "Hi" };
+const valid = { name: "Asha", phone: "+91 98765 43210", email: "asha@example.com", travelers: 2, travelDate: "2099-12-01", message: "Hi" };
 
 describe("POST /api/enquiry", () => {
   it("saves a valid enquiry with only whitelisted fields", async () => {
@@ -69,6 +69,7 @@ describe("POST /api/enquiry", () => {
     ["missing name", { ...valid, name: "" }, /name is required/],
     ["bad email", { ...valid, email: "not-an-email" }, /email/],
     ["bad date", { ...valid, travelDate: "01/12/2026" }, /travelDate/],
+    ["past date", { ...valid, travelDate: "2020-01-01" }, /travelDate cannot be in the past/],
     ["zero travelers", { ...valid, travelers: 0 }, /travelers/],
   ])("rejects %s with 400 and saves nothing", async (_label, body, message) => {
     const before = db.read().enquiries.length;

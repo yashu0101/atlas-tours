@@ -12,7 +12,7 @@ export const SITE_DESCRIPTION =
 
 // Varanasi ghats image, already used by the default Varanasi package.
 export const OG_IMAGE = {
-  url: "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=1200&h=630&fit=crop&q=75",
+  url: "https://images.unsplash.com/photo-1561359313-0639aad49ca6?w=1200&h=630&fit=crop&q=75",
   width: 1200,
   height: 630,
   alt: `${SITE_CONFIG.name} — Varanasi ghats`,

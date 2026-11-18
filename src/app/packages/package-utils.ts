@@ -51,6 +51,12 @@ export const stripDayPrefix = (line: string): string => line.replace(/^\s*Day\s*
 
 export const packagePath = (id: string): string => `/packages/${encodeURIComponent(id)}`;
 
+/** Anchor of the booking card on the detail page (`id` of its <aside>). */
+export const BOOKING_ANCHOR = "book";
+
+/** Detail page scrolled to the booking form — target of the cards' "Book Now". */
+export const packageBookingPath = (id: string): string => `${packagePath(id)}#${BOOKING_ANCHOR}`;
+
 /** wa.me link to the business number from SITE_CONFIG with a prefilled message. */
 export const whatsappLink = (text: string): string =>
   `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent(text)}`;

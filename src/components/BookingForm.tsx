@@ -21,6 +21,8 @@ interface BookingFormProps {
   packageName: string;
   /** Per-person price; the server computes the real amount as price × travelers. */
   price: number;
+  /** Earliest selectable travel date (today in IST, "YYYY-MM-DD"), computed on the server. */
+  minDate: string;
 }
 
 type Status = { kind: "idle" } | { kind: "success"; reference?: string } | { kind: "error"; message: string };
@@ -29,7 +31,7 @@ type Status = { kind: "idle" } | { kind: "success"; reference?: string } | { kin
  * Online booking request form (G-01) for the package detail page, posting to the
  * public `POST /api/book`. Styling follows the Contact form (inputs, labels, submit button).
  */
-const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price }) => {
+const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price, minDate }) => {
   const { lang } = useApp();
   const t = useT();
   const [form, setForm] = useState<BookingFormValues>(EMPTY_BOOKING_FORM);
@@ -201,7 +203,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price
         </div>
         <div>
           <label htmlFor="booking-date" style={labelStyle}>{t("common.travelDate")}</label>
-          <input id="booking-date" name="travelDate" type="date"
+          <input id="booking-date" name="travelDate" type="date" min={minDate}
             className="booking-input" style={inputStyle} value={form.travelDate} onChange={handleChange} />
         </div>
         <div>

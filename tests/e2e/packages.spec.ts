@@ -54,7 +54,7 @@ test("booking form shows the estimate and submits to /api/book (G-01)", async ({
   await form.getByLabel("Full Name *").fill("E2E Traveller");
   await form.getByLabel("Phone *").fill("+91 98765 43210");
   await form.getByLabel("Email").fill("e2e@example.com");
-  await form.getByLabel("Travel Date").fill("2027-01-15");
+  await form.getByLabel("Travel Date").fill("2099-01-15");
   await form.getByLabel("Travelers *").fill("2");
   await expect(form.getByText("× 2 travelers")).toBeVisible();
   await expect(form.getByText("₹17,998")).toBeVisible();
@@ -86,4 +86,34 @@ test("home page category filter and detail link (G-06)", async ({ page }) => {
   await section.getByRole("link", { name: /Divine Varanasi & Prayagraj: full details/ }).click();
   await page.waitForURL("**/packages/pkg-varanasi");
   await expect(page.getByRole("heading", { level: 1, name: "Divine Varanasi & Prayagraj" })).toBeVisible();
+});
+
+test("package cards open the detail page: image, title, View Details, Book Now", async ({ page }) => {
+  const h1 = page.getByRole("heading", { level: 1, name: "Sacred Odisha Pilgrimage" });
+  const card = () => page.locator("#packages .pkg-card").filter({ hasText: "Sacred Odisha Pilgrimage" });
+
+  await page.goto("/");
+  await card().getByRole("link", { name: "View details: Sacred Odisha Pilgrimage" }).click();
+  await page.waitForURL("**/packages/pkg-odisha");
+  await expect(h1).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+
+  await page.goto("/");
+  await card().getByRole("heading", { name: "Sacred Odisha Pilgrimage" }).getByRole("link").click();
+  await page.waitForURL("**/packages/pkg-odisha");
+  await expect(h1).toBeVisible();
+
+  // The image link is mouse-only (aria-hidden), so click the image itself.
+  await page.goto("/");
+  await card().locator('img[alt="Sacred Odisha Pilgrimage"]').click();
+  await page.waitForURL("**/packages/pkg-odisha");
+  await expect(h1).toBeVisible();
+
+  // Book Now lands on the booking form.
+  await page.goto("/");
+  await card().getByRole("link", { name: "Book Sacred Odisha Pilgrimage" }).click();
+  await page.waitForURL("**/packages/pkg-odisha#book");
+  const form = page.getByRole("form", { name: /Book Sacred Odisha Pilgrimage/ });
+  await expect(form).toBeInViewport();
+  await expect(form.getByLabel("Travel Date")).toHaveAttribute("min", /^\d{4}-\d{2}-\d{2}$/);
 });
