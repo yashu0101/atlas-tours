@@ -216,6 +216,7 @@ export const en = {
     viewFull: "View full-size QR code",
     /** N-13: per-booking amount line shown with the booking's own QR. */
     amountLabel: "Amount: ₹{amount}",
+    notePerBooking: "After paying, enter the 12-digit UPI transaction ID (UTR) below so we can match your payment.",
     note: "Please pay only after our team has confirmed your booking, then share the payment screenshot with us on WhatsApp.",
   },
   /** N-13: pay-by-UPI panel on /track (PaymentPanel.tsx). */

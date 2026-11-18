@@ -193,7 +193,7 @@ const UpiPayCard: React.FC<{ compact?: boolean; amount?: number; reference?: str
           {t("upi.payeeLabel")}: <span style={{ color: "var(--text)", fontWeight: 600 }}>{UPI_CONFIG.payee}</span>
         </div>
         <a href={payLink} style={styles.payBtn}>{t("upi.openApp")}</a>
-        <p style={styles.note}>{t("upi.note")}</p>
+        <p style={styles.note}>{t(perBooking ? "upi.notePerBooking" : "upi.note")}</p>
       </div>
     </div>
   );

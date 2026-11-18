@@ -16,7 +16,7 @@
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.13",
     "next": "16.4.6",
-    "qrcode": "^1.5.4",
+    "qrcode": "1.5.4",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
@@ -24,7 +24,7 @@
     "@electric-sql/pglite": "^0.5.16",
     "@playwright/test": "1.65.1",
     "@types/node": "^20",
-    "@types/qrcode": "^1.5.5",
+    "@types/qrcode": "1.5.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
