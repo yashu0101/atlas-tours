@@ -6,6 +6,7 @@ import { formatPrice } from "@/app/packages/package-utils";
 import { formatISTDate } from "@/app/blog/_lib/format-date";
 import { parseBookingReference } from "@/lib/booking-ref";
 import { PHONE_DISPLAY } from "@/lib/config";
+import PaymentPanel from "./PaymentPanel";
 import { useT } from "@/lib/i18n/use-t";
 import {
   Honeypot,
@@ -71,6 +72,7 @@ export default function TrackBookingForm({ initialReference = "" }: { initialRef
   const [website, setWebsite] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [lookupPhone, setLookupPhone] = useState("");
   const [result, setResult] = useState<BookingStatusResult | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,6 +96,7 @@ export default function TrackBookingForm({ initialReference = "" }: { initialRef
       if (res.status === 400) return setError(t("track.notFound"));
       if (!res.ok || !body || typeof body !== "object") return setError(t("track.errorGeneric"));
       setResult(body as BookingStatusResult);
+      setLookupPhone(phone.trim());
     } catch {
       setError(t("track.errorGeneric"));
     } finally {
@@ -231,6 +234,14 @@ export default function TrackBookingForm({ initialReference = "" }: { initialRef
                 PAYMENT_TONE[result.paymentStatus],
                 t(`track.paymentStatusHelp.${result.paymentStatus}`),
               )}
+            {result.bookingStatus === "confirmed" && result.paymentStatus === "pending" && (
+              <PaymentPanel
+                reference={result.reference}
+                phone={lookupPhone}
+                amount={result.amount}
+                onSubmitted={() => setResult((r) => (r ? { ...r, paymentStatus: "verifying" } : r))}
+              />
+            )}
           </section>
         )}
       </div>

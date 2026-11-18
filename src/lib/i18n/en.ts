@@ -141,6 +141,8 @@ export const en = {
     successReference: " (ref. {reference})",
     /** N-4: link in the success message to /track?ref=… */
     trackLink: "Track this booking",
+    /** N-13: replaces the QR under the success message, so nobody pays an unconfirmed amount. */
+    payAfterConfirm: "We'll call you to confirm. Once confirmed, you can pay by UPI from the Track page.",
     errorTooMany: "Too many booking attempts. Please wait a minute and try again.",
     errorNotFound: "Sorry, this package is no longer available for online booking.",
     errorCheckDetails: "Please check your details: {message}.",
@@ -212,7 +214,21 @@ export const en = {
     openApp: "Open UPI app",
     qrAlt: "UPI QR code for paying {payee}, UPI ID {id}",
     viewFull: "View full-size QR code",
+    /** N-13: per-booking amount line shown with the booking's own QR. */
+    amountLabel: "Amount: ₹{amount}",
     note: "Please pay only after our team has confirmed your booking, then share the payment screenshot with us on WhatsApp.",
+  },
+  /** N-13: pay-by-UPI panel on /track (PaymentPanel.tsx). */
+  pay: {
+    utrLabel: "UPI transaction ID (UTR)",
+    utrHint: "12 digits, shown in your UPI app after paying",
+    submit: "Submit transaction ID",
+    submitting: "Submitting...",
+    errorInvalid: "The transaction ID must be 12 digits.",
+    notPayable: "This booking is not awaiting payment.",
+    utrUsed: "This transaction ID has already been submitted. Please check it and try again.",
+    errorTooMany: "Too many attempts. Please try again in 15 minutes.",
+    errorGeneric: "Something went wrong while submitting your transaction ID. Please try again or contact us.",
   },
   blog: {
     badge: "Our Blog",

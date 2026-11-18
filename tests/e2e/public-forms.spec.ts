@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
 // N-4 /track, N-5 /reviews/new, N-6 /plan-trip. Runs against the e2e dev server's temp JSON
 // database (see playwright.config.ts). The public endpoints are rate-limited per IP
@@ -24,8 +24,76 @@ async function createBooking(page: Page, phone: string) {
   });
   expect(res.ok()).toBeTruthy();
   const booking = (await res.json()) as { id: string; amount: number };
-  return { reference: booking.id.slice(0, 8).toUpperCase(), amount: booking.amount };
+  return { id: booking.id, reference: booking.id.slice(0, 8).toUpperCase(), amount: booking.amount };
 }
+
+/** Confirms a booking through the admin API (separate request context = its own cookie jar). */
+async function confirmBooking(request: APIRequestContext, id: string) {
+  const login = await request.post("/api/auth/login", {
+    data: { email: "admin@atlastours.com", password: "admin123" },
+  });
+  expect(login.ok()).toBeTruthy();
+  const patch = await request.patch("/api/bookings", { data: { id, bookingStatus: "confirmed" } });
+  expect(patch.ok()).toBeTruthy();
+}
+
+async function trackBooking(page: Page, reference: string, phone: string) {
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": uniqueIp() });
+  await page.goto(`/track?ref=${reference}`);
+  const form = page.getByRole("form", { name: "Track a booking" });
+  await form.getByLabel("Phone *").fill(phone);
+  await form.getByRole("button", { name: "Check status" }).click();
+  const result = page.getByRole("region", { name: `Booking ${reference}` });
+  await expect(result).toBeVisible();
+  return result;
+}
+
+test("pending booking on /track has no pay panel (N-13)", async ({ page }) => {
+  const { reference } = await createBooking(page, "9876566661");
+  const result = await trackBooking(page, reference, "9876566661");
+  await expect(result.getByText("Pay via UPI")).toHaveCount(0);
+});
+
+test("confirmed booking shows the UPI QR and accepts a UTR (N-13)", async ({ page, request }) => {
+  const { id, reference, amount } = await createBooking(page, "9876566662");
+  await confirmBooking(request, id);
+  const result = await trackBooking(page, reference, "9876566662");
+
+  await expect(result.getByText("Pay via UPI", { exact: true })).toBeVisible();
+  await expect(result.getByRole("img", { name: /UPI ID/ })).toBeVisible();
+  await expect(result.getByText(`Amount: ₹${amount.toLocaleString("en-IN")}`)).toBeVisible();
+
+  await result.getByLabel("UPI transaction ID (UTR)").fill("4123 5678 9012");
+  await result.getByRole("button", { name: "Submit transaction ID" }).click();
+  await expect(result.getByText("Verifying payment", { exact: true })).toBeVisible();
+  await expect(result.getByText("Pay via UPI", { exact: true })).toHaveCount(0);
+});
+
+test("an invalid UTR shows an inline error without a request (N-13)", async ({ page, request }) => {
+  const { id, reference } = await createBooking(page, "9876566663");
+  await confirmBooking(request, id);
+  const result = await trackBooking(page, reference, "9876566663");
+
+  let claims = 0;
+  page.on("request", (r) => {
+    if (r.url().endsWith("/api/payment-claim")) claims++;
+  });
+  await result.getByLabel("UPI transaction ID (UTR)").fill("123");
+  await result.getByRole("button", { name: "Submit transaction ID" }).click();
+  await expect(result.getByText("The transaction ID must be 12 digits.")).toBeVisible();
+  expect(claims).toBe(0);
+});
+
+test("booking success shows no QR and says to pay after confirmation (N-13)", async ({ page }) => {
+  await useOwnIp(page);
+  await page.goto("/packages/pkg-varanasi");
+  const form = page.getByRole("form", { name: /Book Divine Varanasi/ });
+  await form.getByLabel("Full Name *").fill("Copy Tester");
+  await form.getByLabel("Phone *").fill("9876566664");
+  await form.getByRole("button", { name: "Request Booking" }).click();
+  await expect(form.getByText(/you can pay by UPI from the Track page/)).toBeVisible();
+  await expect(page.getByRole("img", { name: /UPI QR code/ })).toHaveCount(0);
+});
 
 test("track page shows a booking found by reference + phone (N-4)", async ({ page }) => {
   const { reference, amount } = await createBooking(page, "+91 98765 11111");
@@ -48,7 +116,7 @@ test("track page shows a booking found by reference + phone (N-4)", async ({ pag
   await expect(result.getByText(`₹${amount.toLocaleString("en-IN")}`)).toBeVisible();
   await expect(result.getByText("Pending", { exact: true })).toBeVisible();
   await expect(result.getByText("Not paid yet", { exact: true })).toBeVisible();
-  await expect(result.getByText(/No payment is taken online/)).toBeVisible();
+  await expect(result.getByText(/Once we confirm your booking, you can pay here by UPI/)).toBeVisible();
 });
 
 test("track page shows not-found for a wrong phone number (N-4)", async ({ page }) => {

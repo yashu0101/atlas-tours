@@ -37,5 +37,5 @@ test("home page shows the team section and UPI payment details", async ({ page }
   const contact = page.locator("#contact");
   await expect(contact.getByText("Pay via UPI")).toBeVisible();
   await expect(contact.getByText("d2095760-1@okicici")).toBeVisible();
-  await expect(contact.getByRole("link", { name: "Open UPI app" })).toHaveAttribute("href", /^upi:\/\/pay\?pa=d2095760-1%40okicici/);
+  await expect(contact.getByRole("link", { name: "Open UPI app" })).toHaveAttribute("href", /^upi:\/\/pay\?pa=d2095760-1@okicici/);
 });
