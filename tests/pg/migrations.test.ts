@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  addOffer, addPackage, addReview, getEnquiries, getFAQs, getPackages, getReviews,
+  addAdminUser, getAdminUserByEmail, addOffer, addPackage, addReview, getEnquiries, getFAQs, getPackages, getReviews,
   seedContent, updateBooking, updateEnquiryStatus, updateReview, addBooking, addEnquiry,
 } from "@/lib/db";
 import { initDB, MIGRATIONS } from "@/lib/db-schema";
@@ -109,6 +109,35 @@ describe("migrations: upgrading a database created by the old initDB", () => {
   });
 });
 
+describe("migrations: v6 admin users / sessions / audit (N-8)", () => {
+  it("applies on a database already at v5 (old schema upgraded before N-8), keeping its rows", async () => {
+    await exec(OLD_SCHEMA_SQL);
+    await insertOldRows();
+    // Bring the database to v5 exactly as a pre-N-8 deploy would have.
+    await pg.db.query("CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY, name TEXT NOT NULL, applied_at TIMESTAMPTZ NOT NULL DEFAULT now())");
+    for (const m of MIGRATIONS.filter(m => m.version <= 5)) {
+      await exec(m.statements);
+      await pg.db.query("INSERT INTO schema_migrations (version, name) VALUES ($1, $2)", [m.version, m.name]);
+    }
+    const tables = async () => (await pg.db.query<{ table_name: string }>(
+      "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('admin_users','admin_sessions','audit_log') ORDER BY 1")).rows.map(r => r.table_name);
+    expect(await tables()).toEqual([]);
+    const pkgsBefore = await getPackages();
+
+    await init();
+
+    expect(await versions()).toEqual(MIGRATIONS.map(m => m.version));
+    expect(await tables()).toEqual(["admin_sessions", "admin_users", "audit_log"]);
+    expect(await getPackages()).toEqual(pkgsBefore);
+    expect(await columnType("audit_log", "details")).toBe("jsonb");
+    expect(await columnType("admin_sessions", "expires_at")).toBe("timestamp with time zone");
+    const u = await addAdminUser({ email: "New@Example.com", name: "N", passwordHash: "$2b$12$" + "a".repeat(53), active: true });
+    expect(await getAdminUserByEmail("new@example.com")).toMatchObject({ id: u.id });
+    await init(); // re-run is a no-op
+    expect(await versions()).toEqual(MIGRATIONS.map(m => m.version));
+  });
+});
+
 describe("migrations: fresh database", () => {
   it("creates the latest schema, seeds, and re-runs safely", async () => {
     await init();
@@ -124,6 +153,7 @@ describe("migrations: fresh database", () => {
     expect(names).toEqual(expect.arrayContaining([
       "packages_created_at_idx", "enquiries_created_at_idx", "bookings_created_at_idx", "reviews_created_at_idx",
       "gallery_created_at_idx", "blogs_created_at_idx", "offers_created_at_idx", "faqs_sort_order_idx", "bookings_id_prefix_idx",
+      "admin_users_email_unique", "admin_sessions_user_id_idx", "admin_sessions_expires_at_idx", "audit_log_created_at_idx",
     ]));
   });
 

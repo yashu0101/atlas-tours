@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { TourPackage, Enquiry, Booking, Review, GalleryImage, BlogPost, FAQ, Offer, DB } from "./types";
+import { TourPackage, Enquiry, Booking, Review, GalleryImage, BlogPost, FAQ, Offer, DB, AdminDB, AdminUser, AdminSession, AuditEntry } from "./types";
 import { buildSeedDB, SEED_PACKAGES, SEED_REVIEWS, SEED_GALLERY, SEED_BLOGS, SEED_FAQS, SEED_OFFERS } from "./seed-data";
 import {
   BOOKING_FILTER_SPEC, ENQUIRY_FILTER_SPEC, EMPTY_BOOKING_FILTERS, EMPTY_ENQUIRY_FILTERS, REFERENCE_LENGTH,
@@ -61,7 +61,10 @@ interface Column {
 
 interface Entity<T extends { id: string }> {
   table: string;
-  key: Exclude<keyof DB, "config">;
+  /** Array key in the JSON file: `DB` (db.json) or, with `file: "admin"`, `AdminDB` (db.admin.json). */
+  key: Exclude<keyof DB, "config"> | keyof AdminDB;
+  /** JSON backend only: "admin" keeps the rows in db.admin.json instead of db.json (N-8). */
+  file?: "admin";
   /** Every field of T, in the order columns are written. */
   columns: { readonly [K in keyof T & string]-?: Column };
   /** Fields an update may touch (B-07): never id or createdAt. */
@@ -141,6 +144,33 @@ const OFFERS: Entity<Offer> = {
   patchable: ["title", "description", "discount", "code", "validFrom", "validTo", "active"],
 };
 
+// N-8: admin users, server-side sessions and the audit log (JSON backend: db.admin.json).
+const ADMIN_USERS: Entity<AdminUser> = {
+  table: "admin_users", key: "adminUsers", file: "admin", orderBy: "created_at",
+  columns: {
+    id, email: c("email"), name: c("name"), passwordHash: c("password_hash"), active: c("active"), createdAt,
+    lastLoginAt: c("last_login_at", { type: "timestamp", optional: true }),
+  },
+  patchable: ["name", "passwordHash", "active", "lastLoginAt"],
+};
+const ADMIN_SESSIONS: Entity<AdminSession> = {
+  table: "admin_sessions", key: "adminSessions", file: "admin", orderBy: "created_at DESC",
+  columns: {
+    id, userId: c("user_id"), email: c("email"), createdAt, expiresAt: c("expires_at", { type: "timestamp" }),
+    revokedAt: c("revoked_at", { type: "timestamp", optional: true }),
+    userAgent: c("user_agent", { optional: true }), ip: c("ip", { optional: true }),
+  },
+  patchable: ["revokedAt"],
+};
+const AUDIT_LOG: Entity<AuditEntry> = {
+  table: "audit_log", key: "auditLog", file: "admin", orderBy: "created_at DESC",
+  columns: {
+    id, createdAt, actorEmail: c("actor_email"), action: c("action"),
+    entity: c("entity", { optional: true }), entityId: c("entity_id", { optional: true }), details: c("details", { type: "array" }),
+  },
+  patchable: [],
+};
+
 // ============================================================
 // POSTGRES (Neon)
 // ============================================================
@@ -187,7 +217,8 @@ function fromRow<T extends { id: string }>(e: Entity<T>, r: Row): T {
   const out: Record<string, unknown> = {};
   for (const [field, col] of Object.entries(e.columns) as [string, Column][]) {
     const v = r[col.col];
-    out[field] = col.type === "array" ? safeParseArray(v, `${e.table}.${col.col}`)
+    out[field] = col.optional && v == null ? undefined
+      : col.type === "array" ? safeParseArray(v, `${e.table}.${col.col}`)
       : col.type === "timestamp" ? toIsoString(v)
       : col.optional ? v ?? undefined
       : v;
@@ -354,8 +385,11 @@ function sleepSync(ms: number) {
  * so it is retried a few times.
  */
 function writeDB(data: DB): void {
+  writeJsonFile(dbPath(), data);
+}
+
+function writeJsonFile(file: string, data: unknown): void {
   warnIfJsonInProduction();
-  const file = dbPath();
   const dir = path.dirname(file);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   const tmp = path.join(dir, `.${path.basename(file)}.${process.pid}.${crypto.randomUUID()}.tmp`);
@@ -374,9 +408,45 @@ function writeDB(data: DB): void {
 }
 
 
+/**
+ * N-8: admin users, sessions and the audit log live in a second file next to db.json
+ * (`<name>.admin.json`, so `data/db.admin.json` by default, git-ignored), so logging in or
+ * out never rewrites the git-tracked content file. A missing file is an empty store.
+ */
+function adminDbPath(): string {
+  return dbPath().replace(/\.json$/i, "") + ".admin.json";
+}
+
+function readAdminDB(): AdminDB {
+  warnIfJsonInProduction();
+  const file = adminDbPath();
+  let raw: string;
+  try {
+    raw = fs.readFileSync(file, "utf-8");
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+    return { adminUsers: [], adminSessions: [], auditLog: [] };
+  }
+  let data: Partial<AdminDB>;
+  try {
+    data = JSON.parse(raw);
+  } catch (err) {
+    throw new Error(`[db] ${file} is not valid JSON; refusing to overwrite it. Fix or delete the file. (${(err as Error).message})`);
+  }
+  return { adminUsers: data.adminUsers ?? [], adminSessions: data.adminSessions ?? [], auditLog: data.auditLog ?? [] };
+}
+
+type JsonStore = Record<string, unknown>;
+const readStore = (file?: "admin"): JsonStore => (file === "admin" ? readAdminDB() : readDB()) as unknown as JsonStore;
+const writeStore = (file: "admin" | undefined, data: JsonStore) =>
+  (file === "admin" ? writeJsonFile(adminDbPath(), data) : writeDB(data as unknown as DB));
+
 // JSON CRUD helpers — same semantics as the pg* functions, driven by the same definitions.
 function jsonCRUD<T extends { id: string }>(e: Entity<T>) {
-  const all = (db: DB) => db[e.key] as unknown as T[];
+  // Shadow the db.json helpers so every entity reads and writes its own file.
+  const readDB = () => readStore(e.file);
+  const writeDB = (db: JsonStore) => writeStore(e.file, db);
+  const all = (db: JsonStore) => db[e.key] as T[];
   return {
     getAll: (): T[] => all(readDB()),
     add: (item: T): T => {
@@ -616,4 +686,109 @@ export async function getInboxSummary(): Promise<InboxSummary> {
     bookings: { total: allB.total, pending: pendingB.total, paidRevenue, recent: allB.items },
     enquiries: { total: allE.total, new: newE.total, recent: allE.items },
   };
+}
+
+// ============================================================
+// ADMIN USERS, SESSIONS, AUDIT LOG (N-8)
+// ============================================================
+// Raw rows: an AdminUser here includes `passwordHash`. Only server code (auth.ts, the
+// admin-users route) calls these; API responses go through `toPublicAdminUser` (admin-users.ts).
+
+const adminUsers = store(ADMIN_USERS);
+const adminSessions = store(ADMIN_SESSIONS);
+const auditLog = store(AUDIT_LOG);
+
+/** Thrown by `addAdminUser` when the e-mail is already taken (case-insensitive). */
+export class DuplicateEmailError extends Error {
+  constructor() { super("An admin user with this email already exists"); this.name = "DuplicateEmailError"; }
+}
+
+export const normalizeEmail = (email: string) => email.trim().toLowerCase();
+
+export async function getAdminUsers(): Promise<AdminUser[]> { return adminUsers.list(); }
+export async function getAdminUserById(userId: string): Promise<AdminUser | null> { return adminUsers.get(userId); }
+export async function getAdminUserByEmail(email: string): Promise<AdminUser | null> {
+  const e = normalizeEmail(email);
+  if (!e) return null;
+  if (!isPostgres()) return (await adminUsers.list()).find(u => u.email === e) ?? null;
+  const rows = await getSQL().query(`SELECT * FROM ${ADMIN_USERS.table} WHERE lower(email)=$1`, [e]);
+  return rows[0] ? fromRow(ADMIN_USERS, rows[0]) : null;
+}
+/** The e-mail is stored lower-case. Throws `DuplicateEmailError` if it is taken. */
+export async function addAdminUser(u: Omit<AdminUser, "id" | "createdAt">): Promise<AdminUser> {
+  const item = stamp({ ...u, email: normalizeEmail(u.email) });
+  if (!isPostgres()) {
+    if (await getAdminUserByEmail(item.email)) throw new DuplicateEmailError();
+    return adminUsers.add(item);
+  }
+  try {
+    return await adminUsers.add(item);
+  } catch (err) {
+    // The unique index on lower(email) also catches a concurrent insert.
+    if ((err as { code?: string }).code === "23505") throw new DuplicateEmailError();
+    throw err;
+  }
+}
+export async function updateAdminUser(userId: string, u: Partial<Pick<AdminUser, "name" | "passwordHash" | "active" | "lastLoginAt">>) {
+  return adminUsers.update(userId, u);
+}
+export async function deleteAdminUser(userId: string) { return adminUsers.remove(userId); }
+
+export async function getAdminSession(sessionId: string): Promise<AdminSession | null> { return adminSessions.get(sessionId); }
+/** `s.id` is the JWT id (jti), generated by auth.ts. */
+export async function addAdminSession(s: AdminSession): Promise<AdminSession> { return adminSessions.add(s); }
+/** Marks one session revoked (a no-op if it already is, or does not exist). */
+export async function revokeAdminSession(sessionId: string, now = new Date()): Promise<void> {
+  if (isPostgres()) {
+    await getSQL().query(`UPDATE ${ADMIN_SESSIONS.table} SET revoked_at=$1 WHERE id=$2 AND revoked_at IS NULL`, [now.toISOString(), sessionId]);
+    return;
+  }
+  const s = await adminSessions.get(sessionId);
+  if (s && !s.revokedAt) await adminSessions.update(sessionId, { revokedAt: now.toISOString() });
+}
+/** Revokes every live session of `userId` except `exceptSessionId` (if given). Returns how many were revoked. */
+export async function revokeAdminSessionsForUser(userId: string, exceptSessionId?: string, now = new Date()): Promise<number> {
+  const at = now.toISOString();
+  if (isPostgres()) {
+    const rows = await getSQL().query(
+      `UPDATE ${ADMIN_SESSIONS.table} SET revoked_at=$1 WHERE user_id=$2 AND revoked_at IS NULL AND id<>$3 RETURNING id`,
+      [at, userId, exceptSessionId ?? ""]);
+    return rows.length;
+  }
+  const db = readAdminDB();
+  let n = 0;
+  for (const s of db.adminSessions) {
+    if (s.userId === userId && !s.revokedAt && s.id !== exceptSessionId) { s.revokedAt = at; n++; }
+  }
+  if (n) writeJsonFile(adminDbPath(), db);
+  return n;
+}
+/**
+ * Deletes sessions that can never be used again: expired, or revoked more than a day ago.
+ * Called opportunistically on login. Returns how many rows were removed.
+ */
+export async function pruneAdminSessions(now = new Date()): Promise<number> {
+  const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  if (isPostgres()) {
+    const rows = await getSQL().query(
+      `DELETE FROM ${ADMIN_SESSIONS.table} WHERE expires_at < $1 OR revoked_at < $2 RETURNING id`, [now.toISOString(), cutoff.toISOString()]);
+    return rows.length;
+  }
+  const db = readAdminDB();
+  const keep = db.adminSessions.filter(s =>
+    !(Date.parse(s.expiresAt) < now.getTime() || (s.revokedAt && Date.parse(s.revokedAt) < cutoff.getTime())));
+  const n = db.adminSessions.length - keep.length;
+  if (n) { db.adminSessions = keep; writeJsonFile(adminDbPath(), db); }
+  return n;
+}
+
+export async function addAuditEntry(e: Omit<AuditEntry, "id" | "createdAt">): Promise<AuditEntry> { return auditLog.add(stamp(e)); }
+/** Newest first, at most `limit` entries. */
+export async function getAuditLog(limit: number): Promise<AuditEntry[]> {
+  if (isPostgres()) {
+    const rows = await getSQL().query(`SELECT * FROM ${AUDIT_LOG.table} ORDER BY created_at DESC, id LIMIT $1`, [limit]);
+    return rows.map(r => fromRow(AUDIT_LOG, r));
+  }
+  // Appended in time order, so newest first is the reversed file order (stable for equal timestamps).
+  return [...(await auditLog.list())].reverse().slice(0, limit);
 }

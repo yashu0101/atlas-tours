@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getBookings, updateBooking, deleteBooking } from "@/lib/db";
 import { Booking } from "@/lib/types";
+import { audit } from "@/lib/audit";
 import { badRequest, notFound, oneOf, readJson, requireAdmin, requireId, withHandler } from "@/lib/api";
 import { BOOKINGS_LIST, inboxList } from "@/lib/inbox-route";
 
@@ -13,7 +14,7 @@ const BOOKING_STATUSES = Object.keys({ pending: 1, confirmed: 1, completed: 1, c
 export const GET = withHandler(async (req) => inboxList(req, BOOKINGS_LIST, getBookings));
 
 export const PATCH = withHandler(async (req) => {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const body = await readJson(req);
   const id = requireId(body);
   const updates: Partial<Pick<Booking, "paymentStatus" | "bookingStatus">> = {};
@@ -22,12 +23,14 @@ export const PATCH = withHandler(async (req) => {
   if (!updates.paymentStatus && !updates.bookingStatus) throw badRequest("Provide paymentStatus and/or bookingStatus");
   const result = await updateBooking(id, updates);
   if (!result) throw notFound();
+  await audit(admin, "update", { entity: "bookings", entityId: id, fields: Object.keys(updates) });
   return NextResponse.json(result);
 });
 
 export const DELETE = withHandler(async (req) => {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = requireId(await readJson(req));
   if (!(await deleteBooking(id))) throw notFound();
+  await audit(admin, "delete", { entity: "bookings", entityId: id });
   return NextResponse.json({ success: true });
 });

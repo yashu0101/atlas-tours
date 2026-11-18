@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getEnquiries, updateEnquiryStatus, deleteEnquiry } from "@/lib/db";
 import { Enquiry } from "@/lib/types";
+import { audit } from "@/lib/audit";
 import { notFound, oneOf, readJson, requireAdmin, requireId, withHandler } from "@/lib/api";
 import { ENQUIRIES_LIST, inboxList } from "@/lib/inbox-route";
 
@@ -11,18 +12,20 @@ const ENQUIRY_STATUSES = Object.keys({ new: 1, contacted: 1, confirmed: 1, cance
 export const GET = withHandler(async (req) => inboxList(req, ENQUIRIES_LIST, getEnquiries));
 
 export const PATCH = withHandler(async (req) => {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const body = await readJson(req);
   const id = requireId(body);
   const status = oneOf(body.status, ENQUIRY_STATUSES, "status");
   const result = await updateEnquiryStatus(id, status);
   if (!result) throw notFound();
+  await audit(admin, "update", { entity: "enquiries", entityId: id, fields: ["status"] });
   return NextResponse.json(result);
 });
 
 export const DELETE = withHandler(async (req) => {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = requireId(await readJson(req));
   if (!(await deleteEnquiry(id))) throw notFound();
+  await audit(admin, "delete", { entity: "enquiries", entityId: id });
   return NextResponse.json({ success: true });
 });

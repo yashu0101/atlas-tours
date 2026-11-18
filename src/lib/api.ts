@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySession } from "./auth";
+import { verifySession, type AdminIdentity } from "./auth";
 
 /**
  * Shared helpers for API route handlers (B-03).
@@ -36,9 +36,11 @@ export function withHandler(handler: Handler): Handler {
   };
 }
 
-export async function requireAdmin(): Promise<void> {
+/** 401 unless there is a valid admin session; returns who is acting (for the audit log, N-8). */
+export async function requireAdmin(): Promise<AdminIdentity> {
   const s = await verifySession();
   if (!s.authenticated) throw new HttpError(401, "Unauthorized");
+  return { email: s.email, userId: s.userId, sessionId: s.sessionId };
 }
 
 /** True only for an authenticated admin who explicitly asked for `?all=1` (B-05). */
