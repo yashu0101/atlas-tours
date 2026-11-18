@@ -12,23 +12,24 @@ export default function OfferForm({ offer, onSave, onCancel }: { offer?: Offer; 
   const [active, setActive] = useState(offer?.active ?? true);
 
   return (
-    <div>
-      <h3 style={{ margin: "0 0 16px", fontWeight: 600, color: "#E67E22" }}>{offer ? "Edit Offer" : "New Offer"}</h3>
+    // Native validation: required fields block Save and show the browser message; Enter saves.
+    <form onSubmit={e => e.preventDefault()}>
+      <h3 className="modal-title">{offer ? "Edit Offer" : "New Offer"}</h3>
       <div className="adm-form">
-        <div><label>Title *</label><input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Early Bird Discount" /></div>
-        <div><label>Discount (%)</label><input type="number" value={discount} onChange={e => setDiscount(e.target.value)} placeholder="e.g. 20" /></div>
-        <div><label>Coupon Code</label><input value={code} onChange={e => setCode(e.target.value)} placeholder="e.g. ATLAS20" /></div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, paddingTop: 20 }}>
-          <label style={{ display: "flex", gap: 6, alignItems: "center" }}><input type="checkbox" checked={active} onChange={e => setActive(e.target.checked)} /> Active</label>
+        <label className="adm-fl"><span>Title *</span><input required value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Early Bird Discount" /></label>
+        <label className="adm-fl"><span>Discount (%)</span><input type="number" value={discount} onChange={e => setDiscount(e.target.value)} placeholder="e.g. 20" /></label>
+        <label className="adm-fl"><span>Coupon Code</span><input value={code} onChange={e => setCode(e.target.value)} placeholder="e.g. ATLAS20" /></label>
+        <div className="adm-check-cell">
+          <label className="adm-check"><input type="checkbox" checked={active} onChange={e => setActive(e.target.checked)} /> Active</label>
         </div>
-        <div className="full"><label>Description</label><textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Offer details..." /></div>
-        <div><label>Valid From</label><input type="date" value={validFrom} onChange={e => setValidFrom(e.target.value)} /></div>
-        <div><label>Valid To</label><input type="date" value={validTo} onChange={e => setValidTo(e.target.value)} /></div>
+        <label className="adm-fl full"><span>Description</span><textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Offer details..." /></label>
+        <label className="adm-fl"><span>Valid From</span><input type="date" value={validFrom} onChange={e => setValidFrom(e.target.value)} /></label>
+        <label className="adm-fl"><span>Valid To</span><input type="date" value={validTo} onChange={e => setValidTo(e.target.value)} /></label>
       </div>
       <div className="adm-actions">
-        <button className="adm-btn primary" onClick={() => title.trim() && onSave({ title: title.trim(), description, discount: Number(discount) || 0, code: code || undefined, validFrom, validTo, active })}>Save</button>
-        <button className="adm-btn" onClick={onCancel}>Cancel</button>
+        <button type="submit" className="adm-btn primary" onClick={() => title.trim() && onSave({ title: title.trim(), description, discount: Number(discount) || 0, code: code || undefined, validFrom, validTo, active })}>Save</button>
+        <button type="button" className="adm-btn" onClick={onCancel}>Cancel</button>
       </div>
-    </div>
+    </form>
   );
 }

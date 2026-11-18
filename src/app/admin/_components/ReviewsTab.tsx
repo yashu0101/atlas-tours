@@ -8,7 +8,7 @@ import {
   type ReviewFilter,
 } from "../_lib/table";
 import ReviewForm from "./forms/ReviewForm";
-import { Modal, TabHeader } from "./shared";
+import { Empty, Modal, TabHeader } from "./shared";
 
 export default function ReviewsTab({ items: reviews, editing, creating, onAdd, onEdit, onClose, onCreate, onSave, onRemove }: EntityTabProps<Review>) {
   // N-5: customer reviews arrive inactive and wait here for approval.
@@ -18,7 +18,7 @@ export default function ReviewsTab({ items: reviews, editing, creating, onAdd, o
 
   return (
     <>
-      <TabHeader title="Reviews" addLabel="+ Add Review" onAdd={onAdd} />
+      <TabHeader title="Reviews" description="Customer reviews stay hidden until you approve them" addLabel="Add review" onAdd={onAdd} />
       {(creating || editing) && (
         <Modal onClose={onClose}>
           <ReviewForm
@@ -31,41 +31,44 @@ export default function ReviewsTab({ items: reviews, editing, creating, onAdd, o
       <div className="adm-chips" role="group" aria-label="Filter reviews">
         {REVIEW_FILTERS.map(f => (
           <button key={f} className={`adm-chip${filter === f ? " active" : ""}`} aria-pressed={filter === f} onClick={() => setFilter(f)}>
-            {REVIEW_FILTER_LABELS[f]} <span className="adm-chip-count">{counts[f]}</span>
+            {REVIEW_FILTER_LABELS[f]} <span className="adm-chip-count tnum">{counts[f]}</span>
           </button>
         ))}
       </div>
-      {shown.map(r => {
-        const active = isReviewActive(r);
-        const awaiting = isAwaitingApproval(r);
-        return (
-          <div key={r.id} className="adm-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-            <div style={{ flex: 1, minWidth: 220 }}>
-              <h3 style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                {r.name}
-                <span style={{ color: "#E67E22", fontSize: ".9rem" }}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
-                {r.source === "customer" && <span className="badge badge-customer">Customer</span>}
+      <div className="adm-list">
+        {shown.map(r => {
+          const active = isReviewActive(r);
+          const awaiting = isAwaitingApproval(r);
+          return (
+            <div key={r.id} className="adm-card adm-row">
+              <div className="adm-row-main">
+                <h3 className="adm-row-title">
+                  {r.name}
+                  <span className="adm-stars" role="img" aria-label={`${r.rating} out of 5 stars`}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
+                  {r.source === "customer" && <span className="badge badge-customer">Customer</span>}
+                  {awaiting
+                    ? <span className="badge badge-pending">Awaiting approval</span>
+                    : <span className={`badge ${active ? "badge-active" : "badge-inactive"}`}>{active ? "Active" : "Inactive"}</span>}
+                </h3>
+                <p className="adm-row-text adm-quote">&ldquo;{r.text}&rdquo;</p>
+                <div className="adm-row-meta">
+                  {r.city && <span>{r.city}</span>}
+                  {r.packageName && <span>{r.packageName}</span>}
+                </div>
+              </div>
+              <div className="adm-row-actions">
                 {awaiting
-                  ? <span className="badge badge-pending">Awaiting approval</span>
-                  : <span className={`badge ${active ? "badge-active" : "badge-inactive"}`}>{active ? "Active" : "Inactive"}</span>}
-              </h3>
-              <p style={{ color: "#8a8070", fontSize: ".88rem", margin: "4px 0", fontStyle: "italic", whiteSpace: "pre-wrap" }}>&ldquo;{r.text}&rdquo;</p>
-              <p style={{ fontSize: ".82rem", color: "#E67E22" }}>{r.city}{r.packageName ? ` | ${r.packageName}` : ""}</p>
+                  ? <button className="adm-btn primary" onClick={() => onSave(r.id, { active: true })}>Approve</button>
+                  : <button className="adm-btn" onClick={() => onSave(r.id, { active: !active })}>{active ? "Deactivate" : "Activate"}</button>}
+                <button className="adm-btn" onClick={() => onEdit({ ...r })}>Edit</button>
+                <button className="adm-btn danger" onClick={() => onRemove(r.id)}>Delete</button>
+              </div>
             </div>
-            <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-              {awaiting
-                ? <button className="adm-btn primary" onClick={() => onSave(r.id, { active: true })}>Approve</button>
-                : <button className="adm-btn" onClick={() => onSave(r.id, { active: !active })}>{active ? "Deactivate" : "Activate"}</button>}
-              <button className="adm-btn" onClick={() => onEdit({ ...r })}>Edit</button>
-              <button className="adm-btn danger" onClick={() => onRemove(r.id)}>Del</button>
-            </div>
-          </div>
-        );
-      })}
-      {reviews.length === 0 && !creating && <p style={{ textAlign: "center", color: "#8a8070", marginTop: 40 }}>No reviews yet.</p>}
-      {reviews.length > 0 && shown.length === 0 && (
-        <p style={{ textAlign: "center", color: "#8a8070", marginTop: 40 }}>No reviews in &ldquo;{REVIEW_FILTER_LABELS[filter]}&rdquo;.</p>
-      )}
+          );
+        })}
+      </div>
+      {reviews.length === 0 && !creating && <Empty>No reviews yet.</Empty>}
+      {reviews.length > 0 && shown.length === 0 && <Empty>No reviews in &ldquo;{REVIEW_FILTER_LABELS[filter]}&rdquo;.</Empty>}
     </>
   );
 }

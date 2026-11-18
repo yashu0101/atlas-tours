@@ -30,7 +30,7 @@ test("admin can create, edit, deactivate and delete an FAQ", async ({ page }) =>
   const card = page.locator(".adm-card", { hasText: question });
 
   // Create (with Hindi fields)
-  await page.getByRole("button", { name: "+ Add FAQ" }).click();
+  await page.getByRole("button", { name: "Add FAQ" }).click();
   await page.getByPlaceholder("e.g. What is included in the tour package?").fill(question);
   await page.locator('input[placeholder="Hindi translation (optional)"]').fill("प्रश्न");
   await page.getByPlaceholder("Answer to the question...").fill("E2E answer");
