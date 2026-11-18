@@ -7,7 +7,8 @@ import { BOOKING_STATUSES, PAYMENT_STATUSES, isOneOf } from "../_lib/api";
 import {
   EMPTY_BOOKING_FILTERS, bookingsCsv, csvFilename, filterBookings, hasFilters, istDateTime, paginate, type BookingFilters,
 } from "../_lib/table";
-import { Pager, ReceivedRange, downloadCsv } from "./shared";
+import { Empty, Pager, ReceivedRange, TabHeader, downloadCsv } from "./shared";
+import { Icon } from "./icons";
 
 export default function BookingsTab({ bookings, onUpdate, onRemove }: {
   bookings: Booking[];
@@ -24,14 +25,13 @@ export default function BookingsTab({ bookings, onUpdate, onRemove }: {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
-        <h2 style={{ margin: 0, fontWeight: 600, color: "#E67E22" }}>Bookings</h2>
+      <TabHeader title="Bookings" description="Booking requests from package pages. Set the status after you call the guest.">
         {/* Exports every filtered row, not just the current page. */}
         <button className="adm-btn primary" disabled={filtered.length === 0}
           onClick={() => downloadCsv(csvFilename("bookings", new Date()), bookingsCsv(filtered))}>
-          Export CSV
+          <Icon name="download" size={16} />Export CSV
         </button>
-      </div>
+      </TabHeader>
 
       <div className="adm-filters">
         <label className="adm-field adm-search">Search
@@ -54,39 +54,39 @@ export default function BookingsTab({ bookings, onUpdate, onRemove }: {
         {hasFilters(filters) && <button className="adm-btn" onClick={() => update(EMPTY_BOOKING_FILTERS)}>Clear</button>}
       </div>
 
-      <div style={{ overflowX: "auto" }}>
-        <table className="adm-table">
-          <thead><tr><th>Reference</th><th>Guest</th><th>Contact</th><th>Package</th><th>Travel Date</th><th>Travelers</th><th>Amount</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
+      <div className="adm-table-wrap">
+        <table className="adm-table stack">
+          <thead><tr><th>Reference</th><th>Guest</th><th>Contact</th><th>Package</th><th>Travel date</th><th>Travelers</th><th>Amount</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
             {slice.rows.map(b => (
               <tr key={b.id}>
-                <td><code className="adm-ref">{bookingReference(b.id)}</code><br /><span style={{ fontSize: ".75rem", color: "#8a8070" }} title="Received (IST)">{istDateTime(b.createdAt)}</span></td>
-                <td><strong>{b.name}</strong><br /><span style={{ fontSize: ".75rem", color: "#8a8070" }}>{b.city}</span></td>
-                <td>{b.phone}<br /><span style={{ fontSize: ".75rem", color: "#8a8070" }}>{b.email}</span></td>
-                <td>{b.packageName}</td>
-                <td>{b.travelDate}</td>
-                <td>{b.travelers}</td>
-                <td>{"₹"}{b.amount?.toLocaleString()}</td>
-                <td>
-                  <select className="adm-sel" aria-label="Payment status" value={b.paymentStatus} onChange={e => { const v = e.target.value; if (isOneOf(PAYMENT_STATUSES, v)) onUpdate(b.id, { paymentStatus: v }); }}>
+                <td data-label="Reference"><code className="adm-ref">{bookingReference(b.id)}</code><span className="adm-sub tnum" title="Received (IST)">{istDateTime(b.createdAt)}</span></td>
+                <td data-label="Guest"><strong>{b.name}</strong><span className="adm-sub">{b.city}</span></td>
+                <td data-label="Contact">{b.phone}<span className="adm-sub">{b.email}</span></td>
+                <td data-label="Package">{b.packageName}</td>
+                <td data-label="Travel date" className="tnum" style={{ whiteSpace: "nowrap" }}>{b.travelDate}</td>
+                <td data-label="Travelers" className="tnum">{b.travelers}</td>
+                <td data-label="Amount" className="tnum" style={{ whiteSpace: "nowrap" }}>{"₹"}{b.amount?.toLocaleString("en-IN")}</td>
+                <td data-label="Payment">
+                  <select className="adm-sel" aria-label="Payment status" data-value={b.paymentStatus} value={b.paymentStatus} onChange={e => { const v = e.target.value; if (isOneOf(PAYMENT_STATUSES, v)) onUpdate(b.id, { paymentStatus: v }); }}>
                     <option value="pending">Pending</option><option value="paid">Paid</option><option value="failed">Failed</option><option value="refunded">Refunded</option>
                   </select>
                 </td>
-                <td>
-                  <select className="adm-sel" aria-label="Booking status" value={b.bookingStatus} onChange={e => { const v = e.target.value; if (isOneOf(BOOKING_STATUSES, v)) onUpdate(b.id, { bookingStatus: v }); }}>
+                <td data-label="Status">
+                  <select className="adm-sel" aria-label="Booking status" data-value={b.bookingStatus} value={b.bookingStatus} onChange={e => { const v = e.target.value; if (isOneOf(BOOKING_STATUSES, v)) onUpdate(b.id, { bookingStatus: v }); }}>
                     <option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option>
                   </select>
                 </td>
-                <td><button className="adm-btn danger" onClick={() => onRemove(b.id)}>Del</button></td>
+                <td data-label=""><button className="adm-btn danger" onClick={() => onRemove(b.id)}>Delete</button></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       {bookings.length === 0
-        ? <p style={{ textAlign: "center", color: "#8a8070", marginTop: 40 }}>No bookings yet.</p>
+        ? <Empty>No bookings yet.</Empty>
         : filtered.length === 0
-          ? <p style={{ textAlign: "center", color: "#8a8070", marginTop: 40 }}>No bookings match these filters.</p>
+          ? <Empty>No bookings match these filters.</Empty>
           : <Pager slice={slice} onPage={setPage} />}
     </div>
   );

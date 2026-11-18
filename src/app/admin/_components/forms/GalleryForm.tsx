@@ -9,21 +9,22 @@ export default function GalleryForm({ image, onSave, onCancel }: { image?: Galle
   const [active, setActive] = useState(image?.active ?? true);
 
   return (
-    <div>
-      <h3 style={{ margin: "0 0 16px", fontWeight: 600, color: "#E67E22" }}>{image ? "Edit Image" : "New Image"}</h3>
+    // Native validation: required fields block Save and show the browser message; Enter saves.
+    <form onSubmit={e => e.preventDefault()}>
+      <h3 className="modal-title">{image ? "Edit Image" : "New Image"}</h3>
       <div className="adm-form">
-        <div className="full"><label>Image URL *</label><input value={src} onChange={e => setSrc(e.target.value)} placeholder="/images/gallery/photo.jpg or https://..." /></div>
-        <div><label>Caption</label><input value={caption} onChange={e => setCaption(e.target.value)} placeholder="e.g. Sunrise at Ganges" /></div>
-        <div><label>Category</label><input value={category} onChange={e => setCategory(e.target.value)} placeholder="e.g. destination, temple, adventure" /></div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, paddingTop: 20 }}>
-          <label style={{ display: "flex", gap: 6, alignItems: "center" }}><input type="checkbox" checked={active} onChange={e => setActive(e.target.checked)} /> Active</label>
+        <label className="adm-fl full"><span>Image URL *</span><input required value={src} onChange={e => setSrc(e.target.value)} placeholder="/images/gallery/photo.jpg or https://..." /></label>
+        <label className="adm-fl"><span>Caption</span><input value={caption} onChange={e => setCaption(e.target.value)} placeholder="e.g. Sunrise at Ganges" /></label>
+        <label className="adm-fl"><span>Category</span><input value={category} onChange={e => setCategory(e.target.value)} placeholder="e.g. destination, temple, adventure" /></label>
+        <div className="adm-check-cell">
+          <label className="adm-check"><input type="checkbox" checked={active} onChange={e => setActive(e.target.checked)} /> Active</label>
         </div>
       </div>
-      {src && <div style={{ marginTop: 12 }}><img src={src} alt="Preview" style={{ maxWidth: 200, maxHeight: 120, objectFit: "cover", borderRadius: 4, border: "1px solid #323a50" }} /></div>}
+      {src && <div className="adm-preview"><img src={src} alt="Preview" /></div>}
       <div className="adm-actions">
-        <button className="adm-btn primary" onClick={() => src.trim() && onSave({ src: src.trim(), caption, category, active })}>Save</button>
-        <button className="adm-btn" onClick={onCancel}>Cancel</button>
+        <button type="submit" className="adm-btn primary" onClick={() => src.trim() && onSave({ src: src.trim(), caption, category, active })}>Save</button>
+        <button type="button" className="adm-btn" onClick={onCancel}>Cancel</button>
       </div>
-    </div>
+    </form>
   );
 }

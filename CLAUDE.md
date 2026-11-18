@@ -104,7 +104,7 @@ There is no middleware. Auth is enforced per route handler; the `/admin` page gu
 
 - `_lib/api.ts` — fetch helpers (`sendEntity`, `deleteById`, `reportFailure`, `loadList`), the `Patch<T>` type and status constants.
 - `_lib/crud.ts` — `entityCrud(url, label, setItems)` (create/update/remove that only touch state on success) and `useEntityTab(...)` (per-tab modal state).
-- `_components/` — `Dashboard`, one `*Tab.tsx` per entity, `shared.tsx` (`TabHeader`, `Modal`), `AdminStyles.tsx` (the admin CSS), and `forms/*Form.tsx`.
+- `_components/` — `Dashboard`, one `*Tab.tsx` per entity, `shared.tsx` (`TabHeader`, `Empty`, `Modal` with close button/Escape), `icons.tsx` (inline SVG icons), `AdminStyles.tsx` (the admin CSS, scoped under `.adm-root`, themed with `--a-*` variables that switch under `[data-theme="dark"]`), and `forms/*Form.tsx`. `_lib/tabs.ts` holds the `Tab` union. Use the `--a-*` variables, not hex colours, in admin markup.
 
 Edit paths send `null` for emptied nullable fields (conversion lives in each `*Tab.tsx`); create never sends `null`. The admin is covered end to end by `tests/e2e/admin.spec.ts`.
 

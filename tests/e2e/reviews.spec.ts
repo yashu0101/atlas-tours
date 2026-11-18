@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 // Q-6: the reviews carousel has a visible pause/play control (WCAG 2.2.2).
-// Seed data has 3 reviews; auto-advance is 5s per slide.
+// Seed data has 3 reviews; auto-advance is 5s per slide. The total is matched loosely ("of N")
+// because admin-lists.spec.ts approves an extra review in the shared e2e database in parallel.
 
 test("reviews carousel auto-advances, and the pause button stops it until play", async ({ page }) => {
   await page.goto("/");
@@ -12,20 +13,20 @@ test("reviews carousel auto-advances, and the pause button stops it until play",
   const moveAway = () => page.mouse.move(0, 0);
 
   await moveAway();
-  await expect(slide).toHaveAttribute("aria-label", "1 of 3");
-  await expect(slide).toHaveAttribute("aria-label", "2 of 3", { timeout: 8000 });
+  await expect(slide).toHaveAttribute("aria-label", /^1 of \d+$/);
+  await expect(slide).toHaveAttribute("aria-label", /^2 of \d+$/, { timeout: 8000 });
 
   await carousel.getByRole("button", { name: "Pause automatic review rotation" }).click();
   await moveAway();
   const playButton = carousel.getByRole("button", { name: "Resume automatic review rotation" });
   await expect(playButton).toBeVisible();
   await page.waitForTimeout(6500);
-  await expect(slide).toHaveAttribute("aria-label", "2 of 3");
+  await expect(slide).toHaveAttribute("aria-label", /^2 of \d+$/);
 
   await playButton.click();
   await moveAway();
   await expect(carousel.getByRole("button", { name: "Pause automatic review rotation" })).toBeVisible();
-  await expect(slide).toHaveAttribute("aria-label", "3 of 3", { timeout: 8000 });
+  await expect(slide).toHaveAttribute("aria-label", /^3 of \d+$/, { timeout: 8000 });
 });
 
 test("pause button is not shown when the visitor prefers reduced motion", async ({ browser }) => {

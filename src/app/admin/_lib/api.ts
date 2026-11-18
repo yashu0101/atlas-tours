@@ -28,15 +28,37 @@ const jsonHeaders = { "Content-Type": "application/json" };
 export const reportFailure = async (action: string, res: Response) => {
   const body = await res.json().catch(() => null);
   console.error(`${action} failed (${res.status})`, body);
+  // Session expired or logged out in another tab: say so and go to the login page.
+  if (res.status === 401) {
+    alert("Your session has expired. Log in again to continue.");
+    // A full load (not router.push) on purpose: drops all admin state held in memory.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.href = "/login";
+    return;
+  }
   alert(`${action} failed${body?.error ? `: ${body.error}` : ""}`);
 };
+// fetch() only rejects when the request never reached the server (offline, DNS, …).
+const request = async (url: string, init: RequestInit, action: string): Promise<Response | null> => {
+  try {
+    return await fetch(url, init);
+  } catch (err) {
+    console.error(`${action} failed (network)`, err);
+    alert(`${action} failed: could not reach the server. Check your internet connection and try again.`);
+    return null;
+  }
+};
 export const deleteById = async (url: string, id: string, label: string) => {
-  const res = await fetch(url, { method: "DELETE", headers: jsonHeaders, body: JSON.stringify({ id }) });
-  if (!res.ok) { await reportFailure(`Delete ${label}`, res); return false; }
+  const action = `Delete ${label}`;
+  const res = await request(url, { method: "DELETE", headers: jsonHeaders, body: JSON.stringify({ id }) }, action);
+  if (!res) return false;
+  if (!res.ok) { await reportFailure(action, res); return false; }
   return true;
 };
 export const sendEntity = async <T,>(url: string, method: "POST" | "PATCH", payload: unknown, label: string): Promise<T | null> => {
-  const res = await fetch(url, { method, headers: jsonHeaders, body: JSON.stringify(payload) });
-  if (!res.ok) { await reportFailure(`${method === "POST" ? "Create" : "Update"} ${label}`, res); return null; }
+  const action = `${method === "POST" ? "Create" : "Update"} ${label}`;
+  const res = await request(url, { method, headers: jsonHeaders, body: JSON.stringify(payload) }, action);
+  if (!res) return null;
+  if (!res.ok) { await reportFailure(action, res); return null; }
   return (await res.json()) as T;
 };
