@@ -68,11 +68,13 @@ test("bookings: search narrows the table and Export CSV downloads the filtered r
   await expect(rows.first()).toContainText(`Alpha ${tag}`);
   await expect(rows.first()).toContainText(reference);
 
-  // Export: the downloaded file holds exactly the filtered row.
-  const [download] = await Promise.all([
+  // Export: built by the server from the same filters; the file holds exactly the filtered row.
+  const [download, exportRequest] = await Promise.all([
     page.waitForEvent("download"),
+    page.waitForRequest(req => new URL(req.url()).pathname === "/api/bookings/export"),
     page.getByRole("button", { name: "Export CSV" }).click(),
   ]);
+  expect(new URL(exportRequest.url()).searchParams.get("q")).toBe(reference);
   expect(download.suggestedFilename()).toMatch(/^atlas-bookings-\d{4}-\d{2}-\d{2}\.csv$/);
   const path = await download.path();
   const csv = await readFile(path, "utf8");
@@ -85,6 +87,16 @@ test("bookings: search narrows the table and Export CSV downloads the filtered r
   expect(lines[1]).toContain('"Pune, MH"');
   expect(lines[1]).toContain("Divine Varanasi & Prayagraj");
   expect(csv).not.toContain(`Beta ${tag}`);
+
+  // Status edits refetch the current page: with "Pending" selected, confirming Alpha removes it.
+  await search.fill(tag);
+  await page.locator(".adm-filters select").first().selectOption("pending"); // the "Booking status" filter
+  await expect(rows).toHaveCount(2);
+  const alphaRow = rows.filter({ hasText: `Alpha ${tag}` });
+  await alphaRow.getByRole("combobox", { name: "Booking status" }).selectOption("confirmed");
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toContainText(`Beta ${tag}`);
+  await page.getByRole("button", { name: "Clear" }).click();
 
   // No match → empty state, and Export is disabled.
   await search.fill(`${tag}-nobody`);

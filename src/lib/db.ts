@@ -2,6 +2,11 @@ import fs from "fs";
 import path from "path";
 import { TourPackage, Enquiry, Booking, Review, GalleryImage, BlogPost, FAQ, Offer, DB } from "./types";
 import { buildSeedDB, SEED_PACKAGES, SEED_REVIEWS, SEED_GALLERY, SEED_BLOGS, SEED_FAQS, SEED_OFFERS } from "./seed-data";
+import {
+  BOOKING_FILTER_SPEC, ENQUIRY_FILTER_SPEC, EMPTY_BOOKING_FILTERS, EMPTY_ENQUIRY_FILTERS, REFERENCE_LENGTH,
+  compareNewestFirst, istRangeBounds, matchesInboxFilters, searchTerms,
+  type BookingFilters, type EnquiryFilters, type InboxFilterSpec, type ListPage,
+} from "./inbox-filters";
 
 type Row = Record<string, unknown>;
 
@@ -493,3 +498,122 @@ export async function updateOffer(id: string, u: Patch<Offer>) { return offers.u
 export async function deleteOffer(id: string) { return offers.remove(id); }
 
 export function getConfig() { return readDB().config; }
+
+// ============================================================
+// Admin inbox queries (review point #6): filtered, paginated bookings / enquiries
+// ============================================================
+// Filter semantics live in ONE place, `src/lib/inbox-filters.ts` (BOOKING_FILTER_SPEC /
+// ENQUIRY_FILTER_SPEC). The JSON backend runs that spec in memory (`matchesInboxFilters`);
+// `pgInboxWhere` compiles the same spec to SQL. Column names come from the entity
+// definitions above; every value (search pattern, status, date bound) is a bound parameter.
+
+/** Escapes LIKE/ILIKE wildcards so user input matches literally (default escape char `\`). */
+export function escapeLike(s: string): string {
+  return s.replace(/[\\%_]/g, m => "\\" + m);
+}
+
+type InboxItem = { id: string; createdAt: string };
+type InboxFilterBase = { search: string; from: string; to: string };
+
+function pgInboxWhere<T extends InboxItem, F extends InboxFilterBase>(
+  e: Entity<T>, spec: InboxFilterSpec<T, F>, filters: F,
+): { where: string; params: unknown[] } {
+  const params: unknown[] = [];
+  const p = (v: unknown) => { params.push(v); return `$${params.length}`; };
+  const col = (field: string) => (e.columns as Record<string, Column>)[field].col;
+  const clauses: string[] = [];
+  for (const { filter, field, ifMissing } of spec.equals) {
+    const want = filters[filter] as unknown as string;
+    if (!want) continue;
+    clauses.push(ifMissing !== undefined ? `COALESCE(${col(field)}, ${p(ifMissing)}) = ${p(want)}` : `${col(field)} = ${p(want)}`);
+  }
+  const { start, end } = istRangeBounds(filters.from, filters.to);
+  if (start) clauses.push(`created_at >= ${p(start.toISOString())}::timestamptz`);
+  if (end) clauses.push(`created_at < ${p(end.toISOString())}::timestamptz`);
+  const { text, digits } = searchTerms(filters.search);
+  if (text) {
+    const pattern = p(`%${escapeLike(text)}%`);
+    const ors = spec.searchFields.map(f => `${col(f)} ILIKE ${pattern}`);
+    if (spec.referenceField) ors.push(`left(${col(spec.referenceField)}, ${REFERENCE_LENGTH}) ILIKE ${pattern}`);
+    if (digits && spec.phoneField) ors.push(`regexp_replace(${col(spec.phoneField)}, '\\D', '', 'g') LIKE ${p(`%${digits}%`)}`);
+    clauses.push(`(${ors.join(" OR ")})`);
+  }
+  return { where: clauses.length ? ` WHERE ${clauses.join(" AND ")}` : "", params };
+}
+
+async function pgInboxPage<T extends InboxItem, F extends InboxFilterBase>(
+  e: Entity<T>, spec: InboxFilterSpec<T, F>, filters: F, page: number, pageSize: number,
+): Promise<ListPage<T>> {
+  const sql = getSQL();
+  const { where, params } = pgInboxWhere(e, spec, filters);
+  const n = params.length;
+  const rowsAt = (pg: number) => sql.query(
+    `SELECT * FROM ${e.table}${where} ORDER BY created_at DESC NULLS LAST, id DESC LIMIT $${n + 1} OFFSET $${n + 2}`,
+    [...params, pageSize, (pg - 1) * pageSize],
+  );
+  const [countRows, rows] = await Promise.all([sql.query(`SELECT COUNT(*)::int AS total FROM ${e.table}${where}`, params), rowsAt(page)]);
+  const total = Number(countRows[0]?.total ?? 0);
+  const last = Math.max(1, Math.ceil(total / pageSize));
+  // Past the end (e.g. the last row of the last page was just deleted): serve the last page.
+  if (page > last) return { items: (await rowsAt(last)).map(r => fromRow(e, r)), total, page: last, pageSize };
+  return { items: rows.map(r => fromRow(e, r)), total, page, pageSize };
+}
+
+function jsonInboxPage<T extends InboxItem, F extends InboxFilterBase>(
+  all: readonly T[], spec: InboxFilterSpec<T, F>, filters: F, page: number, pageSize: number,
+): ListPage<T> {
+  const matched = all.filter(item => matchesInboxFilters(spec, item, filters)).sort(compareNewestFirst);
+  const total = matched.length;
+  const current = Math.min(page, Math.max(1, Math.ceil(total / pageSize)));
+  const start = (current - 1) * pageSize;
+  return { items: matched.slice(start, start + pageSize), total, page: current, pageSize };
+}
+
+/** `page` is 1-based (clamped to the last page), `pageSize` ≥ 1. Newest first. */
+export type Paging = { page: number; pageSize: number };
+
+export async function queryBookings(filters: BookingFilters, { page, pageSize }: Paging): Promise<ListPage<Booking>> {
+  return isPostgres()
+    ? pgInboxPage(BOOKINGS, BOOKING_FILTER_SPEC, filters, page, pageSize)
+    : jsonInboxPage(await bookings.list(), BOOKING_FILTER_SPEC, filters, page, pageSize);
+}
+
+export async function queryEnquiries(filters: EnquiryFilters, { page, pageSize }: Paging): Promise<ListPage<Enquiry>> {
+  return isPostgres()
+    ? pgInboxPage(ENQUIRIES, ENQUIRY_FILTER_SPEC, filters, page, pageSize)
+    : jsonInboxPage(await enquiries.list(), ENQUIRY_FILTER_SPEC, filters, page, pageSize);
+}
+
+/** What the admin Dashboard and the sidebar counts need, without loading the full lists. */
+export type InboxSummary = {
+  bookings: { total: number; pending: number; paidRevenue: number; recent: Booking[] };
+  enquiries: { total: number; new: number; recent: Enquiry[] };
+};
+
+const RECENT_COUNT = 5;
+
+export async function getInboxSummary(): Promise<InboxSummary> {
+  const one = { page: 1, pageSize: 1 };
+  const paid: BookingFilters = { ...EMPTY_BOOKING_FILTERS, paymentStatus: "paid" };
+  const revenue = async (): Promise<number> => {
+    if (!isPostgres()) {
+      return (await bookings.list())
+        .filter(b => matchesInboxFilters(BOOKING_FILTER_SPEC, b, paid))
+        .reduce((s, b) => s + (Number(b.amount) || 0), 0);
+    }
+    const { where, params } = pgInboxWhere(BOOKINGS, BOOKING_FILTER_SPEC, paid);
+    const rows = await getSQL().query(`SELECT COALESCE(SUM(amount), 0)::float8 AS revenue FROM ${BOOKINGS.table}${where}`, params);
+    return Number(rows[0]?.revenue ?? 0);
+  };
+  const [allB, pendingB, paidRevenue, allE, newE] = await Promise.all([
+    queryBookings(EMPTY_BOOKING_FILTERS, { page: 1, pageSize: RECENT_COUNT }),
+    queryBookings({ ...EMPTY_BOOKING_FILTERS, bookingStatus: "pending" }, one),
+    revenue(),
+    queryEnquiries(EMPTY_ENQUIRY_FILTERS, { page: 1, pageSize: RECENT_COUNT }),
+    queryEnquiries({ ...EMPTY_ENQUIRY_FILTERS, status: "new" }, one),
+  ]);
+  return {
+    bookings: { total: allB.total, pending: pendingB.total, paidRevenue, recent: allB.items },
+    enquiries: { total: allE.total, new: newE.total, recent: allE.items },
+  };
+}

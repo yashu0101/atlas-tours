@@ -2,14 +2,13 @@ import { NextResponse } from "next/server";
 import { getEnquiries, updateEnquiryStatus, deleteEnquiry } from "@/lib/db";
 import { Enquiry } from "@/lib/types";
 import { notFound, oneOf, readJson, requireAdmin, requireId, withHandler } from "@/lib/api";
+import { ENQUIRIES_LIST, inboxList } from "@/lib/inbox-route";
 
 // Runtime copy of Enquiry["status"]; `satisfies` keeps it in sync with types.ts.
 const ENQUIRY_STATUSES = Object.keys({ new: 1, contacted: 1, confirmed: 1, cancelled: 1 } satisfies Record<Enquiry["status"], 1>) as Enquiry["status"][];
 
-export const GET = withHandler(async () => {
-  await requireAdmin();
-  return NextResponse.json(await getEnquiries());
-});
+// Admin-only. No params: bare array; any filter/paging param: { items, total, page, pageSize } (src/lib/inbox-route.ts).
+export const GET = withHandler(async (req) => inboxList(req, ENQUIRIES_LIST, getEnquiries));
 
 export const PATCH = withHandler(async (req) => {
   await requireAdmin();

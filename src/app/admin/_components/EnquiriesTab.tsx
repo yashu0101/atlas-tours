@@ -1,22 +1,21 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useState } from "react";
 
 import type { Enquiry } from "@/lib/types";
+import { EMPTY_ENQUIRY_FILTERS, ENQUIRY_KINDS, enquiryKind, hasFilters, type EnquiryFilters } from "@/lib/inbox-filters";
+import { ENQUIRY_KIND_LABELS, istDateTime } from "@/lib/inbox-csv";
 
-import { ENQUIRY_STATUSES, isOneOf } from "../_lib/api";
-import {
-  EMPTY_ENQUIRY_FILTERS, ENQUIRY_KINDS, ENQUIRY_KIND_LABELS, csvFilename, enquiriesCsv, enquiryKind, filterEnquiries,
-  hasFilters, istDateTime, paginate, type EnquiryFilters,
-} from "../_lib/table";
+import { ENQUIRY_STATUSES, deleteById, isOneOf, sendEntity } from "../_lib/api";
+import { fetchExport, useInboxPage } from "../_lib/inbox";
+import { pageSlice } from "../_lib/table";
 import { Icon } from "./icons";
-import { Empty, Pager, ReceivedRange, TabHeader, downloadCsv } from "./shared";
+import { Empty, Pager, ReceivedRange, TabHeader, downloadBlob } from "./shared";
 
+const API = "/api/enquiries";
 const COLUMNS = 9;
 
-export default function EnquiriesTab({ enquiries, onUpdateStatus, onRemove }: {
-  enquiries: Enquiry[];
-  onUpdateStatus: (id: string, status: Enquiry["status"]) => void;
-  onRemove: (id: string) => void;
-}) {
+// Rows are filtered, sorted and paginated by the server (review point #6).
+// `onChanged` tells the page a status edit or delete happened (Dashboard / sidebar counts).
+export default function EnquiriesTab({ onChanged }: { onChanged: () => void }) {
   const [filters, setFilters] = useState<EnquiryFilters>(EMPTY_ENQUIRY_FILTERS);
   const [page, setPage] = useState(1);
   // Ids whose full message row is open (trip-plan / callback messages are multi-line).
@@ -29,15 +28,31 @@ export default function EnquiriesTab({ enquiries, onUpdateStatus, onRemove }: {
     return next;
   });
 
-  const filtered = useMemo(() => filterEnquiries(enquiries, filters), [enquiries, filters]);
-  const slice = paginate(filtered, page);
+  const { data, applied, reload, setData } = useInboxPage<Enquiry, EnquiryFilters>(API, "enquiries", filters, page);
+  const rows = data?.items ?? [];
+  const slice = data ? pageSlice(data, rows.length) : null;
+
+  const onUpdateStatus = async (id: string, status: Enquiry["status"]) => {
+    const updated = await sendEntity<Enquiry>(API, "PATCH", { id, status }, "enquiry");
+    if (!updated) return;
+    setData(d => d && { ...d, items: d.items.map(e => (e.id === id ? updated : e)) });
+    reload(); onChanged();
+  };
+  const onRemove = async (id: string) => {
+    if (!confirm("Delete this enquiry?")) return;
+    if (!(await deleteById(API, id, "enquiry"))) return;
+    reload(); onChanged();
+  };
+  const onExport = async () => {
+    const file = await fetchExport(API, applied, "enquiries");
+    if (file) downloadBlob(file.filename, file.blob);
+  };
 
   return (
     <div>
       <TabHeader title="Enquiries" description="Contact form messages, trip plans and callback requests">
-        {/* Exports every filtered row, not just the current page. */}
-        <button className="adm-btn primary" disabled={filtered.length === 0}
-          onClick={() => downloadCsv(csvFilename("enquiries", new Date()), enquiriesCsv(filtered))}>
+        {/* Exports every filtered row (server-side, up to 10,000), not just the current page. */}
+        <button className="adm-btn primary" disabled={!data || data.total === 0} onClick={onExport}>
           <Icon name="download" size={16} />Export CSV
         </button>
       </TabHeader>
@@ -68,7 +83,7 @@ export default function EnquiriesTab({ enquiries, onUpdateStatus, onRemove }: {
         <table className="adm-table stack">
           <thead><tr><th>Received</th><th>Type</th><th>Name</th><th>Contact</th><th>Travelers</th><th>Travel date</th><th>Message</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
-            {slice.rows.map(e => {
+            {rows.map(e => {
               const kind = enquiryKind(e);
               const isOpen = open.has(e.id);
               return (
@@ -106,11 +121,9 @@ export default function EnquiriesTab({ enquiries, onUpdateStatus, onRemove }: {
           </tbody>
         </table>
       </div>
-      {enquiries.length === 0
-        ? <Empty>No enquiries yet.</Empty>
-        : filtered.length === 0
-          ? <Empty>No enquiries match these filters.</Empty>
-          : <Pager slice={slice} onPage={setPage} />}
+      {data && slice && (data.total === 0
+        ? <Empty>{hasFilters(applied) ? "No enquiries match these filters." : "No enquiries yet."}</Empty>
+        : <Pager slice={slice} onPage={setPage} />)}
     </div>
   );
 }

@@ -1,23 +1,31 @@
-import type { TourPackage, Booking, Enquiry, Offer, Review } from "@/lib/types";
+import type { TourPackage, Offer, Review } from "@/lib/types";
+import type { InboxSummary } from "@/lib/db";
 
-// newestFirst: Postgres returns newest-first, the JSON store oldest-first.
-import { isAwaitingApproval, newestFirst } from "../_lib/table";
+import { isAwaitingApproval } from "../_lib/table";
 import type { Tab } from "../_lib/tabs";
 import { Icon } from "./icons";
 import { TabHeader } from "./shared";
 
 const inr = (n: number) => `₹${(n || 0).toLocaleString("en-IN")}`;
 
-export default function Dashboard({ packages, bookings, enquiries, offers, reviews, onNavigate }: {
-  packages: TourPackage[]; bookings: Booking[]; enquiries: Enquiry[]; offers: Offer[]; reviews: Review[];
+// Booking/enquiry figures come from GET /api/admin/summary (review point #6): counts, paid
+// revenue and the 5 newest of each, computed by the server instead of from the full lists.
+const EMPTY_SUMMARY: InboxSummary = {
+  bookings: { total: 0, pending: 0, paidRevenue: 0, recent: [] },
+  enquiries: { total: 0, new: 0, recent: [] },
+};
+
+export default function Dashboard({ packages, summary, offers, reviews, onNavigate }: {
+  packages: TourPackage[]; summary: InboxSummary | null; offers: Offer[]; reviews: Review[];
   onNavigate: (tab: Tab) => void;
 }) {
-  const totalRevenue = bookings.filter(b => b.paymentStatus === "paid").reduce((s, b) => s + b.amount, 0);
+  const { bookings, enquiries } = summary ?? EMPTY_SUMMARY;
+  const totalRevenue = bookings.paidRevenue;
   const activeOffers = offers.filter(o => o.active).length;
   const activePackages = packages.filter(p => !p.hidden).length;
   const awaitingReviews = reviews.filter(isAwaitingApproval).length;
-  const newEnquiries = enquiries.filter(e => e.status === "new").length;
-  const pendingBookings = bookings.filter(b => b.bookingStatus === "pending").length;
+  const newEnquiries = enquiries.new;
+  const pendingBookings = bookings.pending;
 
   const today = new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", weekday: "long", day: "numeric", month: "long" }).format(new Date());
 
@@ -43,8 +51,8 @@ export default function Dashboard({ packages, bookings, enquiries, offers, revie
       </div>
 
       <div className="stat-grid">
-        <div className="stat-card"><div className="num">{bookings.length}</div><div className="lbl">Total bookings</div></div>
-        <div className="stat-card"><div className="num">{enquiries.length}</div><div className="lbl">Total enquiries</div></div>
+        <div className="stat-card"><div className="num">{bookings.total}</div><div className="lbl">Total bookings</div></div>
+        <div className="stat-card"><div className="num">{enquiries.total}</div><div className="lbl">Total enquiries</div></div>
         <div className="stat-card"><div className="num">{totalRevenue > 0 ? inr(totalRevenue) : "—"}</div><div className="lbl">Revenue (paid)</div></div>
         <div className="stat-card"><div className="num">{activePackages}</div><div className="lbl">Live packages</div></div>
         <div className="stat-card"><div className="num">{activeOffers}</div><div className="lbl">Active offers</div></div>
@@ -56,12 +64,12 @@ export default function Dashboard({ packages, bookings, enquiries, offers, revie
             <h3>Recent bookings</h3>
             <button type="button" className="adm-btn ghost" onClick={() => onNavigate("bookings")}>View all</button>
           </div>
-          {bookings.length === 0 ? <p className="adm-sub" style={{ padding: 24, textAlign: "center" }}>No bookings yet.</p> : (
+          {bookings.total === 0 ? <p className="adm-sub" style={{ padding: 24, textAlign: "center" }}>No bookings yet.</p> : (
             <div className="adm-table-wrap">
               <table className="adm-table stack">
                 <thead><tr><th>Guest</th><th>Package</th><th>Travel date</th><th>Amount</th><th>Status</th></tr></thead>
                 <tbody>
-                  {newestFirst(bookings).slice(0, 5).map(b => (
+                  {bookings.recent.map(b => (
                     <tr key={b.id}>
                       <td data-label="Guest"><strong>{b.name}</strong></td>
                       <td data-label="Package">{b.packageName}</td>
@@ -80,12 +88,12 @@ export default function Dashboard({ packages, bookings, enquiries, offers, revie
             <h3>Recent enquiries</h3>
             <button type="button" className="adm-btn ghost" onClick={() => onNavigate("enquiries")}>View all</button>
           </div>
-          {enquiries.length === 0 ? <p className="adm-sub" style={{ padding: 24, textAlign: "center" }}>No enquiries yet.</p> : (
+          {enquiries.total === 0 ? <p className="adm-sub" style={{ padding: 24, textAlign: "center" }}>No enquiries yet.</p> : (
             <div className="adm-table-wrap">
               <table className="adm-table stack">
                 <thead><tr><th>Name</th><th>Travelers</th><th>Travel date</th><th>Status</th></tr></thead>
                 <tbody>
-                  {newestFirst(enquiries).slice(0, 5).map(e => (
+                  {enquiries.recent.map(e => (
                     <tr key={e.id}>
                       <td data-label="Name"><strong>{e.name}</strong><span className="adm-sub">{e.phone}</span></td>
                       <td data-label="Travelers" className="tnum">{e.travelers}</td>

@@ -1,34 +1,51 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import type { Booking } from "@/lib/types";
 import { bookingReference } from "@/lib/booking-ref";
+import { EMPTY_BOOKING_FILTERS, hasFilters, type BookingFilters } from "@/lib/inbox-filters";
+import { istDateTime } from "@/lib/inbox-csv";
 
-import { BOOKING_STATUSES, PAYMENT_STATUSES, isOneOf } from "../_lib/api";
-import {
-  EMPTY_BOOKING_FILTERS, bookingsCsv, csvFilename, filterBookings, hasFilters, istDateTime, paginate, type BookingFilters,
-} from "../_lib/table";
-import { Empty, Pager, ReceivedRange, TabHeader, downloadCsv } from "./shared";
+import { BOOKING_STATUSES, PAYMENT_STATUSES, deleteById, isOneOf, sendEntity } from "../_lib/api";
+import { fetchExport, useInboxPage } from "../_lib/inbox";
+import { pageSlice } from "../_lib/table";
+import { Empty, Pager, ReceivedRange, TabHeader, downloadBlob } from "./shared";
 import { Icon } from "./icons";
 
-export default function BookingsTab({ bookings, onUpdate, onRemove }: {
-  bookings: Booking[];
-  onUpdate: (id: string, updates: Partial<Pick<Booking, "paymentStatus" | "bookingStatus">>) => void;
-  onRemove: (id: string) => void;
-}) {
+const API = "/api/bookings";
+
+// Rows are filtered, sorted and paginated by the server (review point #6).
+// `onChanged` tells the page a status edit or delete happened (Dashboard / sidebar counts).
+export default function BookingsTab({ onChanged }: { onChanged: () => void }) {
   const [filters, setFilters] = useState<BookingFilters>(EMPTY_BOOKING_FILTERS);
   const [page, setPage] = useState(1);
   // Any filter change goes back to page 1.
   const update = (patch: Partial<BookingFilters>) => { setFilters(f => ({ ...f, ...patch })); setPage(1); };
 
-  const filtered = useMemo(() => filterBookings(bookings, filters), [bookings, filters]);
-  const slice = paginate(filtered, page);
+  const { data, applied, reload, setData } = useInboxPage<Booking, BookingFilters>(API, "bookings", filters, page);
+  const rows = data?.items ?? [];
+  const slice = data ? pageSlice(data, rows.length) : null;
+
+  const onUpdate = async (id: string, updates: Partial<Pick<Booking, "paymentStatus" | "bookingStatus">>) => {
+    const updated = await sendEntity<Booking>(API, "PATCH", { id, ...updates }, "booking");
+    if (!updated) return;
+    setData(d => d && { ...d, items: d.items.map(b => (b.id === id ? updated : b)) });
+    reload(); onChanged();
+  };
+  const onRemove = async (id: string) => {
+    if (!confirm("Delete this booking?")) return;
+    if (!(await deleteById(API, id, "booking"))) return;
+    reload(); onChanged();
+  };
+  const onExport = async () => {
+    const file = await fetchExport(API, applied, "bookings");
+    if (file) downloadBlob(file.filename, file.blob);
+  };
 
   return (
     <div>
       <TabHeader title="Bookings" description="Booking requests from package pages. Set the status after you call the guest.">
-        {/* Exports every filtered row, not just the current page. */}
-        <button className="adm-btn primary" disabled={filtered.length === 0}
-          onClick={() => downloadCsv(csvFilename("bookings", new Date()), bookingsCsv(filtered))}>
+        {/* Exports every filtered row (server-side, up to 10,000), not just the current page. */}
+        <button className="adm-btn primary" disabled={!data || data.total === 0} onClick={onExport}>
           <Icon name="download" size={16} />Export CSV
         </button>
       </TabHeader>
@@ -58,7 +75,7 @@ export default function BookingsTab({ bookings, onUpdate, onRemove }: {
         <table className="adm-table stack">
           <thead><tr><th>Reference</th><th>Guest</th><th>Contact</th><th>Package</th><th>Travel date</th><th>Travelers</th><th>Amount</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
-            {slice.rows.map(b => (
+            {rows.map(b => (
               <tr key={b.id}>
                 <td data-label="Reference"><code className="adm-ref">{bookingReference(b.id)}</code><span className="adm-sub tnum" title="Received (IST)">{istDateTime(b.createdAt)}</span></td>
                 <td data-label="Guest"><strong>{b.name}</strong><span className="adm-sub">{b.city}</span></td>
@@ -83,11 +100,9 @@ export default function BookingsTab({ bookings, onUpdate, onRemove }: {
           </tbody>
         </table>
       </div>
-      {bookings.length === 0
-        ? <Empty>No bookings yet.</Empty>
-        : filtered.length === 0
-          ? <Empty>No bookings match these filters.</Empty>
-          : <Pager slice={slice} onPage={setPage} />}
+      {data && slice && (data.total === 0
+        ? <Empty>{hasFilters(applied) ? "No bookings match these filters." : "No bookings yet."}</Empty>
+        : <Pager slice={slice} onPage={setPage} />)}
     </div>
   );
 }
