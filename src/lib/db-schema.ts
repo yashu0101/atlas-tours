@@ -194,6 +194,19 @@ END $$`,
       "CREATE UNIQUE INDEX bookings_utr_unique ON bookings (utr) WHERE utr IS NOT NULL",
     ],
   },
+  {
+    // N-18: richer package details from the client's brochures — what is not included, the
+    // starting city, a minimum group size and a note under the price.
+    version: 8,
+    name: "package_details",
+    statements: [
+      "ALTER TABLE packages ADD COLUMN IF NOT EXISTS exclusions JSONB NOT NULL DEFAULT '[]'::jsonb",
+      "ALTER TABLE packages ADD COLUMN IF NOT EXISTS starts_from TEXT",
+      "ALTER TABLE packages ADD COLUMN IF NOT EXISTS min_travelers INTEGER",
+      "ALTER TABLE packages ADD COLUMN IF NOT EXISTS price_note TEXT",
+      "ALTER TABLE packages ADD CONSTRAINT packages_min_travelers_valid CHECK (min_travelers IS NULL OR min_travelers BETWEEN 1 AND 100)",
+    ],
+  },
 ];
 
 /**

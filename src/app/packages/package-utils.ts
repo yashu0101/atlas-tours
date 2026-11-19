@@ -109,6 +109,75 @@ export const discountPercent = (original: number, current: number): number =>
 /** Itinerary entries are stored as "Day N: ..." strings; strip the prefix since the day badge shows it. */
 export const stripDayPrefix = (line: string): string => line.replace(/^\s*Day\s*\d+\s*[:\-–—]\s*/i, "");
 
+// ------------------------------------------------------------
+// Detailed itinerary (N-18)
+// ------------------------------------------------------------
+// An itinerary line is "Day N: Title | point | point | Overnight in Place". Everything after
+// the first " | " is a bullet point; a point starting with "Overnight" names where the night
+// is spent. Lines without " | " (older packages) are just a title.
+
+export interface ItineraryDay {
+  title: string;
+  points: string[];
+  /** Where the night is spent ("Jaipur"), or null on the last day / when not stated. */
+  overnight: string | null;
+}
+
+const OVERNIGHT = /^overnight(?:\s+(?:stay\s+)?(?:at|in))?\s*[:\-–—]?\s*/i;
+
+export function parseItineraryDay(line: string): ItineraryDay {
+  const [head, ...rest] = stripDayPrefix(line).split("|").map((s) => s.trim());
+  let overnight: string | null = null;
+  const points: string[] = [];
+  for (const p of rest) {
+    if (!p) continue;
+    if (OVERNIGHT.test(p)) {
+      const place = p.replace(OVERNIGHT, "").trim();
+      if (place) overnight = place.charAt(0).toUpperCase() + place.slice(1);
+    } else {
+      points.push(p);
+    }
+  }
+  return { title: head ?? "", points, overnight };
+}
+
+export interface RouteStop {
+  place: string;
+  /** Nights spent here; 0 for the start / end point. */
+  nights: number;
+  kind: "start" | "stay" | "end";
+}
+
+/** Text after the last arrow of a day title ("Udaipur → Prayagraj" → "Prayagraj"), or null. */
+const arrivalOf = (title: string): string | null => {
+  const parts = title.split(/\s*(?:→|->)\s*/);
+  return parts.length > 1 ? parts[parts.length - 1].trim() || null : null;
+};
+
+/**
+ * Where the trip goes: the starting city, each place stayed at with its number of nights
+ * (consecutive nights merged), and where it ends (the last day's "A → B" arrival). Empty
+ * when the itinerary names no overnight stays.
+ */
+export function tripRoute(itinerary: readonly string[], startsFrom?: string): RouteStop[] {
+  const days = itinerary.map(parseItineraryDay);
+  const stays: RouteStop[] = [];
+  for (const d of days) {
+    if (!d.overnight) continue;
+    const last = stays[stays.length - 1];
+    if (last && last.place.toLowerCase() === d.overnight.toLowerCase()) last.nights += 1;
+    else stays.push({ place: d.overnight, nights: 1, kind: "stay" });
+  }
+  if (stays.length === 0) return [];
+  const start = startsFrom?.trim();
+  const route: RouteStop[] = [];
+  if (start && start.toLowerCase() !== stays[0].place.toLowerCase()) route.push({ place: start, nights: 0, kind: "start" });
+  route.push(...stays);
+  const end = days.length ? arrivalOf(days[days.length - 1].title) : null;
+  if (end && end.toLowerCase() !== stays[stays.length - 1].place.toLowerCase()) route.push({ place: end, nights: 0, kind: "end" });
+  return route;
+}
+
 export const packagePath = (id: string): string => `/packages/${encodeURIComponent(id)}`;
 
 /** Anchor of the booking card on the detail page (`id` of its <aside>). */

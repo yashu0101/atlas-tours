@@ -83,9 +83,14 @@ const PACKAGES: Entity<TourPackage> = {
     originalPrice: c("original_price", { optional: true }), // `?? null`: 0 is kept (B-07)
     image: c("image"), description: c("description"),
     highlights: c("highlights", { type: "array" }), itinerary: c("itinerary", { type: "array" }), inclusions: c("inclusions", { type: "array" }),
+    exclusions: c("exclusions", { type: "array" }), startsFrom: c("starts_from", { optional: true }),
+    minTravelers: c("min_travelers", { optional: true }), priceNote: c("price_note", { optional: true }),
     category: c("category"), hidden: c("hidden", { insert: v => !!v }), createdAt,
   },
-  patchable: ["name", "destination", "duration", "price", "originalPrice", "image", "description", "highlights", "itinerary", "inclusions", "category", "hidden"],
+  patchable: [
+    "name", "destination", "duration", "price", "originalPrice", "image", "description", "highlights", "itinerary", "inclusions",
+    "exclusions", "startsFrom", "minTravelers", "priceNote", "category", "hidden",
+  ],
 };
 const ENQUIRIES: Entity<Enquiry> = {
   table: "enquiries", key: "enquiries", orderBy: "created_at DESC",

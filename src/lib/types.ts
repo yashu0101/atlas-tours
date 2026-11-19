@@ -10,6 +10,14 @@ export interface TourPackage {
   highlights: string[];
   itinerary: string[];
   inclusions: string[];
+  /** What the price does not cover (N-18). Missing on JSON rows saved before N-18 — treat as []. */
+  exclusions?: string[];
+  /** City the trip starts from, e.g. "Prayagraj" (N-18). */
+  startsFrom?: string;
+  /** Smallest group the package can be booked for (N-18); /api/book rejects fewer travellers. */
+  minTravelers?: number;
+  /** Shown under the price, e.g. "Based on double sharing" (N-18). */
+  priceNote?: string;
   category: "spiritual" | "cultural" | "adventure" | "heritage";
   hidden?: boolean;
   createdAt: string;

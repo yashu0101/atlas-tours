@@ -26,8 +26,9 @@ import {
   formatPrice,
   packageEnquiryText,
   packagePath,
+  parseItineraryDay,
   relatedPackages,
-  stripDayPrefix,
+  tripRoute,
   whatsappLink,
 } from "../package-utils";
 
@@ -114,7 +115,7 @@ function touristTripJsonLd(pkg: TourPackage) {
             itemListElement: pkg.itinerary.map((line, i) => ({
               "@type": "ListItem",
               position: i + 1,
-              name: `Day ${i + 1}: ${stripDayPrefix(line)}`,
+              name: `Day ${i + 1}: ${parseItineraryDay(line).title}`,
             })),
           },
         }
@@ -278,7 +279,40 @@ const styles: Record<string, React.CSSProperties> = {
 
   timeline: { listStyle: "none", padding: 0, margin: 0 },
   dayLabel: { display: "block", fontSize: 13, fontWeight: 700, color: "var(--orange-text)", marginBottom: 2 },
-  dayTitle: { display: "block", fontSize: 16.5, fontWeight: 600, color: "var(--primary)", lineHeight: 1.5 },
+  dayTitle: { display: "block", fontSize: 16.5, fontWeight: 600, color: "var(--primary)", lineHeight: 1.5, margin: 0 },
+  dayPoints: { listStyle: "none", padding: 0, margin: "8px 0 0", display: "grid", gap: 4 },
+  dayPoint: { position: "relative", paddingLeft: 16, fontSize: 14.5, lineHeight: 1.6, color: "var(--text)" },
+  dayStay: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 10,
+    padding: "4px 12px",
+    borderRadius: 999,
+    background: "var(--bg3)",
+    color: "var(--primary)",
+    fontSize: 13,
+    fontWeight: 600,
+  },
+
+  route: { listStyle: "none", padding: 0, margin: 0, display: "flex", flexWrap: "wrap", alignItems: "stretch", rowGap: 14 },
+  routeStop: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    minWidth: 96,
+    padding: "10px 16px",
+    borderRadius: 14,
+    background: "var(--pkgd-tint, rgba(230,126,34,0.07))",
+  },
+  routeEdge: { background: "var(--bg3)" },
+  routePlace: { fontSize: 15, fontWeight: 700, color: "var(--primary)", lineHeight: 1.3 },
+  routeNights: { fontSize: 12.5, fontWeight: 600, color: "var(--orange-text)" },
+  routeEdgeLabel: { fontSize: 12.5, fontWeight: 600, color: "var(--text2)" },
+
+  incGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 },
+  incHeading: { fontSize: 17, fontWeight: 700, color: "var(--primary)", margin: "0 0 16px" },
+  incList: { listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 14 },
 
   inclusionList: {
     listStyle: "none",
@@ -288,7 +322,18 @@ const styles: Record<string, React.CSSProperties> = {
     gridTemplateColumns: "1fr 1fr",
     gap: "14px 24px",
   },
-  inclusion: { display: "flex", alignItems: "center", gap: 12, fontSize: 15, color: "var(--text)" },
+  inclusion: { display: "flex", alignItems: "flex-start", gap: 12, fontSize: 15, lineHeight: 1.5, color: "var(--text)" },
+  crossDot: {
+    flexShrink: 0,
+    width: 26,
+    height: 26,
+    borderRadius: "50%",
+    background: "var(--pkgd-cross-bg, rgba(192,57,43,0.1))",
+    color: "var(--error-text)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   checkDot: {
     flexShrink: 0,
     width: 26,
@@ -342,6 +387,18 @@ const styles: Record<string, React.CSSProperties> = {
   priceRow: { display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "4px 10px" },
   priceNow: { fontSize: 32, fontWeight: 800, letterSpacing: -0.5, lineHeight: 1.1 },
   pricePer: { fontSize: 14, color: "rgba(255,255,255,0.8)" },
+  priceNote: { fontSize: 13, color: "rgba(255,255,255,0.8)", margin: "6px 0 0" },
+  priceMin: {
+    display: "inline-block",
+    marginTop: 10,
+    padding: "4px 12px",
+    borderRadius: 999,
+    background: "rgba(255,255,255,0.14)",
+    border: "1px solid rgba(255,255,255,0.3)",
+    fontSize: 12.5,
+    fontWeight: 600,
+  },
+  factNote: { display: "block", fontSize: 12.5, fontWeight: 500, color: "var(--text2)", marginTop: 2 },
   priceWasRow: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, marginTop: 8 },
   priceWas: { fontSize: 14, color: "rgba(255,255,255,0.75)", textDecoration: "line-through" },
   saveBadge: {
@@ -394,6 +451,18 @@ const CheckIcon = () => (
   </svg>
 );
 
+const CrossIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
+    <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />
+  </svg>
+);
+
 const WhatsAppIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
     <path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35zM12.05 21.8h-.01a9.8 9.8 0 01-5-1.37l-.36-.21-3.72.98 1-3.63-.24-.37a9.8 9.8 0 01-1.5-5.22c0-5.42 4.41-9.83 9.84-9.83a9.77 9.77 0 016.95 2.88 9.77 9.77 0 012.88 6.96c0 5.42-4.41 9.83-9.84 9.83zm8.37-18.2A11.75 11.75 0 0012.05 0C5.5 0 .17 5.33.17 11.88c0 2.1.55 4.14 1.59 5.94L.07 24l6.33-1.66a11.86 11.86 0 005.65 1.44h.01c6.55 0 11.88-5.33 11.88-11.88 0-3.17-1.24-6.16-3.48-8.4z" />
@@ -409,6 +478,10 @@ export default async function PackageDetailPage({ params }: Params) {
   const highlights = pkg.highlights ?? [];
   const itinerary = pkg.itinerary ?? [];
   const inclusions = pkg.inclusions ?? [];
+  const exclusions = pkg.exclusions ?? [];
+  const days = itinerary.map(parseItineraryDay);
+  const route = tripRoute(itinerary, pkg.startsFrom);
+  const routeNights = route.reduce((n, s) => n + s.nights, 0);
   const hasDiscount = typeof pkg.originalPrice === "number" && pkg.originalPrice > pkg.price;
 
   return (
@@ -425,8 +498,18 @@ export default async function PackageDetailPage({ params }: Params) {
           --pkgd-check-bg: rgba(39,176,97,0.16);
           --pkgd-wa-text: var(--green);
           --pkgd-stop-bg: var(--card-bg);
+          --pkgd-cross-bg: rgba(231,76,60,0.16);
         }
         .pkgd-wa:hover { background: var(--green) !important; color: var(--on-accent) !important; }
+        .pkgd-day-point::before {
+          content: ""; position: absolute; left: 2px; top: 0.65em; width: 6px; height: 6px; border-radius: 50%;
+          background: var(--orange);
+        }
+        /* Route strip (N-18): an arrow between stops. */
+        .pkgd-route-stop { display: flex; }
+        .pkgd-route-stop + .pkgd-route-stop::before {
+          content: "→"; display: flex; align-items: center; padding: 0 10px; color: var(--orange-text); font-weight: 700;
+        }
         .pkgd-custom-link:hover { background: var(--primary) !important; color: var(--bg) !important; }
 
         /* Itinerary as a route: one stop per day, joined by a line; arrival and departure filled. */
@@ -459,7 +542,7 @@ export default async function PackageDetailPage({ params }: Params) {
         @media (max-width: 560px) {
           .pkgd-hero-inner { padding-bottom: 92px !important; }
           .pkgd-fact { padding: 16px 18px !important; }
-          .pkgd-two-col { grid-template-columns: 1fr !important; }
+          .pkgd-two-col, .pkgd-inc-grid { grid-template-columns: 1fr !important; }
           .pkgd-booking-body { padding: 22px 20px !important; }
           .pkgd-price-head { padding: 20px !important; }
         }
@@ -507,15 +590,23 @@ export default async function PackageDetailPage({ params }: Params) {
                 <dt style={styles.factLabel}>{t("packageDetail.factPlaces")}</dt>
                 <dd style={styles.factValue}>{pkg.destination || "—"}</dd>
               </div>
-              <div className="pkgd-fact" style={styles.fact}>
-                <dt style={styles.factLabel}>{t("packageDetail.factStyle")}</dt>
-                <dd style={styles.factValue}>{categoryLabel(pkg.category) || "—"}</dd>
-              </div>
+              {pkg.startsFrom ? (
+                <div className="pkgd-fact" style={styles.fact}>
+                  <dt style={styles.factLabel}>{t("packageDetail.factStartsFrom")}</dt>
+                  <dd style={styles.factValue}>{pkg.startsFrom}</dd>
+                </div>
+              ) : (
+                <div className="pkgd-fact" style={styles.fact}>
+                  <dt style={styles.factLabel}>{t("packageDetail.factStyle")}</dt>
+                  <dd style={styles.factValue}>{categoryLabel(pkg.category) || "—"}</dd>
+                </div>
+              )}
               <div className="pkgd-fact" style={styles.fact}>
                 <dt style={styles.factLabel}>{t("packageDetail.factPrice")}</dt>
                 <dd style={styles.factValue}>
                   <span style={styles.factPrice}>&#8377;{formatPrice(pkg.price)}</span>
                   <span style={styles.factPer}>{t("packageDetail.perPerson")}</span>
+                  {pkg.priceNote && <span style={styles.factNote}>{pkg.priceNote}</span>}
                 </dd>
               </div>
               <a href={`#${BOOKING_ANCHOR}`} className="pkgd-jump" style={styles.jump}>
@@ -533,6 +624,33 @@ export default async function PackageDetailPage({ params }: Params) {
                       <h2 id="pkgd-overview" style={styles.sectionTitle}>{t("packageDetail.overview")}</h2>
                     </div>
                     <p style={styles.lead}>{pkg.description}</p>
+                  </section>
+                )}
+
+                {route.length > 0 && (
+                  <section className="reveal" style={styles.section} aria-labelledby="pkgd-route">
+                    <div style={styles.sectionHead}>
+                      <h2 id="pkgd-route" style={styles.sectionTitle}>{t("packageDetail.routeTitle")}</h2>
+                      <span style={styles.sectionMeta}>{t("packageDetail.routeMeta", { nights: routeNights })}</span>
+                    </div>
+                    <ol style={styles.route}>
+                      {route.map((stop, i) => (
+                        <li key={i} className="pkgd-route-stop">
+                          <span style={stop.kind === "stay" ? styles.routeStop : { ...styles.routeStop, ...styles.routeEdge }}>
+                            <span style={styles.routePlace}>{stop.place}</span>
+                            {stop.kind === "stay" ? (
+                              <span style={styles.routeNights}>
+                                {stop.nights === 1 ? t("packageDetail.routeNightOne") : t("packageDetail.routeNights", { count: stop.nights })}
+                              </span>
+                            ) : (
+                              <span style={styles.routeEdgeLabel}>
+                                {stop.kind === "start" ? t("packageDetail.routeStart") : t("packageDetail.routeEnd")}
+                              </span>
+                            )}
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
                   </section>
                 )}
 
@@ -559,21 +677,33 @@ export default async function PackageDetailPage({ params }: Params) {
                       <span style={styles.sectionMeta}>{t("packageDetail.itineraryDays", { count: itinerary.length })}</span>
                     </div>
                     <ol style={styles.timeline}>
-                      {itinerary.map((line, i) => (
+                      {days.map((day, i) => (
                         <li key={i} className={`pkgd-day reveal-left stagger-${Math.min(i + 1, 5)}`}>
                           <span className="pkgd-stop" aria-hidden="true">{i + 1}</span>
                           <span style={styles.dayLabel}>{t("common.day", { n: i + 1 })}</span>
-                          <span style={styles.dayTitle}>{stripDayPrefix(line)}</span>
+                          <h3 style={styles.dayTitle}>{day.title}</h3>
+                          {day.points.length > 0 && (
+                            <ul style={styles.dayPoints}>
+                              {day.points.map((p, j) => (
+                                <li key={j} className="pkgd-day-point" style={styles.dayPoint}>{p}</li>
+                              ))}
+                            </ul>
+                          )}
+                          {day.overnight && (
+                            <span style={styles.dayStay}>
+                              <MoonIcon /> {t("packageDetail.overnight", { place: day.overnight })}
+                            </span>
+                          )}
                         </li>
                       ))}
                     </ol>
                   </section>
                 )}
 
-                {inclusions.length > 0 && (
+                {inclusions.length > 0 && exclusions.length === 0 && (
                   <section className="reveal" style={styles.section} aria-labelledby="pkgd-inclusions">
                     <div style={styles.sectionHead}>
-                      <h2 id="pkgd-inclusions" style={styles.sectionTitle}>{t("common.inclusions")}</h2>
+                      <h2 id="pkgd-inclusions" style={styles.sectionTitle}>{t("packageDetail.included")}</h2>
                     </div>
                     <ul className="pkgd-two-col" style={styles.inclusionList}>
                       {inclusions.map((item, i) => (
@@ -583,6 +713,35 @@ export default async function PackageDetailPage({ params }: Params) {
                         </li>
                       ))}
                     </ul>
+                  </section>
+                )}
+
+                {exclusions.length > 0 && (
+                  <section className="reveal pkgd-inc-grid" style={{ ...styles.section, ...styles.incGrid }}>
+                    {inclusions.length > 0 && (
+                      <div>
+                        <h2 style={{ ...styles.sectionTitle, marginBottom: 20 }}>{t("packageDetail.included")}</h2>
+                        <ul style={styles.incList}>
+                          {inclusions.map((item, i) => (
+                            <li key={i} style={styles.inclusion}>
+                              <span style={styles.checkDot}><CheckIcon /></span>
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <div>
+                      <h2 style={{ ...styles.sectionTitle, marginBottom: 20 }}>{t("packageDetail.notIncluded")}</h2>
+                      <ul style={styles.incList}>
+                        {exclusions.map((item, i) => (
+                          <li key={i} style={styles.inclusion}>
+                            <span style={styles.crossDot}><CrossIcon /></span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </section>
                 )}
 
@@ -604,6 +763,10 @@ export default async function PackageDetailPage({ params }: Params) {
                       <span style={styles.priceNow}>&#8377;{formatPrice(pkg.price)}</span>
                       <span style={styles.pricePer}>{t("packageDetail.perPerson")}</span>
                     </div>
+                    {pkg.priceNote && <p style={styles.priceNote}>{pkg.priceNote}</p>}
+                    {pkg.minTravelers && pkg.minTravelers > 1 ? (
+                      <span style={styles.priceMin}>{t("packageDetail.minTravelers", { count: pkg.minTravelers })}</span>
+                    ) : null}
                     {hasDiscount && (
                       <div style={styles.priceWasRow}>
                         <span style={styles.priceWas}>
@@ -620,7 +783,7 @@ export default async function PackageDetailPage({ params }: Params) {
                   <div className="pkgd-booking-body" style={styles.bookingBody}>
                     <h2 id="pkgd-book" style={styles.bookingTitle}>{t("packageDetail.bookTitle")}</h2>
                     <p style={styles.bookingSub}>{t("packageDetail.bookSubtitle")}</p>
-                    <BookingForm packageId={pkg.id} packageName={pkg.name} price={pkg.price} minDate={istDateKey(new Date())} />
+                    <BookingForm packageId={pkg.id} packageName={pkg.name} price={pkg.price} minDate={istDateKey(new Date())} minTravelers={pkg.minTravelers} />
                     <p style={styles.orDivider}>{t("packageDetail.orAsk")}</p>
                     <a
                       className="pkgd-wa"

@@ -12,7 +12,7 @@ test("package detail page renders server-side content (G-03)", async ({ page }) 
   await expect(page.getByText("₹8,999").first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Itinerary" })).toBeVisible();
   await expect(page.getByText("Day 1", { exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Inclusions" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "What's included" })).toBeVisible();
   await expect(page.getByText("3-Star Hotel Stay")).toBeVisible();
 
   const wa = page.getByRole("link", { name: /Enquire on WhatsApp/ });
@@ -25,6 +25,24 @@ test("package detail page renders server-side content (G-03)", async ({ page }) 
 
   // Header section links point back to the home page from a sub-route.
   await expect(page.getByRole("banner").getByRole("link", { name: "Packages", exact: true }).first()).toHaveAttribute("href", "/#packages");
+});
+
+// N-18. Odisha, not Rajasthan: admin.spec.ts hides pkg-rajasthan while the specs run in parallel.
+test("detail page shows the route, day-by-day points, overnight stays and what is not included", async ({ page }) => {
+  await page.goto("/packages/pkg-odisha");
+  await expect(page.getByRole("term").filter({ hasText: "Starts from" })).toBeVisible();
+
+  const route = page.locator("section", { has: page.getByRole("heading", { name: "Where you'll go" }) });
+  await expect(route.getByText("5 nights")).toBeVisible();
+  await expect(route.getByRole("listitem")).toHaveText([/Bhubaneswar\s*1 night/, /Puri\s*3 nights/, /Bhubaneswar\s*1 night/]);
+
+  await expect(page.getByRole("heading", { level: 3, name: "Bhubaneswar → Puri" })).toBeVisible();
+  await expect(page.getByText("Via Dhauli, Pipili & Raghurajpur")).toBeVisible();
+  await expect(page.getByText("Overnight: Puri").first()).toBeVisible();
+
+  await expect(page.getByRole("heading", { name: "What's included" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Not included" })).toBeVisible();
+  await expect(page.getByText("Train / flight tickets to and from Bhubaneswar")).toBeVisible();
 });
 
 test("unknown and hidden packages return 404", async ({ page, request }) => {
@@ -82,7 +100,7 @@ test("home page category filter and detail link (G-06)", async ({ page }) => {
   await expect(filters.getByRole("button", { name: "All" })).toHaveAttribute("aria-pressed", "true");
   await filters.getByRole("button", { name: "Heritage" }).click();
   await expect(filters.getByRole("button", { name: "Heritage" })).toHaveAttribute("aria-pressed", "true");
-  await expect(section.getByRole("heading", { name: "Royal Rajasthan Explorer" })).toBeVisible();
+  await expect(section.getByRole("heading", { name: "Royal Rajasthan Tour" })).toBeVisible();
   await expect(section.getByRole("heading", { name: "Divine Varanasi & Prayagraj" })).toHaveCount(0);
 
   await filters.getByRole("button", { name: "All" }).click();
@@ -92,31 +110,31 @@ test("home page category filter and detail link (G-06)", async ({ page }) => {
 });
 
 test("package cards open the detail page: image, title, View Details, Book Now", async ({ page }) => {
-  const h1 = page.getByRole("heading", { level: 1, name: "Sacred Odisha Pilgrimage" });
-  const card = () => page.locator("#packages .pkg-card").filter({ hasText: "Sacred Odisha Pilgrimage" });
+  const h1 = page.getByRole("heading", { level: 1, name: "Odisha Temples & Beaches Tour" });
+  const card = () => page.locator("#packages .pkg-card").filter({ hasText: "Odisha Temples & Beaches Tour" });
 
   await page.goto("/");
-  await card().getByRole("link", { name: "View details: Sacred Odisha Pilgrimage" }).click();
+  await card().getByRole("link", { name: "View details: Odisha Temples & Beaches Tour" }).click();
   await page.waitForURL("**/packages/pkg-odisha");
   await expect(h1).toBeVisible();
   await expect(page.getByRole("dialog")).toHaveCount(0);
 
   await page.goto("/");
-  await card().getByRole("heading", { name: "Sacred Odisha Pilgrimage" }).getByRole("link").click();
+  await card().getByRole("heading", { name: "Odisha Temples & Beaches Tour" }).getByRole("link").click();
   await page.waitForURL("**/packages/pkg-odisha");
   await expect(h1).toBeVisible();
 
   // The image link is mouse-only (aria-hidden), so click the image itself.
   await page.goto("/");
-  await card().locator('img[alt="Sacred Odisha Pilgrimage"]').click();
+  await card().locator('img[alt="Odisha Temples & Beaches Tour"]').click();
   await page.waitForURL("**/packages/pkg-odisha");
   await expect(h1).toBeVisible();
 
   // Book Now lands on the booking form.
   await page.goto("/");
-  await card().getByRole("link", { name: "Book Sacred Odisha Pilgrimage" }).click();
+  await card().getByRole("link", { name: "Book Odisha Temples & Beaches Tour" }).click();
   await page.waitForURL("**/packages/pkg-odisha#book");
-  const form = page.getByRole("form", { name: /Book Sacred Odisha Pilgrimage/ });
+  const form = page.getByRole("form", { name: /Book Odisha Temples & Beaches Tour/ });
   await expect(form).toBeInViewport();
   await expect(form.getByLabel("Travel Date")).toHaveAttribute("min", /^\d{4}-\d{2}-\d{2}$/);
 });
@@ -128,11 +146,11 @@ test("/packages lists every public package with search, filter and sort", async 
   await expect(page.getByRole("heading", { level: 1, name: "Tour packages" })).toBeVisible();
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/packages$/);
 
-  // admin.spec.ts briefly hides "Royal Rajasthan Explorer" on the shared test DB, so these
+  // admin.spec.ts briefly hides "Royal Rajasthan Tour" on the shared test DB, so these
   // assertions only rely on the two spiritual seed packages (Varanasi, Odisha).
   const cards = page.locator(".pkg-card");
   await expect(cards.filter({ hasText: "Divine Varanasi & Prayagraj" })).toHaveCount(1);
-  await expect(cards.filter({ hasText: "Sacred Odisha Pilgrimage" })).toHaveCount(1);
+  await expect(cards.filter({ hasText: "Odisha Temples & Beaches Tour" })).toHaveCount(1);
   await expect(page.getByRole("status").filter({ hasText: /^\d+ packages?$/ })).toBeVisible();
 
   // Search narrows the list and is mirrored into the URL.
@@ -146,7 +164,7 @@ test("/packages lists every public package with search, filter and sort", async 
   await page.getByLabel("Search packages").fill("antarctica");
   await expect(cards).toHaveCount(0);
   await page.getByRole("button", { name: "Clear search and filters" }).click();
-  await expect(cards.filter({ hasText: "Sacred Odisha Pilgrimage" })).toHaveCount(1);
+  await expect(cards.filter({ hasText: "Odisha Temples & Beaches Tour" })).toHaveCount(1);
 
   // Category filter.
   const filters = page.getByRole("group", { name: "Filter packages by category" });
@@ -174,7 +192,7 @@ test("detail page links back to /packages and suggests other packages", async ({
   await expect(page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link", { name: "Packages" })).toHaveAttribute("href", "/packages");
   const more = page.locator("section", { has: page.getByRole("heading", { name: "More packages" }) });
   // Same category first: Odisha is the other spiritual package.
-  await expect(more.locator(".pkg-card").first()).toContainText("Sacred Odisha Pilgrimage");
+  await expect(more.locator(".pkg-card").first()).toContainText("Odisha Temples & Beaches Tour");
   await expect(more.getByText("Divine Varanasi & Prayagraj")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Plan a custom trip" })).toHaveAttribute("href", "/plan-trip");
 });
