@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import SmartImage from "@/components/SmartImage";
 import { UPI_CONFIG } from "@/lib/config";
 import QRCode from "qrcode";
 import { UPI_PAY_LINK, upiPayLink } from "@/lib/upi";
@@ -9,9 +8,9 @@ import { formatPrice } from "@/app/packages/package-utils";
 import { useT } from "@/lib/i18n/use-t";
 
 /**
- * UPI payment details (QR, UPI ID, deep link). Used in the Contact section and, `compact`
- * with `amount` + `reference`, in the /track pay panel (N-13): then the QR is generated in
- * the browser for that booking's amount instead of showing the static image. Details live in UPI_CONFIG.
+ * UPI payment details (UPI ID, deep link). Used in the Contact section (no QR image) and, `compact`
+ * with `amount` + `reference`, in the /track pay panel (N-13), where a QR is generated in
+ * the browser for that booking's amount. Details live in UPI_CONFIG.
  */
 const UpiPayCard: React.FC<{ compact?: boolean; amount?: number; reference?: string }> = ({
   compact = false,
@@ -144,7 +143,7 @@ const UpiPayCard: React.FC<{ compact?: boolean; amount?: number; reference?: str
 
   return (
     <div style={styles.card}>
-      {perBooking ? (
+      {perBooking && (
         // Intentionally hardcoded white: the QR needs a light quiet zone and scan contrast in dark mode too.
         <div style={{ ...styles.qrLink, width: qrWidth, height: qrWidth, background: "#fff" }}>
           {qrSrc && (
@@ -158,23 +157,6 @@ const UpiPayCard: React.FC<{ compact?: boolean; amount?: number; reference?: str
             />
           )}
         </div>
-      ) : (
-        <a
-          href={UPI_CONFIG.qrImage}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={styles.qrLink}
-          aria-label={t("upi.viewFull")}
-        >
-          <SmartImage
-            src={UPI_CONFIG.qrImage}
-            alt={t("upi.qrAlt", { payee: UPI_CONFIG.payee, id: UPI_CONFIG.id })}
-            width={qrWidth}
-            height={Math.round((qrWidth * 1478) / 1064)}
-            sizes={`${qrWidth}px`}
-            style={{ display: "block", width: qrWidth, height: "auto" }}
-          />
-        </a>
       )}
       <div style={styles.info}>
         <div style={styles.heading}>{t("upi.heading")}</div>

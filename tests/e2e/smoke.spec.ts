@@ -35,7 +35,6 @@ test("home page shows the team section and UPI payment details", async ({ page }
   await expect(team.locator("img")).toHaveCount(3);
 
   const contact = page.locator("#contact");
-  await expect(contact.getByText("Pay via UPI")).toBeVisible();
-  await expect(contact.getByText("d2095760-1@okicici")).toBeVisible();
-  await expect(contact.getByRole("link", { name: "Open UPI app" })).toHaveAttribute("href", /^upi:\/\/pay\?pa=d2095760-1@okicici/);
+  // UPI payment lives only on /track (per-booking QR); Contact no longer shows a UPI card.
+  await expect(contact.getByText("Pay via UPI")).toHaveCount(0);
 });
