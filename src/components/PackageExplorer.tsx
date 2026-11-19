@@ -146,7 +146,7 @@ const styles: Record<string, React.CSSProperties> = {
   count: { fontSize: 14, fontWeight: 600, color: "var(--text2)", margin: 0 },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))",
     gap: 28,
   },
   empty: {
@@ -240,6 +240,11 @@ const PackageExplorer: React.FC<PackageExplorerProps> = ({ packages, initialQuer
         [data-theme="dark"] #packages-explorer {
           --pkgx-chip-border: rgba(91,143,217,0.35);
           --pkgx-divider: rgba(148,163,184,0.25);
+        }
+        /* Two columns until three fit (3 × 320px + gaps); a lone last card is centred. */
+        @media (min-width: 641px) and (max-width: 1063px) {
+          .pkgx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+          .pkgx-grid > :last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc((100% - 28px) / 2); }
         }
         @media (max-width: 640px) {
           .pkgx-toolbar { grid-template-columns: 1fr !important; }

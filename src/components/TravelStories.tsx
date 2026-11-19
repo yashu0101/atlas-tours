@@ -236,7 +236,7 @@ const TravelStories: React.FC = () => {
       </div>
 
       {/* Travel Moments */}
-      <div className="reveal" style={{ ...styles.header, marginTop: 70 }}>
+      <div className="reveal" style={{ ...styles.header, marginTop: "clamp(40px, 5vw + 22px, 70px)" }}>
         <span style={styles.badge}>Travel Moments</span>
         <h2 style={styles.heading}>Travel Moments</h2>
         <p style={styles.subheading}>
@@ -310,7 +310,7 @@ const TravelStories: React.FC = () => {
 
 const styles: Record<string, React.CSSProperties> = {
   section: {
-    padding: "100px 24px",
+    padding: "var(--section-pad) 24px",
     fontFamily: "'Poppins', sans-serif",
     background: "var(--bg)",
   },

@@ -18,7 +18,7 @@ const Team: React.FC = () => {
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
-      padding: "100px 24px",
+      padding: "var(--section-pad) 24px",
       fontFamily: "'Poppins', sans-serif",
       background: "var(--bg2)",
     },
@@ -128,6 +128,8 @@ const Team: React.FC = () => {
           #team .team-row.flip .team-figure { order: 0; }
           #team .team-row.flip .team-text { justify-self: start; }
           #team .team-figure { max-width: 420px; justify-self: center; }
+          /* Line the text up with the centred photo above it. */
+          #team .team-text, #team .team-row.flip .team-text { justify-self: center; width: 100%; max-width: 420px; }
           #team .team-frame, #team .team-row.flip .team-frame { transform: translate(12px, 12px); }
         }
       `}</style>

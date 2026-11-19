@@ -56,7 +56,7 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
-      padding: "100px 24px",
+      padding: "var(--section-pad) 24px",
       fontFamily: "'Poppins', sans-serif",
       background: "linear-gradient(135deg, #1a3a6b 0%, #0f2548 100%)",
       color: "#fff",

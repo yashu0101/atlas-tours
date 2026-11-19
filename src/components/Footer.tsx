@@ -228,7 +228,7 @@ const Footer: React.FC = () => {
   const mapHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${SITE_CONFIG.name}, ${SITE_CONFIG.address}`)}`;
 
   return (
-    <footer data-header-tone="dark" className="ft">
+    <footer className="ft">
       <style>{`
         .ft {
           --ft-bg: #0f2548;
@@ -330,6 +330,11 @@ const Footer: React.FC = () => {
           .ft-btn:hover { transform: none; }
         }
 
+        /* Keep the copyright line clear of the fixed WhatsApp / back-to-top buttons (bottom-right),
+           which overlap the content column below ~1280px. */
+        @media (max-width: 1280px) {
+          .ft-bottom { padding-right: 80px; }
+        }
         @media (max-width: 1024px) {
           .ft-grid { grid-template-columns: repeat(3, 1fr); }
           .ft-about { grid-column: 1 / -1; }
@@ -354,7 +359,8 @@ const Footer: React.FC = () => {
 
       <GhatSkyline />
 
-      <div className="ft-body">
+      {/* Only the navy body is dark: the skyline's sky is the light page background. */}
+      <div className="ft-body" data-header-tone="dark">
         <div className="ft-inner">
           <div className="ft-cta">
             <div>

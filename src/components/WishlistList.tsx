@@ -18,7 +18,7 @@ const styles: Record<string, React.CSSProperties> = {
     maxWidth: 1200,
     margin: "0 auto",
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(min(300px, 100%), 1fr))",
     gap: 30,
   },
   card: {

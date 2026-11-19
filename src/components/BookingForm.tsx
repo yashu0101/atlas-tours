@@ -101,7 +101,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price
 
   const styles: Record<string, React.CSSProperties> = {
     form: { display: "flex", flexDirection: "column", gap: 0 },
-    grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 },
+    // minmax(0, 1fr): the date input's intrinsic min width otherwise widens column 1 and squeezes Email.
+    grid: { display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 16 },
     full: { gridColumn: "1 / -1" },
     estimate: {
       marginTop: 18,
@@ -172,6 +173,12 @@ const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price
           --booking-error-border: rgba(241,148,138,0.3);
         }
         @media (max-width: 480px) {
+          .booking-grid { grid-template-columns: 1fr !important; }
+        }
+        /* The form also sits in the narrow detail-page sidebar (about 290px wide at 1024px),
+           so stack by the form's own width too, not only the viewport's. */
+        .booking-form { container-type: inline-size; }
+        @container (max-width: 340px) {
           .booking-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>

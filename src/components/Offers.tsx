@@ -38,7 +38,7 @@ const Offers: React.FC<{ initialOffers: Offer[] }> = ({ initialOffers }) => {
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
-      padding: "100px 24px",
+      padding: "var(--section-pad) 24px",
       fontFamily: "'Poppins', sans-serif",
       background: "var(--bg3)",
     },
@@ -74,7 +74,7 @@ const Offers: React.FC<{ initialOffers: Offer[] }> = ({ initialOffers }) => {
       maxWidth: 1200,
       margin: "0 auto",
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+      gridTemplateColumns: "repeat(auto-fit, minmax(min(300px, 100%), 1fr))",
       gap: 30,
     },
     card: {

@@ -29,7 +29,7 @@ const About: React.FC = () => {
   const t = useT();
   const s: Record<string, React.CSSProperties> = {
     section: {
-      padding: "100px 24px 110px",
+      padding: "var(--section-pad) 24px calc(var(--section-pad) + 10px)",
       fontFamily: "'Poppins', sans-serif",
       background: "var(--bg2)",
     },

@@ -16,7 +16,7 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
-      padding: "100px 24px",
+      padding: "var(--section-pad) 24px",
       fontFamily: "'Poppins', sans-serif",
       background: "var(--bg)",
     },
@@ -52,7 +52,7 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
       maxWidth: 1200,
       margin: "0 auto",
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
+      gridTemplateColumns: "repeat(auto-fill, minmax(min(350px, 100%), 1fr))",
       gap: 30,
     },
     card: {
@@ -157,7 +157,12 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
         .blog-read-more:hover, .blog-full-link:hover { color: var(--primary) !important; }
         /* E-02: dark-mode override. Light mode uses the inline fallback (colour unchanged). */
         [data-theme="dark"] #blog { --blog-muted: var(--text2); }
-        @media (max-width: 768px) {
+        /* Tablets: two columns, a lone last card centred; one column on phones. */
+        @media (min-width: 641px) and (max-width: 1157px) {
+          .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+          .blog-grid > :last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc((100% - 30px) / 2); }
+        }
+        @media (max-width: 640px) {
           .blog-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>

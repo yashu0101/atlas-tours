@@ -66,7 +66,7 @@ const Showcase: React.FC = () => {
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
-      padding: "100px 24px",
+      padding: "var(--section-pad) 24px",
       fontFamily: "'Poppins', sans-serif",
       background: "var(--bg2)",
     },
@@ -102,7 +102,7 @@ const Showcase: React.FC = () => {
       maxWidth: 1100,
       margin: "0 auto",
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+      gridTemplateColumns: "repeat(auto-fit, minmax(min(340px, 100%), 1fr))",
       gap: 30,
     },
     card: {
@@ -140,14 +140,14 @@ const Showcase: React.FC = () => {
     },
     packagesHeader: {
       textAlign: "center" as const,
-      marginTop: 70,
+      marginTop: "clamp(40px, 5vw + 22px, 70px)",
       marginBottom: 40,
     },
     pkgGrid: {
       maxWidth: 1100,
       margin: "0 auto",
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+      gridTemplateColumns: "repeat(auto-fit, minmax(min(300px, 100%), 1fr))",
       gap: 28,
     },
     pkgCard: {

@@ -81,7 +81,7 @@ const Counter: React.FC = () => {
   const styles: Record<string, React.CSSProperties> = {
     section: {
       background: "linear-gradient(135deg, #1a3a6b 0%, #0a1628 100%)",
-      padding: "80px 24px",
+      padding: "calc(var(--section-pad) * 0.8) 24px",
       fontFamily: "'Poppins', sans-serif",
       position: "relative",
       overflow: "hidden",
@@ -162,15 +162,20 @@ const Counter: React.FC = () => {
         @media (max-width: 868px) {
           .counter-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
+        /* Phones: keep 2 × 2 with compact cards (one per row made four numbers ~1000px tall). */
         @media (max-width: 500px) {
-          .counter-grid { grid-template-columns: 1fr !important; }
+          .counter-grid { gap: 12px !important; }
+          .counter-card { padding: 22px 8px !important; }
+          .counter-icon { width: 48px !important; height: 48px !important; margin-bottom: 14px !important; }
+          .counter-value { font-size: 32px !important; }
+          .counter-label { font-size: 11px !important; letter-spacing: 1px !important; }
         }
       `}</style>
       <div style={styles.bgDecor} data-parallax="0.25" aria-hidden="true" />
       <div className="counter-grid" style={styles.container}>
         {counters.map((c, i) => (
           <div key={i} className={`counter-card counter-3d reveal-scale stagger-${i + 1} glass-shimmer`} style={{ ...styles.card, position: "relative", overflow: "hidden" }}>
-            <div style={styles.iconWrap}>
+            <div className="counter-icon" style={styles.iconWrap}>
               <svg
                 width="28"
                 height="28"
@@ -185,11 +190,11 @@ const Counter: React.FC = () => {
                 <path d={c.icon} />
               </svg>
             </div>
-            <div style={styles.value}>
+            <div className="counter-value" style={styles.value}>
               <AnimatedNumber target={c.num} triggered={triggered} />
               {c.suffix}
             </div>
-            <div style={styles.label}>{t(c.label)}</div>
+            <div className="counter-label" style={styles.label}>{t(c.label)}</div>
           </div>
         ))}
       </div>

@@ -31,7 +31,7 @@ const styles: Record<string, React.CSSProperties> = {
   breadcrumbLink: { color: "#fff", fontWeight: 600 },
   title: { fontSize: "clamp(28px, 4.5vw, 42px)", fontWeight: 800, lineHeight: 1.2, marginBottom: 12, color: "#fff" },
   subtitle: { fontSize: 16, lineHeight: 1.7, color: "rgba(255,255,255,0.85)", maxWidth: 620 },
-  body: { padding: "48px 24px 100px", background: "var(--bg)", fontFamily: "'Poppins', sans-serif" },
+  body: { padding: "48px 24px var(--section-pad)", background: "var(--bg)", fontFamily: "'Poppins', sans-serif" },
   card: {
     maxWidth: 760,
     margin: "0 auto",
