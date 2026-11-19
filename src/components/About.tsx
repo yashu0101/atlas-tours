@@ -165,7 +165,7 @@ const About: React.FC = () => {
       `}</style>
       <div style={styles.container}>
         <div className="reveal-left" style={styles.imageCol}>
-          <div className="img-zoom reveal-wipe scroll-zoom" style={styles.imgWrap}>
+          <div className="img-zoom reveal-wipe scroll-zoom about-img-3d" style={styles.imgWrap}>
             <SmartImage
               src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=500&q=75"
               alt={t("about.imageAlt")}
@@ -192,7 +192,7 @@ const About: React.FC = () => {
 
           <div className="about-features-grid" style={styles.featuresGrid}>
             {features.map((f, i) => (
-              <div key={f.title} className={`about-feature card-hover reveal stagger-${i + 1}`} style={styles.featureCard}>
+              <div key={f.title} className={`about-feature card-hover tilt-3d reveal stagger-${i + 1}`} style={styles.featureCard}>
                 <div style={styles.featureIcon}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d={iconPaths[f.icon]} />

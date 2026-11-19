@@ -207,7 +207,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ pkg, index, headingLevel = "h
   const Heading = headingLevel;
   const hasDiscount = typeof pkg.originalPrice === "number" && pkg.originalPrice > pkg.price;
   const highlights = pkg.highlights ?? [];
-  const className = reveal ? `pkg-card card-hover reveal stagger-${(index % 3) + 1}` : "pkg-card card-hover";
+  const className = reveal ? `pkg-card card-hover tilt-3d reveal stagger-${(index % 3) + 1}` : "pkg-card card-hover tilt-3d";
 
   return (
     <div className={className} style={styles.card}>

@@ -135,6 +135,8 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
+      perspective: "1200px",
+      transformStyle: "preserve-3d" as const,
     },
     video: {
       position: "absolute",
@@ -345,6 +347,17 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
 
       <div style={styles.overlay} />
 
+      {/* 3D gradient mesh orbs */}
+      <div className="hero-mesh" style={{ top: "-10%", left: "-10%", background: "radial-gradient(circle, #f39c12, #e67e22)" }} />
+      <div className="hero-mesh" style={{ bottom: "-15%", right: "-10%", background: "radial-gradient(circle, #3498db, #1a3a6b)", animationDelay: "-7s", animationDirection: "reverse" }} />
+
+      {/* 3D floating travel icons */}
+      <svg className="hero-3d-icon" style={{ top: "12%", left: "8%", width: 80, height: 80 }} viewBox="0 0 24 24" fill="none" stroke="#f39c12" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2 2H4a2 2 0 01-2-2v-3"/><path d="M2 12l10-9 10 9"/><path d="M12 3v18"/><circle cx="12" cy="12" r="3"/></svg>
+      <svg className="hero-3d-icon" style={{ top: "20%", right: "10%", width: 60, height: 60 }} viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+      <svg className="hero-3d-icon" style={{ bottom: "25%", left: "5%", width: 70, height: 70 }} viewBox="0 0 24 24" fill="none" stroke="rgba(243,156,18,0.5)" strokeWidth="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>
+      <svg className="hero-3d-icon" style={{ bottom: "15%", right: "8%", width: 55, height: 55 }} viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/></svg>
+      <svg className="hero-3d-icon" style={{ top: "40%", left: "15%", width: 45, height: 45 }} viewBox="0 0 24 24" fill="none" stroke="rgba(243,156,18,0.35)" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+
       {/* Floating dots */}
       {dots.map((d, i) => (
         <div
@@ -372,7 +385,7 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
           {t("hero.description")}
         </p>
         <div className="hero-stagger-4" style={styles.btnGroup}>
-          <a href="#packages" className="hero-btn-primary pulse-glow" style={styles.btnPrimary}>
+          <a href="#packages" className="hero-btn-primary btn-3d-glow" style={styles.btnPrimary}>
             {t("hero.viewPackages")}
           </a>
           <a
@@ -387,7 +400,7 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
         </div>
         <div className="hero-stagger-5" style={styles.statsRow}>
           {stats.map((s) => (
-            <div key={s.labelKey} className="glass" style={styles.statCard}>
+            <div key={s.labelKey} className="glass stat-3d glass-shimmer" style={{ ...styles.statCard, position: "relative", overflow: "hidden" }}>
               <div style={styles.statValue}>{s.value}</div>
               <div style={styles.statLabel}>{t(s.labelKey)}</div>
             </div>

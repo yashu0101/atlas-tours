@@ -278,6 +278,161 @@ html::-webkit-scrollbar { display: none; }
 .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.15); }
 [data-theme="dark"] .glass-light { background: rgba(255,255,255,0.05); }
 
+/* ===== 3D EFFECTS ===== */
+
+/* 3D perspective container for tilt cards */
+.perspective { perspective: 1200px; }
+
+/* 3D tilt card — mouse-driven via JS, CSS fallback on hover */
+.tilt-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.03, 0.98, 0.52, 0.99), box-shadow 0.4s ease;
+  will-change: transform;
+}
+.tilt-3d:hover {
+  transform: rotateY(-4deg) rotateX(3deg) translateZ(10px);
+  box-shadow: 12px 16px 44px rgba(0,0,0,0.18), 0 0 0 1px rgba(243,156,18,0.1);
+}
+
+/* Inner content pops forward in 3D space */
+.tilt-3d-inner {
+  transform: translateZ(40px);
+  transform-style: preserve-3d;
+}
+
+/* 3D floating travel icons in hero */
+@keyframes float-3d-1 {
+  0%, 100% { transform: translateZ(60px) translateY(0) rotateY(0deg); }
+  25% { transform: translateZ(80px) translateY(-20px) rotateY(15deg); }
+  50% { transform: translateZ(60px) translateY(-10px) rotateY(0deg); }
+  75% { transform: translateZ(40px) translateY(-25px) rotateY(-15deg); }
+}
+@keyframes float-3d-2 {
+  0%, 100% { transform: translateZ(40px) translateY(0) rotateX(0deg); }
+  50% { transform: translateZ(70px) translateY(-30px) rotateX(12deg); }
+}
+@keyframes float-3d-3 {
+  0%, 100% { transform: translateZ(30px) rotate(0deg) scale(1); }
+  33% { transform: translateZ(60px) rotate(8deg) scale(1.1); }
+  66% { transform: translateZ(50px) rotate(-5deg) scale(0.95); }
+}
+
+.hero-3d-icon {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.15;
+  filter: drop-shadow(0 4px 20px rgba(243,156,18,0.3));
+  transform-style: preserve-3d;
+}
+.hero-3d-icon:nth-child(1) { animation: float-3d-1 8s ease-in-out infinite; }
+.hero-3d-icon:nth-child(2) { animation: float-3d-2 10s ease-in-out infinite 1s; }
+.hero-3d-icon:nth-child(3) { animation: float-3d-3 12s ease-in-out infinite 2s; }
+.hero-3d-icon:nth-child(4) { animation: float-3d-1 9s ease-in-out infinite 3s; }
+.hero-3d-icon:nth-child(5) { animation: float-3d-2 11s ease-in-out infinite 0.5s; }
+
+/* 3D stat cards in hero */
+.stat-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.03, 0.98, 0.52, 0.99), box-shadow 0.5s ease;
+}
+.stat-3d:hover {
+  transform: translateZ(30px) rotateX(-5deg) scale(1.05);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3), 0 0 30px rgba(243,156,18,0.15);
+}
+
+/* 3D section entrance */
+.reveal-3d {
+  opacity: 0;
+  transform: perspective(800px) rotateX(8deg) translateY(60px);
+  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-3d.active {
+  opacity: 1;
+  transform: perspective(800px) rotateX(0deg) translateY(0);
+}
+
+/* 3D card flip on hover */
+.card-3d-flip {
+  perspective: 1000px;
+}
+.card-3d-flip-inner {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+}
+.card-3d-flip:hover .card-3d-flip-inner {
+  transform: rotateY(5deg) translateZ(20px);
+}
+
+/* 3D depth shadow for about image */
+.about-img-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.03, 0.98, 0.52, 0.99);
+}
+.about-img-3d:hover {
+  transform: perspective(800px) rotateY(-5deg) rotateX(2deg) translateZ(20px);
+}
+
+/* Counter 3D lift */
+.counter-3d:hover {
+  transform: perspective(600px) rotateX(-6deg) translateY(-8px) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 20px rgba(243,156,18,0.1) !important;
+  border-color: rgba(243,156,18,0.4) !important;
+}
+
+/* 3D glow ring on buttons */
+@keyframes glow-ring-3d {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(230,126,34,0.5), 0 6px 25px rgba(230,126,34,0.45); }
+  50% { box-shadow: 0 0 30px 8px rgba(230,126,34,0), 0 8px 30px rgba(230,126,34,0.6); }
+}
+.btn-3d-glow {
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.btn-3d-glow:hover {
+  transform: translateY(-4px) translateZ(10px);
+  animation: glow-ring-3d 2s infinite;
+}
+
+/* Shimmer light sweep on glass cards */
+@keyframes glass-shimmer {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+.glass-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.glass-shimmer:hover::after {
+  animation: glass-shimmer 0.8s ease;
+}
+
+/* 3D hero gradient mesh background */
+@keyframes mesh-rotate {
+  0% { transform: rotate(0deg) scale(1); }
+  33% { transform: rotate(120deg) scale(1.1); }
+  66% { transform: rotate(240deg) scale(0.95); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+.hero-mesh {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  opacity: 0.08;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 1;
+  animation: mesh-rotate 20s linear infinite;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .section { padding: 60px 0; }
@@ -286,6 +441,9 @@ html::-webkit-scrollbar { display: none; }
   .card-hover:hover { transform: translateY(-6px); }
   .reveal-left, .reveal-right { opacity: 0; transform: translateY(30px); }
   .reveal-left.active, .reveal-right.active { transform: translateY(0); }
+  .hero-3d-icon { display: none; }
+  .hero-mesh { width: 300px; height: 300px; }
+  .tilt-3d:hover { transform: translateY(-6px); }
 }
 
 /* ===== REDUCED MOTION ===== */
@@ -308,4 +466,8 @@ html::-webkit-scrollbar { display: none; }
   [data-parallax] { translate: none !important; }
   .parallax-fade { opacity: 1 !important; }
   .scroll-zoom img { scale: none !important; }
+  .reveal-3d { opacity: 1 !important; transform: none !important; }
+  .hero-3d-icon { display: none !important; }
+  .hero-mesh { animation: none !important; }
+  .tilt-3d:hover, .stat-3d:hover, .counter-3d:hover, .about-img-3d:hover { transform: none !important; }
 }
