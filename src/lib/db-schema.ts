@@ -181,6 +181,32 @@ END $$`,
       "CREATE INDEX audit_log_created_at_idx ON audit_log (created_at DESC, seq DESC)",
     ],
   },
+  {
+    // N-13: UPI payments. The customer submits a UTR (payment_status 'verifying'); the unique
+    // partial index stops one transaction id being claimed by two bookings.
+    version: 7,
+    name: "booking_payments",
+    statements: [
+      "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS utr TEXT",
+      "ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_submitted_at TIMESTAMPTZ",
+      "ALTER TABLE bookings DROP CONSTRAINT bookings_payment_status_valid",
+      "ALTER TABLE bookings ADD CONSTRAINT bookings_payment_status_valid CHECK (payment_status IN ('pending','verifying','paid','failed','refunded'))",
+      "CREATE UNIQUE INDEX bookings_utr_unique ON bookings (utr) WHERE utr IS NOT NULL",
+    ],
+  },
+  {
+    // N-18: richer package details from the client's brochures — what is not included, the
+    // starting city, a minimum group size and a note under the price.
+    version: 8,
+    name: "package_details",
+    statements: [
+      "ALTER TABLE packages ADD COLUMN IF NOT EXISTS exclusions JSONB NOT NULL DEFAULT '[]'::jsonb",
+      "ALTER TABLE packages ADD COLUMN IF NOT EXISTS starts_from TEXT",
+      "ALTER TABLE packages ADD COLUMN IF NOT EXISTS min_travelers INTEGER",
+      "ALTER TABLE packages ADD COLUMN IF NOT EXISTS price_note TEXT",
+      "ALTER TABLE packages ADD CONSTRAINT packages_min_travelers_valid CHECK (min_travelers IS NULL OR min_travelers BETWEEN 1 AND 100)",
+    ],
+  },
 ];
 
 /**

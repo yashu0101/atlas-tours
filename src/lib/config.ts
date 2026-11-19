@@ -19,72 +19,108 @@ export const PHONE_DISPLAY = SITE_CONFIG.phone.replace(/^\+91(\d+)$/, "+91 $1");
 
 export const DEFAULT_PACKAGES: TourPackage[] = [
   {
-    id: "pkg-odisha",
-    name: "Odisha Tour Package",
-    destination: "Bhubaneswar, Puri, Konark, Chilika Lake",
-    duration: "6 Days / 5 Nights",
-    price: 11999,
-    originalPrice: 16999,
-    image: "/images/pkg-odisha.jpeg",
-    description: "Discover the soul of Odisha — from the magnificent temples of Bhubaneswar to the sacred Jagannath Temple in Puri, the stunning Konark Sun Temple, and the serene Chilika Lake with dolphin spotting. A perfect blend of temples, beaches, culture and nature.",
-    highlights: ["Puri Jagannath Temple", "Konark Sun Temple", "Chilika Lake & Dolphin Spotting", "Bhubaneswar Temples (Lingaraj, Mukteshwar, Rajarani)", "Khandagiri & Udayagiri Caves", "Puri Beach", "Chandrabhaga Beach", "Dhauli Peace Pagoda", "Pipili Applique Village", "Raghurajpur Artist Village"],
-    itinerary: [
-      "Day 1: Arrival Bhubaneswar — Sightseeing (Lingaraj, Mukteshwar, Rajarani, Khandagiri/Udayagiri). Overnight at Bhubaneswar",
-      "Day 2: Bhubaneswar to Puri — Via Dhauli, Pipili & Raghurajpur. Jagannath Temple & Puri Beach. Overnight at Puri",
-      "Day 3: Chilika Lake / Satpada — Boat ride & dolphin spotting area. Return to Puri. Overnight at Puri",
-      "Day 4: Konark Sun Temple — Chandrabhaga Beach, Ramachandi. Return to Puri. Overnight at Puri",
-      "Day 5: Puri Local Sightseeing — Temples & local attractions. Evening transfer to Bhubaneswar. Overnight at Bhubaneswar",
-      "Day 6: Departure — Bhubaneswar shopping / local sightseeing. Drop at airport / railway station",
-    ],
-    inclusions: ["AC Transport", "Hotel Stay (3-Star)", "Daily Breakfast", "Sightseeing as per itinerary", "Boat Ride at Chilika", "Temple Guide", "All Toll & Parking"],
+    id: "pkg-varanasi",
+    name: "Divine Varanasi & Prayagraj",
+    destination: "Varanasi, Prayagraj, Ayodhya",
+    duration: "4 Days / 3 Nights",
+    price: 8999,
+    originalPrice: 12999,
+    image: "https://images.unsplash.com/photo-1561359313-0639aad49ca6?w=800&q=75",
+    description: "Experience the spiritual heart of India with Ganga Aarti, Kashi Vishwanath Temple, and holy dips.",
+    highlights: ["Ganga Aarti at Dashashwamedh Ghat", "Kashi Vishwanath Temple", "Sarnath Buddhist Site", "Triveni Sangam Prayagraj", "Ram Mandir Ayodhya"],
+    itinerary: ["Day 1: Arrival in Varanasi, Evening Ganga Aarti", "Day 2: Kashi Vishwanath, Sarnath, Local Temples", "Day 3: Prayagraj Sangam, Hanuman Mandir", "Day 4: Ayodhya Ram Mandir, Departure"],
+    inclusions: ["AC Transport", "3-Star Hotel Stay", "Breakfast & Dinner", "Guided Temple Tours", "All Entry Tickets"],
+    exclusions: [],
     category: "spiritual",
     createdAt: new Date().toISOString(),
   },
   {
     id: "pkg-rajasthan",
-    name: "Royal Rajasthan Tour Package",
+    // N-18: from the client's "Royal Rajasthan Tour Package" brochure (Oct 2026).
+    name: "Royal Rajasthan Tour",
     destination: "Jaipur, Jodhpur, Jaisalmer, Udaipur",
     duration: "8 Days / 7 Nights",
     price: 17500,
-    originalPrice: 22999,
-    image: "/images/pkg-rajasthan.jpeg",
-    description: "Experience the royal heritage of Rajasthan — from the Pink City Jaipur to the Blue City Jodhpur, the Golden City Jaisalmer with desert camping, and the City of Lakes Udaipur. Same land, different stories. Package cost ₹17,500 per person based on double sharing. Minimum 4 pax required.",
-    highlights: ["Amber Fort & Hawa Mahal Jaipur", "Mehrangarh Fort Jodhpur", "Jaisalmer Fort & Patwon Ki Haveli", "Sam Sand Dunes Camel Safari", "Rajasthani Cultural Programme & Dinner", "Lake Pichola & Gangaur Ghat Udaipur", "City Palace Udaipur", "Saheliyon Ki Bari", "Fateh Sagar Lake", "Clock Tower Market Jodhpur"],
-    itinerary: [
-      "Day 1: Prayagraj to Jaipur — Departure, arrival & hotel check-in. Evening local market. Overnight Jaipur",
-      "Day 2: Jaipur — Amber Fort, Jal Mahal, City Palace, Jantar Mantar, Hawa Mahal. Overnight Jaipur",
-      "Day 3: Jaipur to Jodhpur — Morning departure, Jodhpur arrival. Mehrangarh Fort, Jaswant Thada, Clock Tower Market. Overnight Jodhpur",
-      "Day 4: Jodhpur to Jaisalmer — Morning departure. Jaisalmer Fort, Patwon Ki Haveli, Gadisar Lake. Overnight Jaisalmer",
-      "Day 5: Jaisalmer Desert — Kuldhara Village, Sam Sand Dunes, Camel Safari, Sunset. Rajasthani cultural programme & dinner. Overnight Desert Camp",
-      "Day 6: Jaisalmer to Udaipur — Early morning departure. Udaipur arrival, Lake Pichola / Gangaur Ghat. Overnight Udaipur",
-      "Day 7: Udaipur — City Palace, Jagdish Temple, Saheliyon Ki Bari, Fateh Sagar Lake, Optional boat ride. Overnight Udaipur",
-      "Day 8: Udaipur to Prayagraj — Breakfast & check-out. Return journey to Prayagraj",
+    image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800&q=75",
+    description:
+      "An 8-day trip from Prayagraj through Rajasthan's four royal cities — Jaipur the Pink City, Jodhpur the Blue City, Jaisalmer the Golden City and Udaipur the City of Lakes — with hill forts, palaces, a camel safari on the Sam sand dunes and a night at a desert camp.",
+    highlights: [
+      "Amber Fort, City Palace & Hawa Mahal, Jaipur",
+      "Mehrangarh Fort & Jaswant Thada, Jodhpur",
+      "Jaisalmer Fort & Patwon Ki Haveli",
+      "Camel safari & sunset at Sam Sand Dunes",
+      "Night at a desert camp with Rajasthani cultural programme",
+      "Lake Pichola & City Palace, Udaipur",
     ],
-    inclusions: ["Hotel (3★/4★)", "Daily Breakfast", "AC Vehicle for Sightseeing & Transfers", "All Sightseeing & Entry Tickets (as per itinerary)", "24x7 Tour Manager Support", "Desert Camp Stay", "Driver Charges, Toll Tax & Parking"],
+    itinerary: [
+      "Day 1: Prayagraj → Jaipur | Departure from Prayagraj for Jaipur | Arrival in Jaipur & hotel check-in | Evening at the local market | Overnight in Jaipur",
+      "Day 2: Jaipur sightseeing | Amber Fort | Jal Mahal | City Palace | Jantar Mantar | Hawa Mahal | Overnight in Jaipur",
+      "Day 3: Jaipur → Jodhpur | Morning departure | Arrival in Jodhpur & check-in | Mehrangarh Fort | Jaswant Thada | Clock Tower Market | Overnight in Jodhpur",
+      "Day 4: Jodhpur → Jaisalmer | Morning departure | Jaisalmer Fort | Patwon Ki Haveli | Gadisar Lake | Overnight in Jaisalmer",
+      "Day 5: Jaisalmer desert | Kuldhara Village | Sam Sand Dunes | Camel safari | Desert sunset | Rajasthani cultural programme & dinner | Overnight at Sam desert camp",
+      "Day 6: Jaisalmer → Udaipur | Early-morning departure | Arrival in Udaipur | Lake Pichola / Gangaur Ghat | Overnight in Udaipur",
+      "Day 7: Udaipur sightseeing | City Palace | Jagdish Temple | Saheliyon Ki Bari | Fateh Sagar Lake | Optional boat ride | Overnight in Udaipur",
+      "Day 8: Udaipur → Prayagraj | Breakfast & check-out | Return journey to Prayagraj",
+    ],
+    inclusions: [
+      "Hotel stay (3★ / 4★)",
+      "Daily breakfast",
+      "AC vehicle for sightseeing & transfers",
+      "All sightseeing & entry tickets (as per itinerary)",
+      "Desert camp stay with cultural programme & dinner",
+      "24×7 tour manager support",
+    ],
+    exclusions: [
+      "Lunch, and dinners other than at the desert camp",
+      "Optional boat ride in Udaipur",
+      "Personal expenses (shopping, tips, laundry, phone calls)",
+      "Anything not listed under What's included",
+    ],
+    startsFrom: "Prayagraj",
+    minTravelers: 4,
+    priceNote: "Based on double sharing",
     category: "heritage",
     createdAt: new Date().toISOString(),
   },
   {
-    id: "pkg-up-spiritual",
-    name: "Spiritual Wonders of Uttar Pradesh",
-    destination: "Ayodhya, Varanasi, Prayagraj, Chitrakoot, Lucknow, Vrindavan, Agra",
-    duration: "3 to 8 Days (Multiple Itineraries)",
-    price: 12699,
-    originalPrice: 17999,
-    image: "/images/pkg-up-spiritual.jpeg",
-    description: "Explore the spiritual wonders of Uttar Pradesh with our curated pilgrimage and heritage tours. Visit Ayodhya Ram Mandir, witness the Ganga Aarti in Varanasi, take a holy dip at Prayagraj Sangam, experience the serenity of Chitrakoot, heritage of Lucknow, devotion of Vrindavan, and the iconic Taj Mahal in Agra. Five signature itineraries from 3 nights to 8 nights. Rates based on minimum 6 paying guests.",
-    highlights: ["Ayodhya Ram Mandir", "Varanasi Ganga Aarti", "Prayagraj Triveni Sangam", "Chitrakoot Divine Serenity", "Lucknow Heritage", "Vrindavan Bhakti", "Agra Taj Mahal", "Naimisharanya Day Visit"],
-    itinerary: [
-      "Day 1: Ayodhya — Ram Mandir darshan, Hanuman Garhi, Saryu Ghat. Overnight Ayodhya",
-      "Day 2: Ayodhya to Varanasi — Kashi Vishwanath Temple, Sarnath. Evening Ganga Aarti at Dashashwamedh Ghat. Overnight Varanasi",
-      "Day 3: Varanasi — Morning boat ride on Ganges, local temples. Overnight Varanasi",
-      "Day 4: Varanasi to Prayagraj — Triveni Sangam holy dip, Hanuman Mandir, Anand Bhawan. Overnight Prayagraj",
-      "Day 5: Prayagraj to Chitrakoot — Kamadgiri Parikrama, Ram Ghat, Gupt Godavari. Overnight Chitrakoot",
-      "Day 6: Chitrakoot to Lucknow — Bara Imambara, Chota Imambara, British Residency, Hazratganj. Overnight Lucknow",
-      "Day 7: Lucknow to Vrindavan & Agra — Banke Bihari Temple, Prem Mandir, ISKCON. Drive to Agra. Overnight Agra",
-      "Day 8: Agra & Departure — Taj Mahal, Agra Fort. Departure",
+    id: "pkg-odisha",
+    name: "Odisha Temples & Beaches Tour",
+    destination: "Bhubaneswar, Puri, Chilika Lake, Konark",
+    duration: "6 Days / 5 Nights",
+    price: 11999,
+    image: "https://images.unsplash.com/photo-1576235282476-debff2a4d0b9?w=800&q=75",
+    description:
+      "Discover the soul of Odisha in six days — temples, beaches, culture and nature: the ancient temples of Bhubaneswar, Lord Jagannath's Puri, the Sun Temple at Konark, the artists' village of Raghurajpur and a boat ride on Chilika Lake to spot dolphins.",
+    highlights: [
+      "Jagannath Temple & Puri Beach",
+      "Konark Sun Temple & Chandrabhaga Beach",
+      "Lingaraj, Mukteshwar & Rajarani temples, Bhubaneswar",
+      "Khandagiri & Udayagiri caves",
+      "Boat ride to the dolphin-spotting area, Chilika Lake",
+      "Dhauli, Pipili & Raghurajpur artists' village",
     ],
-    inclusions: ["3-Star Hotel on Double Sharing", "Daily Hotel Breakfast", "AC Innova Crysta for Transfers & Sightseeing", "Driver Charges, Toll Tax & Parking", "GST Included", "Pickup and Drop as per Selected Itinerary"],
+    itinerary: [
+      "Day 1: Arrival in Bhubaneswar | Bhubaneswar sightseeing: Lingaraj, Mukteshwar & Rajarani temples, Khandagiri & Udayagiri caves | Overnight in Bhubaneswar",
+      "Day 2: Bhubaneswar → Puri | Via Dhauli, Pipili & Raghurajpur | Jagannath Temple & Puri Beach | Overnight in Puri",
+      "Day 3: Chilika Lake / Satpada | Boat ride to the dolphin-spotting area | Return to Puri | Overnight in Puri",
+      "Day 4: Konark Sun Temple | Chandrabhaga Beach | Ramachandi | Return to Puri | Overnight in Puri",
+      "Day 5: Puri local sightseeing | Temples & local attractions | Evening transfer to Bhubaneswar | Overnight in Bhubaneswar",
+      "Day 6: Departure | Shopping / local sightseeing in Bhubaneswar | Drop at the airport / railway station",
+    ],
+    inclusions: [
+      "Hotel stay — 5 nights (Bhubaneswar 2, Puri 3)",
+      "Daily breakfast",
+      "AC vehicle for sightseeing & transfers",
+      "Sightseeing as per itinerary",
+      "Drop at Bhubaneswar airport / railway station",
+    ],
+    exclusions: [
+      "Train / flight tickets to and from Bhubaneswar",
+      "Lunch & dinner",
+      "Boat ride & entry tickets, unless confirmed with your booking",
+      "Personal expenses (shopping, tips, laundry, phone calls)",
+    ],
+    startsFrom: "Bhubaneswar",
     category: "spiritual",
     createdAt: new Date().toISOString(),
   },
@@ -291,3 +327,37 @@ export const NAV_ITEMS = [
   { label: "FAQ", href: "#faq" },
   { label: "Contact", href: "#contact" },
 ];
+
+/**
+ * UPI payment details shown in the Contact section and after a booking request
+ * (QR supplied by the client: Hotel Ganga Imperial, payee "Dilip"). Change only here.
+ */
+/**
+ * Q-7: the marketing numbers shown in the Hero stats and the Counter section — one source so the
+ * two can never disagree. (provisional) Awaiting the real figures from the client. The package
+ * count is not here: the Hero shows the live number of visible packages.
+ */
+export const SITE_STATS = {
+  happyTravellers: 500,
+  destinations: 10,
+  yearsExperience: 10,
+  tripsCompleted: 1000,
+} as const;
+
+/**
+ * Footer social links. (provisional) These handles were guessed when the site was built and
+ * have not been confirmed by the client (see CLIENT_QUESTIONS.md). Remove an entry to hide
+ * its icon; change only here.
+ */
+export const SOCIAL_LINKS: readonly { name: "Facebook" | "Instagram" | "YouTube" | "X"; href: string }[] = [
+  { name: "Facebook", href: "https://facebook.com/atlastours" },
+  { name: "Instagram", href: "https://instagram.com/atlastours" },
+  { name: "YouTube", href: "https://youtube.com/atlastours" },
+  { name: "X", href: "https://x.com/atlastours" },
+];
+
+export const UPI_CONFIG = {
+  id: "d2095760-1@okicici",
+  payee: "Dilip",
+  qrImage: "/images/upi-qr.jpg",
+} as const;

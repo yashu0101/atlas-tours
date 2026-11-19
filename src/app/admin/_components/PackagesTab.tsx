@@ -13,7 +13,13 @@ export default function PackagesTab({ items: packages, editing, creating, onAdd,
         <Modal onClose={onClose}>
           <PackageForm
             pkg={editing || undefined}
-            onSave={(data) => editing ? onSave(editing.id, { ...data, originalPrice: data.originalPrice ?? null }) : onCreate(data)}
+            onSave={(data) => editing ? onSave(editing.id, {
+              ...data,
+              originalPrice: data.originalPrice ?? null,
+              startsFrom: data.startsFrom ?? null,
+              minTravelers: data.minTravelers ?? null,
+              priceNote: data.priceNote ?? null,
+            }) : onCreate(data)}
             onCancel={onClose}
           />
         </Modal>

@@ -42,6 +42,66 @@ export function filterByCategory<T extends Pick<TourPackage, "category">>(packag
   return filter === "all" ? [...packages] : packages.filter((p) => p.category === filter);
 }
 
+// ------------------------------------------------------------
+// /packages listing: search and sort
+// ------------------------------------------------------------
+
+/** Number of days in a free-text duration ("4 Days / 3 Nights" → 4); null when it has no number. */
+export function durationDays(duration: string | undefined): number | null {
+  const m = /(\d+)/.exec(duration ?? "");
+  return m ? Number(m[1]) : null;
+}
+
+/** Case-insensitive match on name, destination, category, highlights and description; blank query matches all. */
+export function searchPackages<T extends Pick<TourPackage, "name" | "destination" | "category" | "highlights" | "description">>(
+  packages: readonly T[],
+  query: string,
+): T[] {
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (terms.length === 0) return [...packages];
+  return packages.filter((p) => {
+    const haystack = [p.name, p.destination, p.category, p.description, ...(p.highlights ?? [])]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return terms.every((term) => haystack.includes(term));
+  });
+}
+
+export const PACKAGE_SORTS = ["recommended", "price-asc", "price-desc", "duration-asc"] as const;
+export type PackageSort = (typeof PACKAGE_SORTS)[number];
+
+export const isPackageSort = (v: unknown): v is PackageSort =>
+  typeof v === "string" && (PACKAGE_SORTS as readonly string[]).includes(v);
+
+/** Stable sort; "recommended" keeps the admin's order. Packages without a day count sort last by duration. */
+export function sortPackages<T extends Pick<TourPackage, "price" | "duration">>(packages: readonly T[], sort: PackageSort): T[] {
+  const list = [...packages];
+  const days = (p: T) => durationDays(p.duration) ?? Number.POSITIVE_INFINITY;
+  switch (sort) {
+    case "price-asc":
+      return list.sort((a, b) => a.price - b.price);
+    case "price-desc":
+      return list.sort((a, b) => b.price - a.price);
+    case "duration-asc":
+      return list.sort((a, b) => days(a) - days(b));
+    default:
+      return list;
+  }
+}
+
+/** Lowest per-person price among the packages, or null for an empty list. */
+export const lowestPrice = (packages: readonly Pick<TourPackage, "price">[]): number | null =>
+  packages.length ? Math.min(...packages.map((p) => p.price)) : null;
+
+/** Up to `limit` other packages for the detail page: same category first, then the rest, in list order. */
+export function relatedPackages<T extends Pick<TourPackage, "id" | "category">>(packages: readonly T[], current: T, limit = 3): T[] {
+  const others = packages.filter((p) => p.id !== current.id);
+  const same = others.filter((p) => p.category === current.category);
+  const rest = others.filter((p) => p.category !== current.category);
+  return [...same, ...rest].slice(0, limit);
+}
+
 // Fixed locale so server-rendered and hydrated prices are identical (F-02).
 export const formatPrice = (n: number | undefined): string => (typeof n === "number" ? n.toLocaleString("en-IN") : "");
 
@@ -50,6 +110,75 @@ export const discountPercent = (original: number, current: number): number =>
 
 /** Itinerary entries are stored as "Day N: ..." strings; strip the prefix since the day badge shows it. */
 export const stripDayPrefix = (line: string): string => line.replace(/^\s*Day\s*\d+\s*[:\-–—]\s*/i, "");
+
+// ------------------------------------------------------------
+// Detailed itinerary (N-18)
+// ------------------------------------------------------------
+// An itinerary line is "Day N: Title | point | point | Overnight in Place". Everything after
+// the first " | " is a bullet point; a point starting with "Overnight" names where the night
+// is spent. Lines without " | " (older packages) are just a title.
+
+export interface ItineraryDay {
+  title: string;
+  points: string[];
+  /** Where the night is spent ("Jaipur"), or null on the last day / when not stated. */
+  overnight: string | null;
+}
+
+const OVERNIGHT = /^overnight(?:\s+(?:stay\s+)?(?:at|in))?\s*[:\-–—]?\s*/i;
+
+export function parseItineraryDay(line: string): ItineraryDay {
+  const [head, ...rest] = stripDayPrefix(line).split("|").map((s) => s.trim());
+  let overnight: string | null = null;
+  const points: string[] = [];
+  for (const p of rest) {
+    if (!p) continue;
+    if (OVERNIGHT.test(p)) {
+      const place = p.replace(OVERNIGHT, "").trim();
+      if (place) overnight = place.charAt(0).toUpperCase() + place.slice(1);
+    } else {
+      points.push(p);
+    }
+  }
+  return { title: head ?? "", points, overnight };
+}
+
+export interface RouteStop {
+  place: string;
+  /** Nights spent here; 0 for the start / end point. */
+  nights: number;
+  kind: "start" | "stay" | "end";
+}
+
+/** Text after the last arrow of a day title ("Udaipur → Prayagraj" → "Prayagraj"), or null. */
+const arrivalOf = (title: string): string | null => {
+  const parts = title.split(/\s*(?:→|->)\s*/);
+  return parts.length > 1 ? parts[parts.length - 1].trim() || null : null;
+};
+
+/**
+ * Where the trip goes: the starting city, each place stayed at with its number of nights
+ * (consecutive nights merged), and where it ends (the last day's "A → B" arrival). Empty
+ * when the itinerary names no overnight stays.
+ */
+export function tripRoute(itinerary: readonly string[], startsFrom?: string): RouteStop[] {
+  const days = itinerary.map(parseItineraryDay);
+  const stays: RouteStop[] = [];
+  for (const d of days) {
+    if (!d.overnight) continue;
+    const last = stays[stays.length - 1];
+    if (last && last.place.toLowerCase() === d.overnight.toLowerCase()) last.nights += 1;
+    else stays.push({ place: d.overnight, nights: 1, kind: "stay" });
+  }
+  if (stays.length === 0) return [];
+  const start = startsFrom?.trim();
+  const route: RouteStop[] = [];
+  if (start && start.toLowerCase() !== stays[0].place.toLowerCase()) route.push({ place: start, nights: 0, kind: "start" });
+  route.push(...stays);
+  const end = days.length ? arrivalOf(days[days.length - 1].title) : null;
+  if (end && end.toLowerCase() !== stays[stays.length - 1].place.toLowerCase()) route.push({ place: end, nights: 0, kind: "end" });
+  return route;
+}
 
 export const packagePath = (id: string): string => `/packages/${encodeURIComponent(id)}`;
 

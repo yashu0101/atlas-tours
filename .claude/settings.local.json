@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "mcp__claude_ai_Vercel__list_projects",
+      "mcp__claude_ai_Vercel__get_auth_user",
+      "mcp__claude_ai_Vercel__list_teams",
+      "mcp__claude_ai_Vercel__authorize_team_access",
+      "Bash(npx next:*)",
+      "Bash(npx vercel:*)",
+      "Bash(npx neonctl:*)",
+      "Bash(vercel whoami:*)",
+      "Bash(vercel env:*)",
+      "Bash(vercel:*)",
+      "WebFetch(domain:atlas-tours-sable.vercel.app)",
+      "WebFetch(domain:hotel-ganga-imperial.vercel.app)",
+      "mcp__claude_ai_Vercel__update_project",
+      "WebFetch(domain:dribbble.com)",
+      "Bash(npm run:*)",
+      "Bash(cp:*)",
+      "Bash(npm install:*)",
+      "Bash(curl:*)",
+      "Bash(mkdir:*)",
+      "Bash(ffprobe:*)",
+      "Bash(start:*)",
+      "Bash(pip:*)"
+    ]
+  }
+}

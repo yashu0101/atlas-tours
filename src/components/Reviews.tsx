@@ -1,4 +1,5 @@
 "use client";
+import RevealWords from "@/components/RevealWords";
 
 import React, { useState, useEffect } from "react";
 import type { Review } from "@/lib/types";
@@ -177,19 +178,20 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
   const review = reviews[current];
 
   return (
-    <section id="reviews" style={styles.section}>
+    <section id="reviews" data-header-tone="dark" style={styles.section}>
       <style>{`
         .review-arrow:hover { background: rgba(243,156,18,0.3) !important; border-color: #f39c12 !important; }
       `}</style>
       <div className="reveal" style={styles.header}>
         <span style={styles.badge}>{t("reviews.badge")}</span>
-        <h2 style={styles.heading}>{t("reviews.heading")}</h2>
+        <h2 className="heading-line" style={styles.heading}><RevealWords text={t("reviews.heading")} /></h2>
         <p style={styles.subheading}>
           {t("reviews.subheading")}
         </p>
       </div>
 
       <div
+        className="reveal-blur"
         style={styles.carousel}
         role="region"
         aria-roledescription="carousel"

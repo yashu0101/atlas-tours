@@ -69,19 +69,30 @@ test("admin can create, edit, deactivate and delete an FAQ", async ({ page }) =>
 test("hiding a package in admin removes it from the public home page", async ({ page }) => {
   page.on("dialog", (d) => d.accept());
   await login(page);
-  await page.getByRole("button", { name: "Packages", exact: true }).click();
 
-  const card = page.locator(".pkg-card", { hasText: "Royal Rajasthan Explorer" });
-  await card.getByRole("button", { name: "Hide" }).click();
-  await expect(card.getByRole("button", { name: "Show" })).toBeVisible();
+  // Uses its own package: hiding a seed package raced the parallel public-page tests
+  // (packages.spec.ts, wishlist.spec.ts) that expect all three seed packages.
+  const name = `E2E Hide Me ${Date.now()}`;
+  const created = await page.request.post("/api/packages", {
+    data: { name, price: 50000, category: "heritage", duration: "2 Days", destination: "Agra" },
+  });
+  expect(created.ok()).toBe(true);
+  const { id } = await created.json();
 
-  await page.goto("/");
-  await expect(page.getByText("Divine Varanasi & Prayagraj").first()).toBeVisible();
-  await expect(page.locator("#packages")).not.toContainText("Royal Rajasthan Explorer");
+  try {
+    await page.goto("/");
+    await expect(page.locator("#packages")).toContainText(name);
 
-  // Restore for other tests
-  await page.goto("/admin");
-  await page.getByRole("button", { name: "Packages", exact: true }).click();
-  await card.getByRole("button", { name: "Show" }).click();
-  await expect(card.getByRole("button", { name: "Hide" })).toBeVisible();
+    await page.goto("/admin");
+    await page.getByRole("button", { name: "Packages", exact: true }).click();
+    const card = page.locator(".pkg-card", { hasText: name });
+    await card.getByRole("button", { name: "Hide" }).click();
+    await expect(card.getByRole("button", { name: "Show" })).toBeVisible();
+
+    await page.goto("/");
+    await expect(page.getByText("Divine Varanasi & Prayagraj").first()).toBeVisible();
+    await expect(page.locator("#packages")).not.toContainText(name);
+  } finally {
+    await page.request.delete("/api/packages", { data: { id } });
+  }
 });

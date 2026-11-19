@@ -21,9 +21,14 @@ interface BookingFormProps {
   packageName: string;
   /** Per-person price; the server computes the real amount as price × travelers. */
   price: number;
+  /** Smallest group the package can be booked for (N-18); defaults to 1. */
+  minTravelers?: number;
   /** Earliest selectable travel date (today in IST, "YYYY-MM-DD"), computed on the server. */
   minDate: string;
 }
+
+/** Empty form with the travelers field preset to the package minimum (N-18). */
+const emptyForm = (minTravelers: number): BookingFormValues => ({ ...EMPTY_BOOKING_FORM, travelers: String(minTravelers) });
 
 type Status = { kind: "idle" } | { kind: "success"; reference?: string } | { kind: "error"; message: string };
 
@@ -31,10 +36,10 @@ type Status = { kind: "idle" } | { kind: "success"; reference?: string } | { kin
  * Online booking request form (G-01) for the package detail page, posting to the
  * public `POST /api/book`. Styling follows the Contact form (inputs, labels, submit button).
  */
-const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price, minDate }) => {
+const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price, minDate, minTravelers = 1 }) => {
   const { lang } = useApp();
   const t = useT();
-  const [form, setForm] = useState<BookingFormValues>(EMPTY_BOOKING_FORM);
+  const [form, setForm] = useState<BookingFormValues>(() => emptyForm(minTravelers));
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
 
@@ -65,7 +70,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price
         ? (body as { id: string }).id
         : undefined;
       setStatus({ kind: "success", reference: id ? bookingReference(id) : undefined });
-      setForm(EMPTY_BOOKING_FORM);
+      setForm(emptyForm(minTravelers));
     } catch {
       setStatus({ kind: "error", message: bookingErrorMessage(0, null) });
     } finally {
@@ -208,7 +213,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price
         </div>
         <div>
           <label htmlFor="booking-travelers" style={labelStyle}>{t("booking.travelers")}</label>
-          <input id="booking-travelers" name="travelers" type="number" required min={1} max={MAX_TRAVELERS} step={1}
+          <input id="booking-travelers" name="travelers" type="number" required min={minTravelers} max={MAX_TRAVELERS} step={1}
             className="booking-input" style={inputStyle} value={form.travelers} onChange={handleChange} />
         </div>
         <div style={styles.full}>
@@ -251,6 +256,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price
                 </Link>
               </>
             )}
+            <div style={{ marginTop: 8 }}>{t("booking.payAfterConfirm")}</div>
           </div>
         )}
       </div>

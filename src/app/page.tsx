@@ -6,12 +6,12 @@ import Offers from "@/components/Offers";
 import Gallery from "@/components/Gallery";
 import Counter from "@/components/Counter";
 import Reviews from "@/components/Reviews";
+import Team from "@/components/Team";
 import Blog from "@/components/Blog";
 import FAQ from "@/components/FAQ";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import WhatsApp from "@/components/WhatsApp";
-import Showcase from "@/components/Showcase";
 import BackToTop from "@/components/BackToTop";
 import ScrollProgress from "@/components/ScrollProgress";
 import RevealObserver from "@/components/RevealObserver";
@@ -57,7 +57,7 @@ export default async function HomePage() {
       <ScrollProgress />
       <Header />
       <main id="main-content" tabIndex={-1}>
-        <Hero />
+        <Hero packageCount={packages.length} />
         <WaveDivider fill="var(--bg2)" />
         <About />
         <WaveDivider fill="var(--bg)" />
@@ -70,12 +70,13 @@ export default async function HomePage() {
         )}
         <WaveDivider fill="var(--bg2)" />
         <Gallery initialImages={gallery} />
+        {/* No wave between Counter and Reviews: both are dark navy, and a --bg wave drew a
+            white band between them. */}
         <Counter />
-        <WaveDivider fill="var(--bg2)" />
-        <Showcase />
-        <WaveDivider fill="var(--bg)" />
         <Reviews initialReviews={reviews} />
         <WaveDivider fill="var(--bg2)" />
+        <Team />
+        <WaveDivider fill="var(--bg)" />
         <Blog initialBlogs={blogs} />
         <WaveDivider fill="var(--bg)" />
         <TravelStories />

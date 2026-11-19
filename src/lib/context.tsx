@@ -30,7 +30,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const sl = localStorage.getItem("atlas-lang") as Lang;
       const st = localStorage.getItem("atlas-theme") as Theme;
-      if (sl === "en" || sl === "hi") setLang(sl);
+      // The header language toggle is removed until Hindi content exists (G-08), so a stored
+      // "hi" is not restored — otherwise visitors who picked it earlier would have no way back.
+      if (sl === "en") setLang(sl);
       if (st === "light" || st === "dark") setTheme(st);
     } catch {}
     setLoaded(true);

@@ -67,7 +67,7 @@ export default function FormPageShell({
         }
       `}</style>
       <main id="main-content" tabIndex={-1}>
-        <header style={styles.hero}>
+        <header data-header-tone="dark" style={styles.hero}>
           <div style={styles.heroInner}>
             <nav aria-label={t("packageDetail.breadcrumbAria")}>
               <ol style={styles.breadcrumb}>

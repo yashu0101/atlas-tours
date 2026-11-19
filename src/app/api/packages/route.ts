@@ -15,10 +15,12 @@ const route = crudRoute({
   fields: {
     name: "string", destination: "string", duration: "string", price: int(0, MAX_PRICE), originalPrice: nullable(int(0, MAX_PRICE)),
     image: "image", description: "text", highlights: "string[]", itinerary: "string[]", inclusions: "string[]",
-    category: ["spiritual", "cultural", "adventure", "heritage"], hidden: "boolean",
+    // N-18. Itinerary lines may carry " | "-separated points (see parseItineraryDay).
+    exclusions: "string[]", startsFrom: nullable("string"), minTravelers: nullable(int(1, 100)), priceNote: nullable("string"),
+    category: ["spiritual", "cultural", "adventure", "heritage", "pilgrimage", "international"], hidden: "boolean",
   },
   required: ["name", "price"],
-  defaults: { destination: "", duration: "", image: "", description: "", highlights: [], itinerary: [], inclusions: [], category: "spiritual", hidden: false },
+  defaults: { destination: "", duration: "", image: "", description: "", highlights: [], itinerary: [], inclusions: [], exclusions: [], category: "spiritual", hidden: false },
 });
 
 export const GET = route.GET;

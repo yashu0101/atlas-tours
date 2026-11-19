@@ -41,7 +41,13 @@ export type NotifyEvent =
   | { type: "booking"; booking: Booking }
   /** Contact, trip-plan and callback enquiries. `packageName` resolves `enquiry.packageId` for the owner. */
   | { type: "enquiry"; enquiry: Enquiry; packageName?: string; callback?: { date: string; slot: CallbackSlot } }
-  | { type: "review"; review: Review };
+  | { type: "review"; review: Review }
+  /** N-13: customer submitted a UPI UTR. Owner only. */
+  | { type: "payment-claim"; booking: Booking }
+  /** N-13: owner confirmed the booking; the customer gets the pay link. Customer only. */
+  | { type: "booking-confirmed"; booking: Booking }
+  /** N-13: owner marked the booking paid. Customer only. */
+  | { type: "payment-received"; booking: Booking };
 
 export interface EmailContent {
   subject: string;
@@ -216,9 +222,30 @@ const kindLabel: Record<EnquiryKindKey, MessageKey> = {
   callback: "email.kinds.callback",
 };
 
-/** The owner alert for a submission (always built; sent only when NOTIFY_EMAIL is set). */
-export function buildOwnerEmail(event: NotifyEvent): EmailContent {
+/** The owner alert for a submission (built always; sent only when NOTIFY_EMAIL is set). Null when the event has no owner mail. */
+export function buildOwnerEmail(event: NotifyEvent): EmailContent | null {
   switch (event.type) {
+    case "payment-claim": {
+      const b = event.booking;
+      const ref = bookingReference(b.id);
+      return ownerEmail(
+        t("email.paymentClaim.ownerSubject", { ref, utr: b.utr ?? "" }),
+        t("email.paymentClaim.ownerHeading"),
+        t("email.paymentClaim.ownerIntro", { ref }),
+        [
+          [t("email.labels.reference"), ref],
+          [t("email.labels.package"), b.packageName],
+          [t("email.labels.amountDue"), t("email.amount", { amount: formatPrice(b.amount) })],
+          [t("email.labels.utr"), orNotSet(b.utr)],
+          [t("email.labels.name"), b.name],
+          [t("email.labels.phone"), b.phone],
+          [t("email.labels.submitted"), dateOrNotSet(b.paymentSubmittedAt)],
+        ],
+      );
+    }
+    case "booking-confirmed":
+    case "payment-received":
+      return null; // customer-only
     case "booking": {
       const b = event.booking;
       const ref = bookingReference(b.id);
@@ -334,7 +361,44 @@ export function buildCustomerEmail(event: NotifyEvent): EmailContent | null {
       });
     }
     case "review":
-      return null; // the review form collects no email
+    case "payment-claim":
+      return null; // no email on the review form; payment claims alert the owner only
+    case "booking-confirmed": {
+      const b = event.booking;
+      if (!b.email) return null;
+      const ref = bookingReference(b.id);
+      const url = trackUrl(ref);
+      const pay = t("email.bookingConfirmed.payText");
+      return customerEmail({
+        subject: t("email.bookingConfirmed.customerSubject", { ref }),
+        heading: t("email.bookingConfirmed.customerHeading"),
+        intro: t("email.bookingConfirmed.customerIntro"),
+        rows: [
+          [t("email.labels.reference"), ref],
+          [t("email.labels.package"), b.packageName],
+          [t("email.labels.travelDate"), dateOrNotSet(b.travelDate)],
+          [t("email.labels.travelers"), String(b.travelers)],
+          [t("email.labels.amountDue"), t("email.amount", { amount: formatPrice(b.amount) })],
+        ],
+        extraHtml: `<p>${escapeHtml(pay)}</p>` + button(url, t("email.bookingConfirmed.payCta")),
+        extraText: [`${pay} ${url}`],
+      });
+    }
+    case "payment-received": {
+      const b = event.booking;
+      if (!b.email) return null;
+      const ref = bookingReference(b.id);
+      return customerEmail({
+        subject: t("email.paymentReceived.customerSubject", { ref }),
+        heading: t("email.paymentReceived.customerHeading"),
+        intro: t("email.paymentReceived.customerIntro"),
+        rows: [
+          [t("email.labels.reference"), ref],
+          [t("email.labels.package"), b.packageName],
+          [t("email.labels.amountPaid"), t("email.amount", { amount: formatPrice(b.amount) })],
+        ],
+      });
+    }
   }
 }
 
@@ -393,12 +457,46 @@ export async function sendEmail(cfg: NotifyConfig, content: EmailContent, opts: 
   }
 }
 
+/**
+ * Idempotency key prefix. Resend de-duplicates identical keys for 24 h, so the N-13 events that
+ * can legitimately recur for one booking carry a per-occurrence part: the UTR for a claim, a
+ * timestamp taken once per send (shared by that send's owner/customer mails) otherwise. Existing
+ * events keep `${type}-${id}`.
+ */
+function idempotencyBase(event: NotifyEvent, id: string): string {
+  switch (event.type) {
+    case "payment-claim":
+      return `${event.type}-${id}-${event.booking.utr ?? "none"}`;
+    case "booking-confirmed":
+    case "payment-received":
+      return `${event.type}-${id}-${Date.now()}`;
+    default:
+      return `${event.type}-${id}`;
+  }
+}
+
 function recordId(event: NotifyEvent): string {
-  return event.type === "booking" ? event.booking.id : event.type === "enquiry" ? event.enquiry.id : event.review.id;
+  switch (event.type) {
+    case "enquiry":
+      return event.enquiry.id;
+    case "review":
+      return event.review.id;
+    default:
+      return event.booking.id;
+  }
 }
 
 function customerAddress(event: NotifyEvent): string | undefined {
-  const email = event.type === "booking" ? event.booking.email : event.type === "enquiry" ? event.enquiry.email : "";
+  let email: string | undefined = "";
+  switch (event.type) {
+    case "enquiry":
+      email = event.enquiry.email;
+      break;
+    case "review":
+      break;
+    default:
+      email = event.booking.email;
+  }
   const clean = stripLineBreaks(email ?? "");
   return clean || undefined;
 }
@@ -416,14 +514,16 @@ export async function notifySubmission(event: NotifyEvent): Promise<void> {
     const cfg = notifyConfig();
     if (!cfg) return;
     const id = recordId(event);
+    const keyBase = idempotencyBase(event, id);
     const customer = customerAddress(event);
     const jobs: Promise<boolean>[] = [];
-    if (cfg.owners.length) {
+    const ownerMail = cfg.owners.length ? buildOwnerEmail(event) : null;
+    if (ownerMail) {
       jobs.push(
-        sendEmail(cfg, buildOwnerEmail(event), {
+        sendEmail(cfg, ownerMail, {
           to: cfg.owners,
           replyTo: customer,
-          idempotencyKey: `${event.type}-${id}-owner`,
+          idempotencyKey: `${keyBase}-owner`,
           tag: `${event.type}/owner`,
         }),
       );
@@ -434,7 +534,7 @@ export async function notifySubmission(event: NotifyEvent): Promise<void> {
       logOnce("recipient-cap", `Customer email skipped: recipient reached ${CUSTOMER_MAIL_LIMIT} emails in 24 h (logged once per process).`);
     } else if (customer && mail) {
       jobs.push(
-        sendEmail(cfg, mail, { to: [customer], idempotencyKey: `${event.type}-${id}-customer`, tag: `${event.type}/customer` }),
+        sendEmail(cfg, mail, { to: [customer], idempotencyKey: `${keyBase}-customer`, tag: `${event.type}/customer` }),
       );
     }
     await Promise.all(jobs);

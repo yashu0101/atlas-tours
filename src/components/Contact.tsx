@@ -1,9 +1,11 @@
 "use client";
+import RevealWords from "@/components/RevealWords";
 
 import React, { useState, useEffect, useRef } from "react";
 import type { TourPackage } from "@/lib/types";
 import { SITE_CONFIG, PHONE_DISPLAY } from "@/lib/config";
 import { useT } from "@/lib/i18n/use-t";
+import { errorStyle } from "@/components/public-form-ui";
 
 type PackageOption = Pick<TourPackage, "id" | "name">;
 
@@ -254,14 +256,14 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
 
       <div className="reveal" style={styles.header}>
         <span style={styles.badge}>{t("contact.badge")}</span>
-        <h2 style={styles.heading}>{t("contact.heading")}</h2>
+        <h2 className="heading-line" style={styles.heading}><RevealWords text={t("contact.heading")} /></h2>
         <p style={styles.subheading}>
           {t("contact.subheading")}
         </p>
       </div>
 
       <div className="contact-container" style={styles.container}>
-        <form style={styles.form} onSubmit={handleSubmit}>
+        <form className="reveal-left" style={styles.form} onSubmit={handleSubmit}>
           <div
             aria-hidden="true"
             style={{ position: "absolute", left: -9999, top: "auto", width: 1, height: 1, overflow: "hidden" }}
@@ -386,12 +388,13 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
             </div>
           </div>
           {submitted && (
-            <div style={styles.successMsg}>
+            <div role="status" style={styles.successMsg}>
               {t("contact.success")}
             </div>
           )}
+          {/* Q-3: errors use the shared red error box (as on /track, /plan-trip and the booking form). */}
           {submitError && (
-            <div style={styles.successMsg}>
+            <div role="alert" style={errorStyle}>
               {t("contact.error", { phone: contactCards[0].value })}
             </div>
           )}
@@ -403,7 +406,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
           </p>
         </form>
 
-        <div style={styles.infoSide}>
+        <div className="reveal-right" style={styles.infoSide}>
           {contactCards.map((card) => (
             <a
               key={card.label}

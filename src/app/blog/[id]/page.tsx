@@ -160,7 +160,7 @@ export default async function BlogPostPage({ params }: Params) {
         .blog-back-link:hover { color: var(--primary) !important; }
         [data-theme="dark"] #blog-post { --blog-muted: var(--text2); }
       `}</style>
-      <div style={styles.heroBand} aria-hidden="true" />
+      <div data-header-tone="dark" style={styles.heroBand} aria-hidden="true" />
       <main id="main-content" tabIndex={-1} style={styles.page}>
         <article id="blog-post" style={styles.article}>
           {backLink}
@@ -176,7 +176,7 @@ export default async function BlogPostPage({ params }: Params) {
             )}
           </header>
 
-          <div style={styles.imgWrap}>
+          <div className="reveal-wipe scroll-zoom" style={styles.imgWrap}>
             <SmartImage
               src={post.image || "/images/placeholder.jpg"}
               alt={post.title}
