@@ -128,8 +128,11 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
     section: {
       position: "relative",
       width: "100%",
-      height: "100vh",
-      minHeight: 700,
+      // min-height (not height): on short/narrow screens the content is taller than one
+      // viewport, and a fixed height clipped it under the header and the Play/Scroll controls.
+      minHeight: "max(700px, 100vh)",
+      // Top clears the fixed header; bottom clears the absolutely positioned Play video / Scroll.
+      padding: "110px 0 120px",
       overflow: "hidden",
       fontFamily: "'Poppins', sans-serif",
       display: "flex",
@@ -326,6 +329,14 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
         .hero-btn-secondary:hover { background: rgba(255,255,255,0.15) !important; border-color: #fff !important; }
         .hero-play-btn:hover { background: rgba(255,255,255,0.2) !important; border-color: #fff !important; }
         @keyframes blink-cursor { 0%, 100% { border-color: #f39c12; } 50% { border-color: transparent; } }
+        /* Phones: the three stats sit in one compact row instead of three stacked cards. */
+        @media (max-width: 640px) {
+          #home { padding: 96px 0 104px !important; }
+          #home .hero-stats { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px !important; }
+          #home .hero-stat { min-width: 0 !important; padding: 14px 6px !important; border-radius: 12px !important; }
+          #home .hero-stat-value { font-size: 22px !important; }
+          #home .hero-stat-label { font-size: 11px !important; line-height: 1.3; }
+        }
       `}</style>
 
       {/* N-9: preload="none" and no src until it will actually play, so small screens and
@@ -403,11 +414,11 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
             {t("hero.bookWhatsApp")}
           </a>
         </div>
-        <div className="hero-stagger-5" style={styles.statsRow}>
+        <div className="hero-stagger-5 hero-stats" style={styles.statsRow}>
           {stats.map((s) => (
-            <div key={s.labelKey} className="glass stat-3d glass-shimmer" style={{ ...styles.statCard, position: "relative", overflow: "hidden" }}>
-              <div style={styles.statValue}>{s.value}</div>
-              <div style={styles.statLabel}>{t(s.labelKey)}</div>
+            <div key={s.labelKey} className="glass stat-3d glass-shimmer hero-stat" style={{ ...styles.statCard, position: "relative", overflow: "hidden" }}>
+              <div className="hero-stat-value" style={styles.statValue}>{s.value}</div>
+              <div className="hero-stat-label" style={styles.statLabel}>{t(s.labelKey)}</div>
             </div>
           ))}
         </div>

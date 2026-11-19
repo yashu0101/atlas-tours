@@ -1,50 +1,25 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import { useT } from "@/lib/i18n/use-t";
 
-const stories = [
-  {
-    src: "/videos/travel-story-1.mp4",
-    title: "Varanasi Ganga Aarti",
-    description: "Experience the divine evening aarti ceremony at the sacred ghats of Varanasi",
-    location: "Varanasi, UP",
-  },
-  {
-    src: "/videos/travel-story-2.mp4",
-    title: "Royal Rajasthan Vibes",
-    description: "Golden forts, colorful markets, and the magic of the Thar Desert",
-    location: "Rajasthan",
-  },
-  {
-    src: "/videos/travel-story-3.mp4",
-    title: "Temple Trail Moments",
-    description: "Sacred temples and spiritual experiences from our pilgrim tours",
-    location: "India",
-  },
-  {
-    src: "/videos/travel-story-4.mp4",
-    title: "Journey Highlights",
-    description: "Best moments captured from our travelers' unforgettable adventures",
-    location: "Across India",
-  },
+// Text lives in en.ts under travelStories.<id> (title, description, location).
+type StoryId = "aarti" | "rajasthan" | "temples" | "highlights" | "candid" | "onTheGo";
+
+const stories: { src: string; id: StoryId }[] = [
+  { src: "/videos/travel-story-1.mp4", id: "aarti" },
+  { src: "/videos/travel-story-2.mp4", id: "rajasthan" },
+  { src: "/videos/travel-story-3.mp4", id: "temples" },
+  { src: "/videos/travel-story-4.mp4", id: "highlights" },
 ];
 
-const travelMoments = [
-  {
-    src: "/videos/travel-story-5.mp4",
-    title: "Travel Moments",
-    description: "Candid glimpses from the road — the real joy of travel",
-    location: "India",
-  },
-  {
-    src: "/videos/travel-story-6.mp4",
-    title: "On the Go",
-    description: "Scenes and stories from our group tours across the country",
-    location: "India",
-  },
+const travelMoments: { src: string; id: StoryId }[] = [
+  { src: "/videos/travel-story-5.mp4", id: "candid" },
+  { src: "/videos/travel-story-6.mp4", id: "onTheGo" },
 ];
 
 const TravelStories: React.FC = () => {
+  const t = useT();
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
@@ -169,10 +144,10 @@ const TravelStories: React.FC = () => {
       `}</style>
 
       <div className="reveal" style={styles.header}>
-        <span style={styles.badge}>Travel Stories & Tips</span>
-        <h2 style={styles.heading}>Moments From the Road</h2>
+        <span style={styles.badge}>{t("travelStories.badge")}</span>
+        <h2 style={styles.heading}>{t("travelStories.heading")}</h2>
         <p style={styles.subheading}>
-          Real clips from our tours — the energy, the beauty, and the joy our travelers experience firsthand.
+          {t("travelStories.subheading")}
         </p>
       </div>
 
@@ -223,24 +198,24 @@ const TravelStories: React.FC = () => {
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
                   <circle cx="12" cy="10" r="3" />
                 </svg>
-                {story.location}
+                {t(`travelStories.${story.id}.location`)}
               </div>
               <div className="story-gradient" />
               <div className="story-info">
-                <div style={styles.title}>{story.title}</div>
-                <div style={styles.desc}>{story.description}</div>
+                <div style={styles.title}>{t(`travelStories.${story.id}.title`)}</div>
+                <div style={styles.desc}>{t(`travelStories.${story.id}.description`)}</div>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Travel Moments */}
-      <div className="reveal" style={{ ...styles.header, marginTop: 70 }}>
-        <span style={styles.badge}>Travel Moments</span>
-        <h2 style={styles.heading}>Travel Moments</h2>
+      {/* Second block: candid clips (distinct from the Gallery heading "Travel Moments"). */}
+      <div className="reveal" style={{ ...styles.header, marginTop: "clamp(40px, 5vw + 22px, 70px)" }}>
+        <span style={styles.badge}>{t("travelStories.candidBadge")}</span>
+        <h2 style={styles.heading}>{t("travelStories.candidHeading")}</h2>
         <p style={styles.subheading}>
-          A visual journey through the destinations we love.
+          {t("travelStories.candidSubheading")}
         </p>
       </div>
 
@@ -292,12 +267,12 @@ const TravelStories: React.FC = () => {
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
-                  {story.location}
+                  {t(`travelStories.${story.id}.location`)}
                 </div>
                 <div className="story-gradient" />
                 <div className="story-info">
-                  <div style={styles.title}>{story.title}</div>
-                  <div style={styles.desc}>{story.description}</div>
+                  <div style={styles.title}>{t(`travelStories.${story.id}.title`)}</div>
+                  <div style={styles.desc}>{t(`travelStories.${story.id}.description`)}</div>
                 </div>
               </div>
             </div>
@@ -310,7 +285,7 @@ const TravelStories: React.FC = () => {
 
 const styles: Record<string, React.CSSProperties> = {
   section: {
-    padding: "100px 24px",
+    padding: "var(--section-pad) 24px",
     fontFamily: "'Poppins', sans-serif",
     background: "var(--bg)",
   },

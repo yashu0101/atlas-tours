@@ -1,5 +1,8 @@
 /* ===== CSS VARIABLES ===== */
 :root {
+  /* Vertical section padding: 100px from ~1030px up (desktop unchanged), ~82px on tablets,
+     56px on phones, so stacked sections don't leave screen-sized blank gaps. */
+  --section-pad: clamp(56px, 7vw + 28px, 100px);
   --primary: #1a3a6b;
   --primary-dark: #0a1628;
   --orange: #e67e22;

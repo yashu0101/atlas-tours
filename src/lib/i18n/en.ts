@@ -306,6 +306,46 @@ export const en = {
     fullArticle: "Read full article",
     fullArticleAria: "Read full article: {title}",
   },
+  // Video section after the blog. Badges/headings must not repeat the Blog ("Travel Stories & Tips")
+  // or Gallery ("Travel Moments") headings.
+  travelStories: {
+    badge: "Tour Videos",
+    heading: "Moments From the Road",
+    subheading: "Real clips from our tours — the energy, the beauty, and the joy our travelers experience firsthand.",
+    candidBadge: "On the Road",
+    candidHeading: "Candid Clips",
+    candidSubheading: "Unscripted moments from our group tours across India.",
+    aarti: {
+      title: "Varanasi Ganga Aarti",
+      description: "Experience the divine evening aarti ceremony at the sacred ghats of Varanasi",
+      location: "Varanasi, UP",
+    },
+    rajasthan: {
+      title: "Royal Rajasthan Vibes",
+      description: "Golden forts, colorful markets, and the magic of the Thar Desert",
+      location: "Rajasthan",
+    },
+    temples: {
+      title: "Temple Trail Moments",
+      description: "Sacred temples and spiritual experiences from our pilgrim tours",
+      location: "India",
+    },
+    highlights: {
+      title: "Journey Highlights",
+      description: "Best moments captured from our travelers' unforgettable adventures",
+      location: "Across India",
+    },
+    candid: {
+      title: "Candid Moments",
+      description: "Candid glimpses from the road — the real joy of travel",
+      location: "India",
+    },
+    onTheGo: {
+      title: "On the Go",
+      description: "Scenes and stories from our group tours across the country",
+      location: "India",
+    },
+  },
   blogDetail: {
     notFoundTitle: "Article not found",
     back: "Back to all articles",

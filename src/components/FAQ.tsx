@@ -123,7 +123,7 @@ const FAQ: React.FC<{ initialFaqs: FAQItem[] }> = ({ initialFaqs }) => {
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
-      padding: "100px 24px",
+      padding: "var(--section-pad) 24px",
       fontFamily: "'Poppins', sans-serif",
       background: "var(--bg2)",
     },

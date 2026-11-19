@@ -25,7 +25,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
-      padding: "100px 24px",
+      padding: "var(--section-pad) 24px",
       fontFamily: "'Poppins', sans-serif",
       background: "var(--bg)",
     },
@@ -105,7 +105,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
       maxWidth: 1200,
       margin: "0 auto",
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+      gridTemplateColumns: "repeat(auto-fill, minmax(min(340px, 100%), 1fr))",
       gap: 30,
     },
     allWrap: { textAlign: "center", marginTop: 44 },
@@ -133,7 +133,13 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
         [data-theme="dark"] #packages {
           --pkg-chip-border: rgba(91,143,217,0.35);
         }
-        @media (max-width: 768px) {
+        /* Tablets: two columns (a third would be under 340px); a lone last card is centred
+           instead of leaving half the row empty. One column on phones, like /packages. */
+        @media (min-width: 641px) and (max-width: 1127px) {
+          .pkg-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+          .pkg-grid > :last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc((100% - 30px) / 2); }
+        }
+        @media (max-width: 640px) {
           .pkg-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>

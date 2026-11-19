@@ -111,7 +111,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
-      padding: "100px 24px",
+      padding: "var(--section-pad) 24px",
       fontFamily: "'Poppins', sans-serif",
       background: "var(--bg)",
     },
@@ -331,11 +331,19 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
         @media (max-width: 480px) {
           .contact-info-grid { grid-template-columns: 1fr !important; }
         }
+        /* Two columns side by side leave the info cards ~220px wide here: the email broke mid-word
+           and the address wrapped one word per line. */
+        @media (min-width: 869px) and (max-width: 1100px) {
+          .contact-info-grid { grid-template-columns: 1fr !important; }
+        }
         /* E-02: dark-mode override. Light mode uses the inline fallback (colour unchanged). */
         [data-theme="dark"] #contact { --contact-muted: var(--text2); }
         .submit-btn-h:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(230,126,34,0.45) !important; }
         @media (max-width: 868px) {
           .contact-container { grid-template-columns: 1fr !important; }
+        }
+        /* The form is full width once stacked, so pairs of fields still fit down to ~560px. */
+        @media (max-width: 560px) {
           .contact-form-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>

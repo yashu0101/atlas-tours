@@ -99,7 +99,7 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
 
   const styles: Record<string, React.CSSProperties> = {
     section: {
-      padding: "100px 24px",
+      padding: "var(--section-pad) 24px",
       fontFamily: "'Poppins', sans-serif",
       background: "var(--bg2)",
     },
@@ -158,15 +158,18 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
       color: "var(--on-accent)",
       boxShadow: "0 4px 15px rgba(230,126,34,0.3)",
     },
-    masonry: {
+    // A grid of same-shape tiles, not CSS columns: columns filled top-down with photos at
+    // their natural heights ended at different heights. Rows now always line up; the
+    // lightbox still shows each photo uncropped.
+    grid: {
       maxWidth: 1200,
       margin: "0 auto",
-      columns: "3 320px",
-      columnGap: 20,
+      display: "grid",
+      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+      gap: 20,
     },
-    masonryItem: {
-      breakInside: "avoid" as const,
-      marginBottom: 20,
+    gridItem: {
+      aspectRatio: "4 / 3",
       borderRadius: 14,
       overflow: "hidden",
       cursor: "pointer",
@@ -258,6 +261,12 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
         .gallery-item:hover .gallery-overlay { opacity: 1 !important; }
         .lb-arrow:hover { background: rgba(255,255,255,0.3) !important; }
         .gallery-filter[aria-pressed="false"]:hover { background: rgba(230,126,34,0.2) !important; }
+        @media (max-width: 900px) {
+          .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 16px !important; }
+        }
+        @media (max-width: 560px) {
+          .gallery-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
       <div className="reveal" style={styles.header}>
@@ -288,12 +297,12 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
         </div>
       )}
 
-      <div style={styles.masonry}>
+      <div className="gallery-grid" style={styles.grid}>
         {images.map((img, i) => (
           <div
             key={img.id}
             className={`gallery-item img-zoom scroll-zoom reveal stagger-${(i % 3) + 1}`}
-            style={styles.masonryItem}
+            style={styles.gridItem}
             role="button"
             tabIndex={0}
             aria-label={img.caption || img.category || t("gallery.imageFallback")}
@@ -319,9 +328,9 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
               src={img.src}
               alt={img.caption || t("gallery.imageFallback")}
               width={400}
-              height={300 + (i % 3) * 80}
-              sizes="(max-width: 720px) 100vw, (max-width: 1100px) 50vw, 390px"
-              style={{ width: "100%", height: "auto", display: "block" }}
+              height={300}
+              sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 390px"
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             />
             <div className="gallery-overlay" style={styles.imgOverlay}>
               {img.caption || img.category || ""}

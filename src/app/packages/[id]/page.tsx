@@ -442,7 +442,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   moreTitle: { fontSize: "clamp(24px, 3vw, 32px)", fontWeight: 800, color: "var(--primary)", margin: 0 },
   moreLink: { color: "var(--orange-text)", fontSize: 15, fontWeight: 600 },
-  moreGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 28 },
+  moreGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))", gap: 28 },
 };
 
 const CheckIcon = () => (
