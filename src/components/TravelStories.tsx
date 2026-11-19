@@ -79,6 +79,12 @@ const TravelStories: React.FC = () => {
         .story-card.is-playing .story-play-overlay {
           opacity: 0;
         }
+        .story-card.is-playing .story-info {
+          opacity: 0;
+        }
+        .story-card.is-playing .story-gradient {
+          opacity: 0;
+        }
         .story-play-btn {
           width: 64px;
           height: 64px;
@@ -111,6 +117,7 @@ const TravelStories: React.FC = () => {
           display: flex;
           align-items: center;
           gap: 5px;
+          pointer-events: none;
         }
         .story-gradient {
           position: absolute;
@@ -121,6 +128,7 @@ const TravelStories: React.FC = () => {
           background: linear-gradient(transparent, rgba(0,0,0,0.75));
           z-index: 2;
           pointer-events: none;
+          transition: opacity 0.4s;
         }
         .story-info {
           position: absolute;
@@ -130,6 +138,8 @@ const TravelStories: React.FC = () => {
           padding: 20px;
           z-index: 3;
           color: #fff;
+          pointer-events: none;
+          transition: opacity 0.4s;
         }
         @media (max-width: 768px) {
           .stories-grid {
@@ -157,6 +167,22 @@ const TravelStories: React.FC = () => {
             key={i}
             className={`story-card card-hover reveal stagger-${i + 1}${activeIdx === i ? " is-playing" : ""}`}
             style={styles.card}
+            onClick={() => {
+              const v = videoRefs.current[i];
+              if (!v) return;
+              if (v.paused) {
+                v.muted = false;
+                v.play().catch(() => {
+                  // Autoplay policy: retry muted
+                  v.muted = true;
+                  v.play();
+                });
+                handlePlay(i);
+              } else {
+                v.pause();
+                handlePause(i);
+              }
+            }}
           >
             <div style={styles.videoWrap}>
               <video
@@ -167,11 +193,8 @@ const TravelStories: React.FC = () => {
                 muted
                 playsInline
                 preload="metadata"
-                onClick={(e) => {
-                  const v = e.currentTarget;
-                  if (v.paused) { v.play(); handlePlay(i); }
-                  else { v.pause(); handlePause(i); }
-                }}
+                controls={activeIdx === i}
+                onClick={(e) => e.stopPropagation()}
               />
               <div className="story-play-overlay">
                 <div className="story-play-btn">
