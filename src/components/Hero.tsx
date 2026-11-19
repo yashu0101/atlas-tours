@@ -352,11 +352,16 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
       <div className="hero-mesh" style={{ bottom: "-15%", right: "-10%", background: "radial-gradient(circle, #3498db, #1a3a6b)", animationDelay: "-7s", animationDirection: "reverse" }} />
 
       {/* 3D floating travel icons */}
-      <svg className="hero-3d-icon" style={{ top: "12%", left: "8%", width: 80, height: 80 }} viewBox="0 0 24 24" fill="none" stroke="#f39c12" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2 2H4a2 2 0 01-2-2v-3"/><path d="M2 12l10-9 10 9"/><path d="M12 3v18"/><circle cx="12" cy="12" r="3"/></svg>
-      <svg className="hero-3d-icon" style={{ top: "20%", right: "10%", width: 60, height: 60 }} viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-      <svg className="hero-3d-icon" style={{ bottom: "25%", left: "5%", width: 70, height: 70 }} viewBox="0 0 24 24" fill="none" stroke="rgba(243,156,18,0.5)" strokeWidth="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>
-      <svg className="hero-3d-icon" style={{ bottom: "15%", right: "8%", width: 55, height: 55 }} viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/></svg>
-      <svg className="hero-3d-icon" style={{ top: "40%", left: "15%", width: 45, height: 45 }} viewBox="0 0 24 24" fill="none" stroke="rgba(243,156,18,0.35)" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      {/* Compass/navigation */}
+      <svg className="hero-3d-icon" style={{ top: "10%", left: "6%", width: 110, height: 110 }} viewBox="0 0 24 24" fill="none" stroke="#f39c12" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="rgba(243,156,18,0.15)"/></svg>
+      {/* Globe */}
+      <svg className="hero-3d-icon" style={{ top: "15%", right: "8%", width: 90, height: 90 }} viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+      {/* 3D cube */}
+      <svg className="hero-3d-icon" style={{ bottom: "22%", left: "4%", width: 100, height: 100 }} viewBox="0 0 24 24" fill="none" stroke="rgba(243,156,18,0.6)" strokeWidth="1"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>
+      {/* Airplane */}
+      <svg className="hero-3d-icon" style={{ bottom: "12%", right: "6%", width: 85, height: 85 }} viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/></svg>
+      {/* Map pin */}
+      <svg className="hero-3d-icon" style={{ top: "45%", left: "12%", width: 70, height: 70 }} viewBox="0 0 24 24" fill="none" stroke="rgba(243,156,18,0.45)" strokeWidth="1.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
 
       {/* Floating dots */}
       {dots.map((d, i) => (
