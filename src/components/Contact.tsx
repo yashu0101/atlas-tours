@@ -6,6 +6,7 @@ import type { TourPackage } from "@/lib/types";
 import { SITE_CONFIG, PHONE_DISPLAY, MD_NAME } from "@/lib/config";
 import { useT } from "@/lib/i18n/use-t";
 import { errorStyle } from "@/components/public-form-ui";
+import PartnerNote from "@/components/PartnerNote";
 
 type PackageOption = Pick<TourPackage, "id" | "name">;
 
@@ -567,6 +568,8 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
               );
             })}
           </div>
+
+          <PartnerNote label={t("partner.contact")} newTabLabel={t("partner.newTab")} style={{ margin: "4px 0 16px" }} />
 
           <div style={styles.mapWrap}>
             <iframe

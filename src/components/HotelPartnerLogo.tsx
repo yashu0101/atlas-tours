@@ -1,6 +1,18 @@
 import React from "react";
 import { HOTEL_PARTNER } from "@/lib/config";
 
+/** Hotel building: tower with windows, arched entrance and a pennant on the roof. */
+export const HotelIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M16 2v4" />
+    <path d="M16 2.5l4 1.3-4 1.3" fill="currentColor" />
+    <path d="M7 30V8.5L16 6l9 2.5V30" />
+    <path d="M3 30h26" />
+    <path d="M11 12h2.5M18.5 12H21M11 16.5h2.5M18.5 16.5H21M11 21h2.5M18.5 21H21" />
+    <path d="M13.5 30v-4.5a2.5 2.5 0 015 0V30" />
+  </svg>
+);
+
 /**
  * Hotel Ganga Imperial wordmark, as on the hotel's own site (it has no image logo):
  * small letter-spaced "HOTEL" in brass above "Ganga Imperial" in Marcellus, cream on the
@@ -34,15 +46,7 @@ const HotelPartnerLogo: React.FC<{ ariaLabel: string; size?: "sm" | "md" }> = ({
       .hotel-logo-sm .hl-small { font-size: 9px; }
       .hotel-logo-sm .hl-name { font-size: 15px; }
     `}</style>
-    {/* Hotel building: tower with windows, arched entrance and a pennant on the roof. */}
-    <svg className="hl-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M16 2v4" />
-      <path d="M16 2.5l4 1.3-4 1.3" fill="currentColor" />
-      <path d="M7 30V8.5L16 6l9 2.5V30" />
-      <path d="M3 30h26" />
-      <path d="M11 12h2.5M18.5 12H21M11 16.5h2.5M18.5 16.5H21M11 21h2.5M18.5 21H21" />
-      <path d="M13.5 30v-4.5a2.5 2.5 0 015 0V30" />
-    </svg>
+    <HotelIcon className="hl-icon" />
     <span className="hl-text" aria-hidden="true">
       <span className="hl-small">HOTEL</span>
       <span className="hl-name">Ganga Imperial</span>

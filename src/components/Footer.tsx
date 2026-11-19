@@ -25,7 +25,6 @@ const tourLinks = [
   { label: "footer.serviceSpiritual", href: "/packages?category=spiritual" },
   { label: "footer.serviceCultural", href: "/packages?category=cultural" },
   { label: "footer.serviceHeritage", href: "/packages?category=heritage" },
-  { label: "footer.serviceAdventure", href: "/packages?category=adventure" },
   { label: "footer.serviceGroup", href: "/plan-trip" },
   { label: "footer.serviceCustom", href: "/plan-trip" },
   { label: "footer.serviceHotel", href: "#contact" },

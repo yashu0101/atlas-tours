@@ -103,11 +103,12 @@ test("booking success shows no QR and says to pay after confirmation (N-13)", as
   await useOwnIp(page);
   await page.goto("/packages/pkg-varanasi");
   const form = page.getByRole("form", { name: /Book Divine Varanasi/ });
-  await form.getByLabel("Full Name *").fill("Copy Tester");
+  await form.getByLabel("Full name *").fill("Copy Tester");
   await form.getByLabel("Phone *").fill("9876566664");
-  await form.getByRole("button", { name: "Request Booking" }).click();
+  await form.getByRole("button", { name: "Request booking" }).click();
   await expect(form.getByText(/you can pay by UPI from the Track page/)).toBeVisible();
   await expect(page.getByRole("img", { name: /UPI QR code/ })).toHaveCount(0);
+  await expect(form.getByRole("link", { name: /Hotel Ganga Imperial/ })).toBeVisible();
 });
 
 test("track page shows a booking found by reference + phone (N-4)", async ({ page }) => {
@@ -152,9 +153,9 @@ test("booking success message links to the track page (N-4)", async ({ page }) =
   await useOwnIp(page);
   await page.goto("/packages/pkg-varanasi");
   const form = page.getByRole("form", { name: /Book Divine Varanasi/ });
-  await form.getByLabel("Full Name *").fill("Link Tester");
+  await form.getByLabel("Full name *").fill("Link Tester");
   await form.getByLabel("Phone *").fill("9876533333");
-  await form.getByRole("button", { name: "Request Booking" }).click();
+  await form.getByRole("button", { name: "Request booking" }).click();
 
   const link = form.getByRole("link", { name: "Track this booking" });
   await expect(link).toHaveAttribute("href", /^\/track\?ref=[0-9A-F]{8}$/);
@@ -169,8 +170,8 @@ test("review form submits a review for approval (N-5)", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "Write a review" })).toBeVisible();
   const form = page.getByRole("form", { name: "Write a review" });
 
-  await form.getByLabel("Full Name *").fill("E2E Reviewer");
-  await form.getByLabel("Your City").fill("Pune");
+  await form.getByLabel("Full name *").fill("E2E Reviewer");
+  await form.getByLabel("Your city").fill("Pune");
 
   // Star rating is a radio group: pick 5 with the pointer, then 3 and 4 with the keyboard.
   await form.locator('label[for="review-star-5"]').click();
@@ -202,11 +203,11 @@ test("plan-trip form sends a trip plan (N-6)", async ({ page }) => {
   await expect(page.getByRole("radio", { name: "Plan my trip" })).toBeChecked();
   const form = page.getByRole("form", { name: "Plan my trip" });
 
-  await form.getByLabel("Full Name *").fill("E2E Planner");
+  await form.getByLabel("Full name *").fill("E2E Planner");
   await form.getByLabel("Phone *").fill("9876544444");
   await form.getByLabel("Where would you like to go?").fill("Varanasi, Sarnath");
   await form.getByLabel("Number of days").fill("4");
-  await form.getByLabel("Travelers").fill("3");
+  await form.getByLabel("Travellers").fill("3");
   await form.getByLabel("Budget").selectOption("10k-25k");
   await form.getByLabel("Ganga boat rides").check();
   await form.getByLabel("Food & local markets").check();
@@ -232,7 +233,7 @@ test("plan-trip ?mode=callback requests a callback (N-6)", async ({ page }) => {
   await expect(page.getByRole("radio", { name: "Request a callback" })).toBeChecked();
   const form = page.getByRole("form", { name: "Request a callback" });
 
-  await form.getByLabel("Full Name *").fill("E2E Caller");
+  await form.getByLabel("Full name *").fill("E2E Caller");
   await form.getByLabel("Phone *").fill("9876555555");
   const dateInput = form.getByLabel("Date *");
   const min = await dateInput.getAttribute("min");

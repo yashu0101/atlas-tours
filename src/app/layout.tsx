@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins, Marcellus } from "next/font/google";
 import { AppProvider } from "@/lib/context";
+import ThemeScript from "@/components/ThemeScript";
 import { SITE_CONFIG } from "@/lib/config";
 import { SITE_URL, SITE_TITLE, SITE_DESCRIPTION, OG_IMAGE, travelAgencyJsonLd, jsonLdString } from "@/lib/seo";
 import "./globals.css";
@@ -21,10 +22,6 @@ const marcellus = Marcellus({
   display: "swap",
   variable: "--font-marcellus",
 });
-
-// Runs before first paint so dark-theme users don't see a light flash (D-05).
-// Key/values must match src/lib/context.tsx ("atlas-theme": "light" | "dark").
-const themeScript = `try{var t=localStorage.getItem("atlas-theme");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t}catch(e){}`;
 
 // Favicon / apple-touch-icon come from src/app/icon.jpeg and apple-icon.jpeg (file convention).
 export const metadata: Metadata = {
@@ -62,7 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // while hash links on the home page keep scrolling smoothly.
     <html lang="en" className={`${poppins.variable} ${marcellus.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <ThemeScript />
       </head>
       <body>
         <script

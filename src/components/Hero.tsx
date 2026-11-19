@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { SITE_CONFIG, SITE_STATS } from "@/lib/config";
 import { useT } from "@/lib/i18n/use-t";
+import PartnerNote from "@/components/PartnerNote";
 import { shouldAutoplayVideo } from "@/lib/images";
 
 const HERO_VIDEO_SRC = "https://assets.mixkit.co/videos/4064/4064-720.mp4";
@@ -207,7 +208,7 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
       gap: 16,
       justifyContent: "center",
       flexWrap: "wrap",
-      marginBottom: 50,
+      marginBottom: 24,
     },
     btnPrimary: {
       background: "linear-gradient(135deg, #e67e22, #f39c12)",
@@ -315,7 +316,7 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
   };
 
   return (
-    <section id="home" data-header-tone="dark" style={styles.section}>
+    <section id="home" data-header-tone="glass" style={styles.section}>
       <style>{`
         @keyframes float-dot {
           0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
@@ -413,6 +414,9 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
           >
             {t("hero.bookWhatsApp")}
           </a>
+        </div>
+        <div className="hero-stagger-4" style={{ marginBottom: 36 }}>
+          <PartnerNote tone="glass" label={t("partner.hero")} newTabLabel={t("partner.newTab")} />
         </div>
         <div className="hero-stagger-5 hero-stats" style={styles.statsRow}>
           {stats.map((s) => (

@@ -25,7 +25,7 @@ export const POST = withHandler(async (req) => {
   if (typeof pkg.price !== "number" || !Number.isFinite(pkg.price)) throw new Error(`Package ${pkg.id} has no valid price`);
   // N-18: some packages need a minimum group (e.g. "Minimum 4 pax" on the Rajasthan brochure).
   if (pkg.minTravelers && contact.travelers < pkg.minTravelers) {
-    throw badRequest(`this package needs at least ${pkg.minTravelers} travelers`);
+    throw badRequest(`this package needs at least ${pkg.minTravelers} travellers`);
   }
 
   const booking = await addBooking({

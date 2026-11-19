@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import FormPageShell from "@/components/FormPageShell";
 import TrackBookingForm from "@/components/TrackBookingForm";
+import PartnerNote from "@/components/PartnerNote";
 import { getT } from "@/lib/i18n";
 
 // Reads ?ref= on every request.
@@ -26,6 +27,11 @@ export default async function TrackPage({ searchParams }: Props) {
   return (
     <FormPageShell title={t("track.heading")} subtitle={t("track.subheading")}>
       <TrackBookingForm initialReference={initialReference} />
+      <PartnerNote
+        label={t("partner.track")}
+        newTabLabel={t("partner.newTab")}
+        style={{ marginTop: 28 }}
+      />
     </FormPageShell>
   );
 }

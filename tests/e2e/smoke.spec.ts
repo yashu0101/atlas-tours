@@ -27,24 +27,28 @@ test("/robots.txt is served", async ({ request }) => {
 test("home page shows the team section and UPI payment details", async ({ page }) => {
   await page.goto("/");
   const team = page.locator("#team");
-  await expect(team.getByRole("heading", { name: /The People Behind/ })).toBeVisible();
-  for (const name of ["Ashfaque Ahmed", "Dinesh Singh Rathore"]) {
+  await expect(team.getByRole("heading", { name: /Meet the faces of/ })).toBeVisible();
+  for (const name of ["Mr. Ashfaque Ahmed", "Mr. Dinesh Singh Rathore", "Mrs. Bushra Ashfaque"]) {
     await expect(team.getByRole("heading", { name })).toBeVisible();
   }
   await expect(team.getByText("Front Desk Team")).toHaveCount(0);
   await expect(team.getByRole("link", { name: /Hotel Ganga Imperial/ })).toBeVisible();
   await expect(team.locator("img")).toHaveCount(2);
+  // Direct numbers under each person (TEAM_PHONES).
+  await expect(team.getByRole("link", { name: "Call Mr. Ashfaque Ahmed on +91 96160 74995" })).toHaveAttribute("href", "tel:+919616074995");
+  await expect(team.getByRole("link", { name: "Call Mr. Dinesh Singh Rathore on +91 72688 95995" })).toHaveAttribute("href", "tel:+917268895995");
+  await expect(team.getByRole("link", { name: "Call Mrs. Bushra Ashfaque on +91 63883 60881" })).toHaveAttribute("href", "tel:+916388360881");
 
   const about = page.locator("#about");
   await expect(about.getByText("Travel agency since")).toBeVisible();
   await expect(about.getByText("1983", { exact: true })).toBeVisible();
   // People live in Our Team / Contact, not in About.
   await expect(about.getByText("Ashfaque Ahmed")).toHaveCount(0);
-  await expect(page.locator("#contact").getByText("Mera Bushra Ashfaque")).toBeVisible();
+  await expect(page.locator("#contact").getByText("Mrs. Bushra Ashfaque")).toBeVisible();
 
   // Every Hotel Ganga Imperial link goes to the hotel's website in a new tab.
   const hotelLinks = page.locator('a[href="https://hotel-ganga-imperial.vercel.app/"]');
-  await expect(hotelLinks).toHaveCount(2); // Team GM card + footer partner line
+  await expect(hotelLinks).toHaveCount(5); // hero, About, Team GM card, Contact, footer partner line
   for (const link of await hotelLinks.all()) {
     await expect(link).toHaveAttribute("target", "_blank");
     await expect(link).toHaveAttribute("rel", /noopener/);

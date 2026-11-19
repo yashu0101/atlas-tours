@@ -69,16 +69,16 @@ test("booking form shows the estimate and submits to /api/book (G-01)", async ({
   await page.goto("/packages/pkg-varanasi");
   const form = page.getByRole("form", { name: /Book Divine Varanasi/ });
 
-  await form.getByLabel("Full Name *").fill("E2E Traveller");
+  await form.getByLabel("Full name *").fill("E2E Traveller");
   await form.getByLabel("Phone *").fill("+91 98765 43210");
   await form.getByLabel("Email").fill("e2e@example.com");
   await form.getByLabel("Travel Date").fill("2099-01-15");
-  await form.getByLabel("Travelers *").fill("2");
-  await expect(form.getByText("× 2 travelers")).toBeVisible();
+  await form.getByLabel("Travellers *").fill("2");
+  await expect(form.getByText("× 2 travellers")).toBeVisible();
   await expect(form.getByText("₹17,998")).toBeVisible();
 
   const response = page.waitForResponse((r) => r.url().endsWith("/api/book") && r.request().method() === "POST");
-  await form.getByRole("button", { name: "Request Booking" }).click();
+  await form.getByRole("button", { name: "Request booking" }).click();
   const res = await response;
   expect(res.status()).toBe(200);
   const sent = res.request().postDataJSON();
@@ -89,7 +89,7 @@ test("booking form shows the estimate and submits to /api/book (G-01)", async ({
   // N-13: no payment details until the booking is confirmed.
   await expect(form.getByText(/you can pay by UPI from the Track page/)).toBeVisible();
   await expect(form.getByText("d2095760-1@okicici")).toHaveCount(0);
-  await expect(form.getByLabel("Full Name *")).toHaveValue("");
+  await expect(form.getByLabel("Full name *")).toHaveValue("");
 });
 
 test("home page category filter and detail link (G-06)", async ({ page }) => {
@@ -109,7 +109,7 @@ test("home page category filter and detail link (G-06)", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "Divine Varanasi & Prayagraj" })).toBeVisible();
 });
 
-test("package cards open the detail page: image, title, View Details, Book Now", async ({ page }) => {
+test("package cards open the detail page: image, title, View details, Book now", async ({ page }) => {
   const h1 = page.getByRole("heading", { level: 1, name: "Odisha Temples & Beaches Tour" });
   const card = () => page.locator("#packages .pkg-card").filter({ hasText: "Odisha Temples & Beaches Tour" });
 
@@ -130,7 +130,7 @@ test("package cards open the detail page: image, title, View Details, Book Now",
   await page.waitForURL("**/packages/pkg-odisha");
   await expect(h1).toBeVisible();
 
-  // Book Now lands on the booking form.
+  // Book now lands on the booking form.
   await page.goto("/");
   await card().getByRole("link", { name: "Book Odisha Temples & Beaches Tour" }).click();
   await page.waitForURL("**/packages/pkg-odisha#book");

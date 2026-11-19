@@ -6,3 +6,6 @@ node_modules/
 next-env.d.ts
 .vercel
 .env*
+# N-8: admin users, sessions and audit log of the JSON backend (local only)
+data/db.admin.json
+test-results/
