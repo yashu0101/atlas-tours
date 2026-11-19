@@ -51,6 +51,7 @@ const Header: React.FC = () => {
     { label: t("header.nav.gallery"), href: sectionHref("#gallery") },
     { label: lang === "en" ? "Showcase" : "\u0936\u094B\u0915\u0947\u0938", href: sectionHref("#showcase") },
     { label: t("header.nav.blog"), href: sectionHref("#blog") },
+    { label: lang === "en" ? "Stories" : "\u0915\u0939\u093E\u0928\u093F\u092F\u093E\u0901", href: sectionHref("#travel-stories") },
     { label: t("header.nav.faq"), href: sectionHref("#faq") },
     { label: t("header.nav.contact"), href: sectionHref("#contact") },
   ];

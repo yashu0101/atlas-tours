@@ -15,6 +15,7 @@ import Showcase from "@/components/Showcase";
 import BackToTop from "@/components/BackToTop";
 import ScrollProgress from "@/components/ScrollProgress";
 import RevealObserver from "@/components/RevealObserver";
+import TravelStories from "@/components/TravelStories";
 import CompareBar from "@/components/CompareBar";
 import { getBlogs, getFAQs, getGallery, getOffers, getPackages, getReviews } from "@/lib/db";
 import { isPublicBlog, isPublicFAQ, isPublicGalleryImage, isPublicOffer, isPublicPackage, isPublicReview, istDateKey } from "@/lib/visibility";
@@ -77,6 +78,8 @@ export default async function HomePage() {
         <WaveDivider fill="var(--bg2)" />
         <Blog initialBlogs={blogs} />
         <WaveDivider fill="var(--bg)" />
+        <TravelStories />
+        <WaveDivider fill="var(--bg2)" />
         <FAQ initialFaqs={faqs} />
         <Contact initialPackages={packages} minDate={istDateKey(new Date())} />
       </main>
