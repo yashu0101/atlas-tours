@@ -86,7 +86,7 @@ test("home page category filter and detail link (G-06)", async ({ page }) => {
   await expect(section.getByRole("heading", { name: "Divine Varanasi & Prayagraj" })).toHaveCount(0);
 
   await filters.getByRole("button", { name: "All" }).click();
-  await section.getByRole("link", { name: /Divine Varanasi & Prayagraj: full details/ }).click();
+  await section.getByRole("link", { name: "View details: Divine Varanasi & Prayagraj" }).click();
   await page.waitForURL("**/packages/pkg-varanasi");
   await expect(page.getByRole("heading", { level: 1, name: "Divine Varanasi & Prayagraj" })).toBeVisible();
 });

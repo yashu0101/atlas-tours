@@ -41,8 +41,8 @@ export const en = {
     /** Label of the language switch: names the language you switch TO. */
     langToggle: "हिंदी",
     callNow: "Call Now",
-    themeLight: "☀️ Light",
-    themeDark: "🌙 Dark",
+    themeLight: "Light mode",
+    themeDark: "Dark mode",
     themeToggleAria: "Toggle dark mode",
     menuAria: "Menu",
   },
@@ -103,8 +103,12 @@ export const en = {
     },
     empty: "No packages in this category right now.",
     showAll: "Show all packages",
-    detailsLinkAria: "{name}: full details and online booking",
-    detailsLink: "Full details & online booking →",
+    /** Card price suffix: prices are per person. */
+    perPerson: "/ person",
+    /** Card: amount saved against the original price. */
+    save: "Save ₹{amount}",
+    /** Card: highlights beyond the first three. */
+    moreHighlights: "+{count} more highlights",
     viewDetails: "View Details",
     viewDetailsAria: "View details: {name}",
     bookNow: "Book Now",

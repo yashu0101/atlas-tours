@@ -83,6 +83,11 @@ button { font-family: inherit; }
 .skip-link:focus, .skip-link:focus-visible { transform: none; }
 
 /* ===== SCROLLBAR ===== */
+/* The page (window) scrollbar is hidden; scrolling still works and the orange
+   ScrollProgress bar shows the position. Inner scroll areas (admin tables, modals,
+   mobile menu) keep the styled scrollbar below so they stay discoverable. */
+html { scrollbar-width: none; }
+html::-webkit-scrollbar { display: none; }
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg2); }
 ::-webkit-scrollbar-thumb { background: var(--orange); border-radius: 4px; }

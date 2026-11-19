@@ -73,8 +73,9 @@ export default async function HomePage() {
         )}
         <WaveDivider fill="var(--bg2)" />
         <Gallery initialImages={gallery} />
+        {/* No wave between Counter and Reviews: both are dark navy, and a --bg wave drew a
+            white band between them. */}
         <Counter />
-        <WaveDivider fill="var(--bg)" />
         <Reviews initialReviews={reviews} />
         <WaveDivider fill="var(--bg2)" />
         <Team />
