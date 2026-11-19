@@ -108,6 +108,7 @@ test("booking success shows no QR and says to pay after confirmation (N-13)", as
   await form.getByRole("button", { name: "Request Booking" }).click();
   await expect(form.getByText(/you can pay by UPI from the Track page/)).toBeVisible();
   await expect(page.getByRole("img", { name: /UPI QR code/ })).toHaveCount(0);
+  await expect(form.getByRole("link", { name: /Hotel Ganga Imperial/ })).toBeVisible();
 });
 
 test("track page shows a booking found by reference + phone (N-4)", async ({ page }) => {

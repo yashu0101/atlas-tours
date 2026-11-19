@@ -3,6 +3,7 @@ import RevealWords from "@/components/RevealWords";
 
 import React from "react";
 import SmartImage from "@/components/SmartImage";
+import PartnerNote from "@/components/PartnerNote";
 import { useT } from "@/lib/i18n/use-t";
 import { SITE_CONFIG } from "@/lib/config";
 
@@ -209,6 +210,7 @@ const About: React.FC = () => {
             <a href="#packages" style={s.btnPrimary}>{t("about.explorePackages")}</a>
             <a href="#contact" style={s.btnOutline}>{t("about.getInTouch")}</a>
           </div>
+          <PartnerNote label={t("partner.about")} newTabLabel={t("partner.newTab")} style={{ marginTop: 24 }} />
         </div>
       </div>
     </section>

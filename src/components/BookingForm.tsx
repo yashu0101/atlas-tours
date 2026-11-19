@@ -15,6 +15,7 @@ import {
 import { useApp } from "@/lib/context";
 import { useT } from "@/lib/i18n/use-t";
 import { bookingReference } from "@/lib/booking-ref";
+import PartnerNote from "@/components/PartnerNote";
 
 interface BookingFormProps {
   packageId: string;
@@ -264,6 +265,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price
               </>
             )}
             <div style={{ marginTop: 8 }}>{t("booking.payAfterConfirm")}</div>
+            <PartnerNote label={t("partner.booking")} newTabLabel={t("partner.newTab")} style={{ marginTop: 12 }} />
           </div>
         )}
       </div>

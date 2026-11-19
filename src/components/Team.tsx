@@ -3,7 +3,7 @@ import RevealWords from "@/components/RevealWords";
 
 import React from "react";
 import SmartImage from "@/components/SmartImage";
-import { TEAM_MEMBERS } from "@/lib/team";
+import { TEAM_MEMBERS, teamInitials } from "@/lib/team";
 import HotelPartnerLogo from "@/components/HotelPartnerLogo";
 import { useT } from "@/lib/i18n/use-t";
 
@@ -71,6 +71,20 @@ const Team: React.FC = () => {
       overflow: "hidden",
       lineHeight: 0,
     },
+    placeholder: {
+      aspectRatio: "3 / 4",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "linear-gradient(160deg, #1a3a6b, #0a1628)",
+      lineHeight: 1,
+    },
+    initials: {
+      fontSize: "clamp(64px, 9vw, 104px)",
+      fontWeight: 800,
+      letterSpacing: 4,
+      color: "#f6b144",
+    },
     frame: {
       position: "absolute",
       inset: 0,
@@ -85,17 +99,21 @@ const Team: React.FC = () => {
       lineHeight: 1.2,
       margin: 0,
     },
+    // Role sits above the name, in the same lettering as the "The Atlas Family" badge.
     role: {
-      fontSize: 17,
+      fontSize: 14,
       fontWeight: 600,
+      letterSpacing: 2,
+      textTransform: "uppercase",
+      lineHeight: 1.3,
       color: "var(--orange-text)",
-      margin: "8px 0 0",
+      margin: "0 0 8px",
     },
     org: {
       fontSize: 15,
-      fontWeight: 500,
-      color: "var(--orange-text)",
-      margin: "6px 0 0",
+      fontWeight: 600,
+      color: "var(--text2)",
+      margin: "8px 0 0",
     },
     desc: {
       fontSize: 16,
@@ -153,21 +171,28 @@ const Team: React.FC = () => {
               <figure className={`team-figure ${flip ? "reveal-right" : "reveal-left"}`} style={styles.figure}>
                 <div className="team-frame" style={styles.frame} aria-hidden="true" />
                 <div style={styles.photo}>
-                  <SmartImage
-                    src={m.image}
-                    alt={t(m.alt)}
-                    width={m.width}
-                    height={m.height}
-                    sizes="(max-width: 768px) min(420px, 100vw), 460px"
-                    style={{ width: "100%", height: "auto", display: "block" }}
-                  />
+                  {m.photo ? (
+                    <SmartImage
+                      src={m.photo.image}
+                      alt={t(m.photo.alt)}
+                      width={m.photo.width}
+                      height={m.photo.height}
+                      sizes="(max-width: 768px) min(420px, 100vw), 460px"
+                      style={{ width: "100%", height: "auto", display: "block" }}
+                    />
+                  ) : (
+                    // No photo yet: initials on a navy panel in the photo's 3:4 slot.
+                    <div style={styles.placeholder} aria-hidden="true">
+                      <span style={styles.initials}>{teamInitials(m.name ?? t(m.role))}</span>
+                    </div>
+                  )}
                 </div>
               </figure>
               <div className={`team-text ${flip ? "reveal-left" : "reveal-right"}`}>
                 {m.name ? (
                   <>
-                    <h3 style={styles.name}>{m.name}</h3>
                     <p style={styles.role}>{t(m.role)}</p>
+                    <h3 style={styles.name}>{m.name}</h3>
                   </>
                 ) : (
                   <h3 style={styles.name}>{t(m.role)}</h3>

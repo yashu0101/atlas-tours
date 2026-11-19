@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { PHONE_DISPLAY, SITE_CONFIG } from "@/lib/config";
+import { MD_NAME, PHONE_DISPLAY, SITE_CONFIG } from "@/lib/config";
 
 const showcaseItems = [
   {
@@ -303,7 +303,7 @@ const Showcase: React.FC = () => {
               color: "var(--primary)",
               marginBottom: 4,
             }}>
-              Ashfaque Ahmed
+              Mr. Ashfaque Ahmed
             </div>
             <div style={{
               fontSize: 14,
@@ -372,7 +372,7 @@ const Showcase: React.FC = () => {
             </svg>
           </div>
           <div style={{ textAlign: "left" as const }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--primary)" }}>Bushra Ashfaque</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--primary)" }}>{MD_NAME}</div>
             <div style={{ fontSize: 12, color: "#e67e22", fontWeight: 600, marginBottom: 2 }}>Managing Director</div>
             <a href={`tel:${SITE_CONFIG.phone}`} style={{ fontSize: 13, color: "var(--text2)", textDecoration: "none" }}>
               {PHONE_DISPLAY}

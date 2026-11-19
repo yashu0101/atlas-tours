@@ -27,8 +27,8 @@ test("/robots.txt is served", async ({ request }) => {
 test("home page shows the team section and UPI payment details", async ({ page }) => {
   await page.goto("/");
   const team = page.locator("#team");
-  await expect(team.getByRole("heading", { name: /The People Behind/ })).toBeVisible();
-  for (const name of ["Ashfaque Ahmed", "Dinesh Singh Rathore"]) {
+  await expect(team.getByRole("heading", { name: /Meet the Faces of/ })).toBeVisible();
+  for (const name of ["Mr. Ashfaque Ahmed", "Mr. Dinesh Singh Rathore", "Mera Bushra Ashfaque"]) {
     await expect(team.getByRole("heading", { name })).toBeVisible();
   }
   await expect(team.getByText("Front Desk Team")).toHaveCount(0);
@@ -44,7 +44,7 @@ test("home page shows the team section and UPI payment details", async ({ page }
 
   // Every Hotel Ganga Imperial link goes to the hotel's website in a new tab.
   const hotelLinks = page.locator('a[href="https://hotel-ganga-imperial.vercel.app/"]');
-  await expect(hotelLinks).toHaveCount(2); // Team GM card + footer partner line
+  await expect(hotelLinks).toHaveCount(5); // hero, About, Team GM card, Contact, footer partner line
   for (const link of await hotelLinks.all()) {
     await expect(link).toHaveAttribute("target", "_blank");
     await expect(link).toHaveAttribute("rel", /noopener/);

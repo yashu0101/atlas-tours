@@ -255,18 +255,21 @@ export const en = {
   },
   /** "Our Team" section (Team.tsx); members are listed in src/lib/team.ts. */
   team: {
-    badge: "Our Team",
-    heading: "The People Behind",
-    headingAccent: "Your Journey",
-    subheading: "Meet the team that plans your trip and welcomes you in Varanasi.",
+    badge: "The Atlas Family",
+    heading: "Meet the Faces of",
+    headingAccent: "Atlas Tours",
+    subheading: "Real people who know Varanasi by heart and look after every guest like family.",
     founderRole: "Founder",
     founderOrg: "Atlas Tour & Travels",
-    founderDesc: "Started Atlas Tours to share the spiritual heart of India with every traveller.",
+    founderDesc: "Ashfaque started Atlas Tours with one simple aim: to let every traveller feel the real Varanasi, from the ghats at sunrise to the Ganga Aarti at dusk.",
     founderAlt: "Founder of Atlas Tours at the office desk",
     gmRole: "General Manager",
     gmOrg: "Hotel Ganga Imperial",
-    gmDesc: "Looks after your stay at our partner hotel, from check-in to your last morning in Varanasi.",
+    gmDesc: "Dinesh makes sure your stay at Hotel Ganga Imperial is comfortable and easy, from the moment you arrive until you leave.",
     gmAlt: "General Manager of Hotel Ganga Imperial",
+    mdRole: "Managing Director",
+    mdOrg: "Atlas Tour & Travels",
+    mdDesc: "Oversees the day-to-day running of Atlas Tours, so every booking, guide and transfer goes smoothly for our guests.",
     orgLinkAria: "{org} website (opens in a new tab)",
   },
   /** UPI payment card (UpiPayCard.tsx) in Contact and after a booking request. */
@@ -412,6 +415,16 @@ export const en = {
     trackBooking: "Track Booking",
     wishlist: "My Wishlist",
     writeReview: "Write a Review",
+  },
+  /** Caption above the hotel name on the partner card (PartnerNote.tsx). */
+  partner: {
+    /** Screen-reader only, after the hotel name. */
+    newTab: "(opens the hotel website in a new tab)",
+    hero: "Our official stay partner",
+    about: "Our partner hotel in Varanasi",
+    contact: "Visit our office at",
+    booking: "Staying in Varanasi? Our partner hotel",
+    track: "Our partner hotel in Varanasi",
   },
   track: {
     metaTitle: "Track your booking",
