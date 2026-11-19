@@ -196,6 +196,9 @@ const Showcase: React.FC = () => {
         .showcase-card:hover { transform: translateY(-8px); box-shadow: 0 16px 48px rgba(0,0,0,0.15) !important; }
         .showcase-card .showcase-img { transition: transform 0.8s cubic-bezier(.16,1,.3,1); }
         .showcase-card:hover .showcase-img { transform: scale(1.06); }
+        .founder-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.12) !important; }
+        .founder-card .founder-img { transition: transform 0.8s cubic-bezier(.16,1,.3,1); }
+        .founder-card:hover .founder-img { transform: scale(1.04); }
         @media (max-width: 768px) {
           .showcase-grid { grid-template-columns: 1fr !important; }
         }
@@ -231,6 +234,61 @@ const Showcase: React.FC = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Founder */}
+      <div className="reveal" style={{ maxWidth: 480, margin: "60px auto 0", textAlign: "center" as const }}>
+        <div
+          className="founder-card"
+          style={{
+            borderRadius: 22,
+            overflow: "hidden",
+            background: "var(--card-bg)",
+            boxShadow: "var(--shadow)",
+            transition: "transform 0.4s cubic-bezier(.16,1,.3,1), box-shadow 0.4s",
+          }}
+        >
+          <div style={{ position: "relative", height: 360, overflow: "hidden" }}>
+            <Image
+              className="founder-img"
+              src="/images/founder.jpeg"
+              alt="Ashfaque Ahmed — Founder, Atlas Tour & Travels"
+              fill
+              style={{ objectFit: "cover", objectPosition: "center top" }}
+            />
+          </div>
+          <div style={{ padding: "22px 20px 26px" }}>
+            <div style={{
+              display: "inline-block",
+              background: "linear-gradient(135deg, #e67e22, #f39c12)",
+              color: "#fff",
+              padding: "4px 16px",
+              borderRadius: 14,
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: 1.5,
+              textTransform: "uppercase" as const,
+              marginBottom: 10,
+            }}>
+              Founder
+            </div>
+            <div style={{
+              fontSize: 22,
+              fontWeight: 800,
+              color: "var(--primary)",
+              marginBottom: 4,
+            }}>
+              Ashfaque Ahmed
+            </div>
+            <div style={{
+              fontSize: 14,
+              color: "var(--text2)",
+              lineHeight: 1.5,
+            }}>
+              Atlas Tour & Travels
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Tour Package Posters */}
