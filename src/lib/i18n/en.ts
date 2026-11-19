@@ -331,6 +331,7 @@ export const en = {
     },
     paymentStatusHelp: {
       pending: "Once we confirm your booking, you can pay here by UPI.",
+      payNow: "Your booking is confirmed. Scan the QR code below to pay, then enter your UPI transaction ID.",
       verifying: "We have your transaction ID and are checking the payment. This usually takes a few hours.",
       paid: "We have received your payment. Thank you!",
       failed: "Your payment did not go through. Please contact us to try again.",
@@ -530,7 +531,7 @@ export const en = {
     paymentClaim: {
       ownerSubject: "Payment submitted: {ref} – UTR {utr}",
       ownerHeading: "Payment submitted for verification",
-      ownerIntro: "A customer says they have paid by UPI. Check the UTR against your bank statement, then mark the booking as paid in the admin Bookings tab.",
+      ownerIntro: "A customer says they have paid by UPI. Before marking it paid, check in your bank or UPI app that the UTR, the amount and the note \"Atlas booking {ref}\" all match, then mark the booking as paid in the admin Bookings tab.",
     },
     bookingConfirmed: {
       customerSubject: "Booking {ref} confirmed – please complete your payment",

@@ -231,7 +231,7 @@ export function buildOwnerEmail(event: NotifyEvent): EmailContent | null {
       return ownerEmail(
         t("email.paymentClaim.ownerSubject", { ref, utr: b.utr ?? "" }),
         t("email.paymentClaim.ownerHeading"),
-        t("email.paymentClaim.ownerIntro"),
+        t("email.paymentClaim.ownerIntro", { ref }),
         [
           [t("email.labels.reference"), ref],
           [t("email.labels.package"), b.packageName],

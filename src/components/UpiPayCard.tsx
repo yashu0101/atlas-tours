@@ -145,6 +145,7 @@ const UpiPayCard: React.FC<{ compact?: boolean; amount?: number; reference?: str
   return (
     <div style={styles.card}>
       {perBooking ? (
+        // Intentionally hardcoded white: the QR needs a light quiet zone and scan contrast in dark mode too.
         <div style={{ ...styles.qrLink, width: qrWidth, height: qrWidth, background: "#fff" }}>
           {qrSrc && (
             // eslint-disable-next-line @next/next/no-img-element -- generated data: URI, nothing to optimise

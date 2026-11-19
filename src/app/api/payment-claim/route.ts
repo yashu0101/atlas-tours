@@ -35,7 +35,7 @@ export const POST = withHandler(async (req) => {
   const booking = await findBookingByReferenceAndPhone(body);
   const utr = normalizeUtr(str(body, "utr", 40, true));
   if (!utr) throw badRequest("utr must be the 12-digit UPI transaction ID");
-  if (booking.bookingStatus !== "confirmed" || booking.paymentStatus !== "pending") {
+  if (booking.bookingStatus !== "confirmed" || (booking.paymentStatus !== "pending" && booking.paymentStatus !== "failed")) {
     throw new HttpError(409, "This booking is not awaiting payment.");
   }
 

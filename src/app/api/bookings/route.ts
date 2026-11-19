@@ -29,8 +29,8 @@ export const PATCH = withHandler(async (req) => {
   const before = await getBookingById(id);
   if (!before) throw notFound();
   const auditFields = Object.keys(updates);
-  // Owner rejected a wrong UTR: back to pending so the customer can resubmit.
-  if (updates.paymentStatus === "pending") {
+  // Owner rejected a wrong UTR (pending or failed): clear it so the customer can resubmit.
+  if (updates.paymentStatus === "pending" || updates.paymentStatus === "failed") {
     updates.utr = null;
     updates.paymentSubmittedAt = null;
   }

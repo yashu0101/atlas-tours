@@ -42,7 +42,7 @@ export default function PaymentPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reference, phone, utr: normalized, website: "" }),
       });
-      if (res.ok) return onSubmitted();
+      if (res.ok) return onSubmitted(); // parent unmounts this panel and moves focus to the payment status
       const body: unknown = await res.json().catch(() => null);
       const message = body && typeof body === "object" && "error" in body ? (body as { error: unknown }).error : "";
       if (res.status === 409 && message === NOT_PAYABLE_MESSAGE) return setError(t("pay.notPayable"));
