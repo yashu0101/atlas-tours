@@ -90,6 +90,18 @@ export const SITE_STATS = {
   tripsCompleted: 1000,
 } as const;
 
+/**
+ * Footer social links. (provisional) These handles were guessed when the site was built and
+ * have not been confirmed by the client (see CLIENT_QUESTIONS.md). Remove an entry to hide
+ * its icon; change only here.
+ */
+export const SOCIAL_LINKS: readonly { name: "Facebook" | "Instagram" | "YouTube" | "X"; href: string }[] = [
+  { name: "Facebook", href: "https://facebook.com/atlastours" },
+  { name: "Instagram", href: "https://instagram.com/atlastours" },
+  { name: "YouTube", href: "https://youtube.com/atlastours" },
+  { name: "X", href: "https://x.com/atlastours" },
+];
+
 export const UPI_CONFIG = {
   id: "d2095760-1@okicici",
   payee: "Dilip",
