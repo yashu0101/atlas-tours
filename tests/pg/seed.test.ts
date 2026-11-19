@@ -19,8 +19,9 @@ describe("seedContent (Postgres)", () => {
     await seedContent();
     const byId = <T extends { id: string }>(xs: readonly T[]) => [...xs].sort((a, b) => a.id.localeCompare(b.id));
     // JSON.parse(JSON.stringify(...)) drops undefined optional fields, like an API response does.
+    // exclusions is a NOT NULL DEFAULT [] column, so a seed package without it reads back as [].
     const plain = <T>(x: T): T => JSON.parse(JSON.stringify(x));
-    expect(plain(byId(await getPackages()))).toEqual(plain(byId(SEED_PACKAGES.map(p => ({ ...p, hidden: !!p.hidden })))));
+    expect(plain(byId(await getPackages()))).toEqual(plain(byId(SEED_PACKAGES.map(p => ({ ...p, hidden: !!p.hidden, exclusions: p.exclusions ?? [] })))));
     expect(plain(byId(await getReviews()))).toEqual(plain(byId(SEED_REVIEWS)));
     expect(plain(byId(await getGallery()))).toEqual(plain(byId(SEED_GALLERY)));
     expect(plain(byId(await getBlogs()))).toEqual(plain(byId(SEED_BLOGS)));

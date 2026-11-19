@@ -6,6 +6,7 @@ import {
 import { initDB, MIGRATIONS } from "@/lib/db-schema";
 import { isIsoString, setupPgDb } from "../helpers/pglite-sql";
 import { OLD_SCHEMA_SQL } from "./fixtures/old-schema";
+import { SEED_PACKAGES } from "@/lib/seed-data";
 
 const pg = setupPgDb({ init: false });
 const init = () => initDB(pg.sql as unknown as Parameters<typeof initDB>[0]);
@@ -153,7 +154,7 @@ describe("migrations: fresh database", () => {
     await init();
     await init();
     expect((await versions()).at(-1)).toBe(LATEST);
-    expect(await seedContent()).toMatchObject({ packages: 3 });
+    expect(await seedContent()).toMatchObject({ packages: SEED_PACKAGES.length });
     expect(await seedContent()).toMatchObject({ packages: 0 });
   });
 
