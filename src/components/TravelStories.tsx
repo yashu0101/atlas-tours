@@ -27,6 +27,18 @@ const stories = [
     description: "Best moments captured from our travelers' unforgettable adventures",
     location: "Across India",
   },
+  {
+    src: "/videos/travel-story-5.mp4",
+    title: "Travel Moments",
+    description: "Candid glimpses from the road — the real joy of travel",
+    location: "India",
+  },
+  {
+    src: "/videos/travel-story-6.mp4",
+    title: "On the Go",
+    description: "Scenes and stories from our group tours across the country",
+    location: "India",
+  },
 ];
 
 const TravelStories: React.FC = () => {
@@ -261,7 +273,7 @@ const styles: Record<string, React.CSSProperties> = {
     maxWidth: 1100,
     margin: "0 auto",
     display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
+    gridTemplateColumns: "repeat(3, 1fr)",
     gap: 22,
   },
   card: {
