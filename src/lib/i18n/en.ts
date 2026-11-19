@@ -141,6 +141,8 @@ export const en = {
     successReference: " (ref. {reference})",
     /** N-4: link in the success message to /track?ref=… */
     trackLink: "Track this booking",
+    /** N-13: replaces the QR under the success message, so nobody pays an unconfirmed amount. */
+    payAfterConfirm: "We'll call you to confirm. Once confirmed, you can pay by UPI from the Track page.",
     errorTooMany: "Too many booking attempts. Please wait a minute and try again.",
     errorNotFound: "Sorry, this package is no longer available for online booking.",
     errorCheckDetails: "Please check your details: {message}.",
@@ -212,7 +214,22 @@ export const en = {
     openApp: "Open UPI app",
     qrAlt: "UPI QR code for paying {payee}, UPI ID {id}",
     viewFull: "View full-size QR code",
+    /** N-13: per-booking amount line shown with the booking's own QR. */
+    amountLabel: "Amount: ₹{amount}",
+    notePerBooking: "After paying, enter the 12-digit UPI transaction ID (UTR) below so we can match your payment.",
     note: "Please pay only after our team has confirmed your booking, then share the payment screenshot with us on WhatsApp.",
+  },
+  /** N-13: pay-by-UPI panel on /track (PaymentPanel.tsx). */
+  pay: {
+    utrLabel: "UPI transaction ID (UTR)",
+    utrHint: "12 digits, shown in your UPI app after paying",
+    submit: "Submit transaction ID",
+    submitting: "Submitting...",
+    errorInvalid: "The transaction ID must be 12 digits.",
+    notPayable: "This booking is not awaiting payment.",
+    utrUsed: "This transaction ID has already been submitted. Please check it and try again.",
+    errorTooMany: "Too many attempts. Please try again in 15 minutes.",
+    errorGeneric: "Something went wrong while submitting your transaction ID. Please try again or contact us.",
   },
   blog: {
     badge: "Our Blog",
@@ -307,14 +324,18 @@ export const en = {
     },
     paymentStatus: {
       pending: "Not paid yet",
+      verifying: "Verifying payment",
       paid: "Paid",
       failed: "Payment failed",
       refunded: "Refunded",
     },
     paymentStatusHelp: {
-      pending: "No payment is taken online. Our team will tell you how and when to pay.",
+      pending: "Once we confirm your booking, you can pay here by UPI.",
+      payNow: "Your booking is confirmed. Scan the QR code below to pay, then enter your UPI transaction ID.",
+      verifying: "We have your transaction ID and are checking the payment. This usually takes a few hours.",
       paid: "We have received your payment. Thank you!",
       failed: "Your payment did not go through. Please contact us to try again.",
+      payAgain: "Your payment did not go through. Scan the QR code below to pay again, then enter your new UPI transaction ID.",
       refunded: "Your payment has been refunded.",
     },
     invalidReference: "Please enter the 8-character booking reference.",
@@ -485,6 +506,7 @@ export const en = {
     contactLine: "Questions? Call or WhatsApp us on {phone}, or email {email}.",
     automated: "This is an automated message from {site}. You received it because this email address was entered on our website.",
     notSet: "Not specified",
+    amount: "₹{amount}",
     adminCta: "Open the admin panel",
     ownerFooter: "Sent automatically by the {site} website.",
     labels: {
@@ -503,6 +525,26 @@ export const en = {
       rating: "Rating",
       review: "Review",
       submitted: "Submitted",
+      utr: "UTR (UPI transaction ID)",
+      amountDue: "Amount due",
+      amountPaid: "Amount paid",
+    },
+    paymentClaim: {
+      ownerSubject: "Payment submitted: {ref} – UTR {utr}",
+      ownerHeading: "Payment submitted for verification",
+      ownerIntro: "A customer says they have paid by UPI. Before marking it paid, check in your bank or UPI app that the UTR, the amount and the note \"Atlas booking {ref}\" all match, then mark the booking as paid in the admin Bookings tab.",
+    },
+    bookingConfirmed: {
+      customerSubject: "Booking {ref} confirmed – please complete your payment",
+      customerHeading: "Your booking is confirmed",
+      customerIntro: "Good news: your booking is confirmed. Please complete the payment by UPI to secure it.",
+      payText: "Pay by UPI here (you'll need your phone number):",
+      payCta: "Pay by UPI",
+    },
+    paymentReceived: {
+      customerSubject: "Payment received for booking {ref}",
+      customerHeading: "Payment received",
+      customerIntro: "Thank you, we have received your payment. Your booking is fully paid.",
     },
     kinds: {
       contact: "Contact enquiry",

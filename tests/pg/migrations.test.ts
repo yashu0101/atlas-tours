@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  addAdminUser, getAdminUserByEmail, addOffer, addPackage, addReview, getEnquiries, getFAQs, getPackages, getReviews,
+  addAdminUser, getAdminUserByEmail, addOffer, addPackage, addReview, getBookings, getEnquiries, getFAQs, getPackages, getReviews,
   seedContent, updateBooking, updateEnquiryStatus, updateReview, addBooking, addEnquiry,
 } from "@/lib/db";
 import { initDB, MIGRATIONS } from "@/lib/db-schema";
@@ -68,6 +68,16 @@ describe("migrations: upgrading a database created by the old initDB", () => {
     // (DESC puts the NULL created_at row first, as it did with TEXT; the new row comes right after it.)
     expect((await getPackages()).map(p => p.id).slice(0, 2)).toEqual(["null-array", added.id]);
     expect((await getPackages()).find(p => p.id === added.id)).toMatchObject({ highlights: ["x"], createdAt: added.createdAt });
+  });
+
+  it("v7: an old booking reads back without utr / paymentSubmittedAt", async () => {
+    await exec(OLD_SCHEMA_SQL);
+    await pg.db.query("INSERT INTO bookings (id,name,phone,email,city,package_id,package_name,travelers,travel_date,amount,payment_status,booking_status,created_at) VALUES ('b-old','Old','1','e','c','p','P',2,'2024-06-01',5000,'pending','pending','2024-05-06T00:00:00.000Z')");
+    await init();
+    const [b] = await getBookings();
+    expect(b).toMatchObject({ id: "b-old", paymentStatus: "pending" });
+    expect(b.utr).toBeUndefined();
+    expect(b.paymentSubmittedAt).toBeUndefined();
   });
 
   it("is a no-op when run again", async () => {

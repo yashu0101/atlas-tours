@@ -47,8 +47,12 @@ export interface Booking {
   travelers: number;
   travelDate: string;
   amount: number;
-  paymentStatus: "pending" | "paid" | "failed" | "refunded";
+  paymentStatus: "pending" | "verifying" | "paid" | "failed" | "refunded";
   bookingStatus: "pending" | "confirmed" | "completed" | "cancelled";
+  /** UPI transaction reference (UTR) the customer submitted (N-13). Unique across bookings. */
+  utr?: string;
+  /** When the UTR was submitted (ISO). */
+  paymentSubmittedAt?: string;
   createdAt: string;
 }
 

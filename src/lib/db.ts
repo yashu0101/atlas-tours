@@ -102,9 +102,10 @@ const BOOKINGS: Entity<Booking> = {
   columns: {
     id, name: c("name"), phone: c("phone"), email: c("email"), city: c("city"), packageId: c("package_id"),
     packageName: c("package_name"), travelers: c("travelers"), travelDate: c("travel_date"), amount: c("amount"),
-    paymentStatus: c("payment_status"), bookingStatus: c("booking_status"), createdAt,
+    paymentStatus: c("payment_status"), bookingStatus: c("booking_status"),
+    utr: c("utr", { optional: true }), paymentSubmittedAt: c("payment_submitted_at", { type: "timestamp", optional: true }), createdAt,
   },
-  patchable: ["paymentStatus", "bookingStatus"],
+  patchable: ["paymentStatus", "bookingStatus", "amount", "utr", "paymentSubmittedAt"],
 };
 const REVIEWS: Entity<Review> = {
   table: "reviews", key: "reviews", orderBy: "created_at DESC",
@@ -535,7 +536,17 @@ export async function findBookingsByIdPrefix(prefix: string) {
   if (!/^[0-9a-f-]+$/.test(prefix)) return [];
   return isPostgres() ? pgFindBookingsByIdPrefix(prefix) : (await bookings.list()).filter(b => b.id.startsWith(prefix));
 }
-export async function updateBooking(id: string, u: Partial<Pick<Booking, "paymentStatus"|"bookingStatus">>) { return bookings.update(id, u); }
+export async function getBookingById(id: string): Promise<Booking | null> { return bookings.get(id); }
+/** The booking that already carries this UTR (unique), or null. */
+export async function findBookingByUtr(utr: string): Promise<Booking | null> {
+  if (isPostgres()) {
+    const rows = await getSQL().query(`SELECT * FROM ${BOOKINGS.table} WHERE utr = $1 LIMIT 1`, [utr]);
+    return rows[0] ? fromRow(BOOKINGS, rows[0]) : null;
+  }
+  return (await bookings.list()).find(b => b.utr === utr) ?? null;
+}
+/** `null` clears `utr` / `paymentSubmittedAt` (SQL NULL / key deleted in the JSON file). */
+export async function updateBooking(id: string, u: Patch<Pick<Booking, "paymentStatus"|"bookingStatus"|"amount"|"utr"|"paymentSubmittedAt">>) { return bookings.update(id, u); }
 export async function deleteBooking(id: string) { return bookings.remove(id); }
 
 export async function getReviews() { return reviews.list(); }

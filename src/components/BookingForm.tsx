@@ -14,7 +14,6 @@ import {
 } from "@/app/packages/package-utils";
 import { useApp } from "@/lib/context";
 import { useT } from "@/lib/i18n/use-t";
-import UpiPayCard from "@/components/UpiPayCard";
 import { bookingReference } from "@/lib/booking-ref";
 
 interface BookingFormProps {
@@ -252,15 +251,10 @@ const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price
                 </Link>
               </>
             )}
+            <div style={{ marginTop: 8 }}>{t("booking.payAfterConfirm")}</div>
           </div>
         )}
       </div>
-      {/* Outside the status region so screen readers announce only the success message. */}
-      {status.kind === "success" && (
-        <div style={{ marginTop: 14 }}>
-          <UpiPayCard compact />
-        </div>
-      )}
       <div role="alert">
         {status.kind === "error" && <div style={styles.errorMsg}>{status.message}</div>}
       </div>

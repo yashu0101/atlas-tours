@@ -6,6 +6,8 @@ import { formatPrice } from "@/app/packages/package-utils";
 import { formatISTDate } from "@/app/blog/_lib/format-date";
 import { parseBookingReference } from "@/lib/booking-ref";
 import { PHONE_DISPLAY } from "@/lib/config";
+import PaymentPanel from "./PaymentPanel";
+import { isAwaitingPayment } from "@/lib/upi";
 import { useT } from "@/lib/i18n/use-t";
 import {
   Honeypot,
@@ -42,6 +44,7 @@ const BOOKING_TONE: Record<Booking["bookingStatus"], Tone> = {
 };
 const PAYMENT_TONE: Record<Booking["paymentStatus"], Tone> = {
   pending: "warn",
+  verifying: "warn",
   paid: "good",
   failed: "bad",
   refunded: "neutral",
@@ -70,6 +73,7 @@ export default function TrackBookingForm({ initialReference = "" }: { initialRef
   const [website, setWebsite] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [lookupPhone, setLookupPhone] = useState("");
   const [result, setResult] = useState<BookingStatusResult | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,6 +97,7 @@ export default function TrackBookingForm({ initialReference = "" }: { initialRef
       if (res.status === 400) return setError(t("track.notFound"));
       if (!res.ok || !body || typeof body !== "object") return setError(t("track.errorGeneric"));
       setResult(body as BookingStatusResult);
+      setLookupPhone(phone.trim());
     } catch {
       setError(t("track.errorGeneric"));
     } finally {
@@ -228,8 +233,19 @@ export default function TrackBookingForm({ initialReference = "" }: { initialRef
                 t("track.paymentStatusLabel"),
                 t(`track.paymentStatus.${result.paymentStatus}`),
                 PAYMENT_TONE[result.paymentStatus],
-                t(`track.paymentStatusHelp.${result.paymentStatus}`),
+                // Payable bookings get the pay-now / pay-again prompt, which points at the QR below.
+                isAwaitingPayment(result)
+                  ? t(result.paymentStatus === "failed" ? "track.paymentStatusHelp.payAgain" : "track.paymentStatusHelp.payNow")
+                  : t(`track.paymentStatusHelp.${result.paymentStatus}`),
               )}
+            {isAwaitingPayment(result) && (
+              <PaymentPanel
+                reference={result.reference}
+                phone={lookupPhone}
+                amount={result.amount}
+                onSubmitted={() => setResult((r) => (r ? { ...r, paymentStatus: "verifying" } : r))}
+              />
+            )}
           </section>
         )}
       </div>
