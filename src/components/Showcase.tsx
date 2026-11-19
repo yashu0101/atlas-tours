@@ -1,14 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 const showcaseItems = [
   {
     src: "/images/showcase-group.jpeg",
-    title: "Happy Tour Groups",
-    description: "Our travelers enjoying memorable journeys across India",
+    title: "46 Pax Group from Bhopal",
+    description: "A memorable pilgrimage group tour organized by Atlas Tours",
+    gallery: [
+      "/images/showcase-group.jpeg",
+      "/images/bhopal-group-1.jpeg",
+      "/images/bhopal-group-2.jpeg",
+    ],
   },
   {
     src: "/images/showcase-frontdesk.jpeg",
@@ -56,6 +61,8 @@ const packageCategories = [
 ];
 
 const Showcase: React.FC = () => {
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
+
   const styles: Record<string, React.CSSProperties> = {
     section: {
       padding: "100px 24px",
@@ -228,7 +235,8 @@ const Showcase: React.FC = () => {
           <div
             key={i}
             className={`showcase-card card-hover reveal stagger-${i + 1}`}
-            style={styles.card}
+            style={{ ...styles.card, cursor: item.gallery ? "pointer" : "default" }}
+            onClick={() => item.gallery && setLightbox({ images: item.gallery, index: 0 })}
           >
             <div style={styles.imgWrap}>
               <Image
@@ -241,6 +249,11 @@ const Showcase: React.FC = () => {
               <div style={styles.overlay}>
                 <div style={styles.title}>{item.title}</div>
                 <div style={styles.desc}>{item.description}</div>
+                {item.gallery && (
+                  <div style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: "#f39c12" }}>
+                    View {item.gallery.length} Photos →
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -456,6 +469,41 @@ const Showcase: React.FC = () => {
           </div>
         </div>
       ))}
+
+      {/* Lightbox */}
+      {lightbox && (
+        <>
+          <style>{`
+            .lightbox-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.92); display: flex; align-items: center; justify-content: center; }
+            .lightbox-close { position: absolute; top: 20px; right: 24px; background: none; border: none; color: #fff; font-size: 36px; cursor: pointer; z-index: 10001; line-height: 1; }
+            .lightbox-close:hover { color: #f39c12; }
+            .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 32px; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+            .lightbox-nav:hover { background: rgba(243,156,18,0.6); }
+            .lightbox-prev { left: 16px; }
+            .lightbox-next { right: 16px; }
+            .lightbox-img-wrap { position: relative; max-width: 90vw; max-height: 80vh; width: 900px; aspect-ratio: 16/10; }
+            .lightbox-counter { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 14px; font-weight: 600; background: rgba(0,0,0,0.5); padding: 6px 16px; border-radius: 20px; }
+          `}</style>
+          <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
+            <button className="lightbox-close" onClick={() => setLightbox(null)}>×</button>
+            {lightbox.images.length > 1 && (
+              <>
+                <button className="lightbox-nav lightbox-prev" onClick={(e) => { e.stopPropagation(); setLightbox({ ...lightbox, index: (lightbox.index - 1 + lightbox.images.length) % lightbox.images.length }); }}>‹</button>
+                <button className="lightbox-nav lightbox-next" onClick={(e) => { e.stopPropagation(); setLightbox({ ...lightbox, index: (lightbox.index + 1) % lightbox.images.length }); }}>›</button>
+              </>
+            )}
+            <div className="lightbox-img-wrap" onClick={(e) => e.stopPropagation()}>
+              <Image
+                src={lightbox.images[lightbox.index]}
+                alt={`Photo ${lightbox.index + 1}`}
+                fill
+                style={{ objectFit: "contain" }}
+              />
+            </div>
+            <div className="lightbox-counter">{lightbox.index + 1} / {lightbox.images.length}</div>
+          </div>
+        </>
+      )}
     </section>
   );
 };
