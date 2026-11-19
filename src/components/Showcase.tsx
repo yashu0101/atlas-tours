@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const showcaseItems = [
   {
@@ -13,6 +14,33 @@ const showcaseItems = [
     src: "/images/showcase-frontdesk.jpeg",
     title: "Professional Front Desk",
     description: "Dedicated team ensuring a warm welcome at every stay",
+  },
+];
+
+const packagePosters = [
+  {
+    id: "pkg-odisha",
+    src: "/images/pkg-odisha.jpeg",
+    title: "Odisha Tour Package",
+    duration: "6 Days / 5 Nights",
+    price: "₹11,999",
+    destinations: "Bhubaneswar • Puri • Konark • Chilika",
+  },
+  {
+    id: "pkg-rajasthan",
+    src: "/images/pkg-rajasthan.jpeg",
+    title: "Royal Rajasthan Tour",
+    duration: "8 Days / 7 Nights",
+    price: "₹17,500",
+    destinations: "Jaipur • Jodhpur • Jaisalmer • Udaipur",
+  },
+  {
+    id: "pkg-up-spiritual",
+    src: "/images/pkg-up-spiritual.jpeg",
+    title: "Spiritual Wonders of UP",
+    duration: "3 to 8 Days",
+    price: "₹12,699",
+    destinations: "Ayodhya • Varanasi • Prayagraj • Agra",
   },
 ];
 
@@ -91,6 +119,75 @@ const Showcase: React.FC = () => {
       opacity: 0.85,
       lineHeight: 1.5,
     },
+    packagesHeader: {
+      textAlign: "center" as const,
+      marginTop: 70,
+      marginBottom: 40,
+    },
+    pkgGrid: {
+      maxWidth: 1100,
+      margin: "0 auto",
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+      gap: 28,
+    },
+    pkgCard: {
+      borderRadius: 18,
+      overflow: "hidden",
+      background: "var(--card-bg)",
+      boxShadow: "var(--shadow)",
+      transition: "transform 0.4s cubic-bezier(.16,1,.3,1), box-shadow 0.4s",
+      textDecoration: "none",
+      color: "inherit",
+      display: "block",
+      cursor: "pointer",
+    },
+    pkgImgWrap: {
+      position: "relative" as const,
+      height: 380,
+      overflow: "hidden",
+    },
+    pkgInfo: {
+      padding: "20px 22px",
+    },
+    pkgTitle: {
+      fontSize: 18,
+      fontWeight: 700,
+      color: "var(--primary)",
+      marginBottom: 6,
+    },
+    pkgDest: {
+      fontSize: 13,
+      color: "var(--text2)",
+      marginBottom: 10,
+      lineHeight: 1.4,
+    },
+    pkgMeta: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    pkgDuration: {
+      fontSize: 13,
+      color: "var(--text2)",
+      fontWeight: 500,
+    },
+    pkgPrice: {
+      fontSize: 18,
+      fontWeight: 800,
+      color: "#e67e22",
+    },
+    viewBtn: {
+      marginTop: 14,
+      display: "inline-block",
+      background: "linear-gradient(135deg, #e67e22, #f39c12)",
+      color: "#fff",
+      padding: "8px 20px",
+      borderRadius: 20,
+      fontSize: 13,
+      fontWeight: 600,
+      letterSpacing: 0.5,
+    },
   };
 
   return (
@@ -133,6 +230,45 @@ const Showcase: React.FC = () => {
               </div>
             </div>
           </div>
+        ))}
+      </div>
+
+      {/* Tour Package Posters */}
+      <div className="reveal" style={styles.packagesHeader}>
+        <span style={styles.badge}>Tour Packages</span>
+        <h2 style={styles.heading}>Our Signature Tours</h2>
+        <p style={styles.subheading}>
+          Handcrafted itineraries for unforgettable journeys. Click to explore full details.
+        </p>
+      </div>
+
+      <div className="showcase-grid" style={styles.pkgGrid}>
+        {packagePosters.map((pkg, i) => (
+          <Link
+            key={pkg.id}
+            href={`/packages/${pkg.id}`}
+            className={`showcase-card card-hover reveal stagger-${i + 1}`}
+            style={styles.pkgCard}
+          >
+            <div style={styles.pkgImgWrap}>
+              <Image
+                className="showcase-img"
+                src={pkg.src}
+                alt={pkg.title}
+                fill
+                style={{ objectFit: "cover" }}
+              />
+            </div>
+            <div style={styles.pkgInfo}>
+              <div style={styles.pkgTitle}>{pkg.title}</div>
+              <div style={styles.pkgDest}>{pkg.destinations}</div>
+              <div style={styles.pkgMeta}>
+                <span style={styles.pkgDuration}>{pkg.duration}</span>
+                <span style={styles.pkgPrice}>{pkg.price}</span>
+              </div>
+              <span style={styles.viewBtn}>View Details →</span>
+            </div>
+          </Link>
         ))}
       </div>
     </section>
