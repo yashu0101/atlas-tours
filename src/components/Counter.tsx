@@ -87,11 +87,12 @@ const Counter: React.FC = () => {
       overflow: "hidden",
     },
     bgDecor: {
+      // Taller than the section so the parallax shift (data-parallax) never shows an edge.
       position: "absolute",
-      top: 0,
+      top: "-50%",
       left: 0,
       width: "100%",
-      height: "100%",
+      height: "200%",
       opacity: 0.05,
       backgroundImage:
         "radial-gradient(circle at 20% 50%, #f39c12 0%, transparent 50%), radial-gradient(circle at 80% 50%, #e67e22 0%, transparent 50%)",
@@ -165,7 +166,7 @@ const Counter: React.FC = () => {
           .counter-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
-      <div style={styles.bgDecor} aria-hidden="true" />
+      <div style={styles.bgDecor} data-parallax="0.25" aria-hidden="true" />
       <div className="counter-grid" style={styles.container}>
         {counters.map((c, i) => (
           <div key={i} className={`counter-card reveal-scale stagger-${i + 1}`} style={styles.card}>

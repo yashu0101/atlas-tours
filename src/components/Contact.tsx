@@ -1,4 +1,5 @@
 "use client";
+import RevealWords from "@/components/RevealWords";
 
 import React, { useState, useEffect, useRef } from "react";
 import type { TourPackage } from "@/lib/types";
@@ -255,14 +256,14 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
 
       <div className="reveal" style={styles.header}>
         <span style={styles.badge}>{t("contact.badge")}</span>
-        <h2 style={styles.heading}>{t("contact.heading")}</h2>
+        <h2 className="heading-line" style={styles.heading}><RevealWords text={t("contact.heading")} /></h2>
         <p style={styles.subheading}>
           {t("contact.subheading")}
         </p>
       </div>
 
       <div className="contact-container" style={styles.container}>
-        <form style={styles.form} onSubmit={handleSubmit}>
+        <form className="reveal-left" style={styles.form} onSubmit={handleSubmit}>
           <div
             aria-hidden="true"
             style={{ position: "absolute", left: -9999, top: "auto", width: 1, height: 1, overflow: "hidden" }}
@@ -405,7 +406,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
           </p>
         </form>
 
-        <div style={styles.infoSide}>
+        <div className="reveal-right" style={styles.infoSide}>
           {contactCards.map((card) => (
             <a
               key={card.label}

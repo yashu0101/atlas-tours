@@ -473,10 +473,11 @@ export default async function PackageDetailPage({ params }: Params) {
               fill
               priority
               sizes="100vw"
+              data-parallax="0.3"
               style={{ objectFit: "cover" }}
             />
             <div style={styles.heroOverlay} aria-hidden="true" />
-            <div className="pkgd-hero-inner" style={styles.heroInner}>
+            <div className="pkgd-hero-inner parallax-fade" data-parallax="0.15" style={styles.heroInner}>
               <nav aria-label={t("packageDetail.breadcrumbAria")}>
                 <ol style={styles.breadcrumb}>
                   <li><Link href="/" style={styles.breadcrumbLink}>{t("header.nav.home")}</Link></li>
@@ -527,7 +528,7 @@ export default async function PackageDetailPage({ params }: Params) {
             <div className="pkgd-layout" style={styles.layout}>
               <div>
                 {pkg.description && (
-                  <section style={styles.section} aria-labelledby="pkgd-overview">
+                  <section className="reveal" style={styles.section} aria-labelledby="pkgd-overview">
                     <div style={styles.sectionHead}>
                       <h2 id="pkgd-overview" style={styles.sectionTitle}>{t("packageDetail.overview")}</h2>
                     </div>
@@ -536,7 +537,7 @@ export default async function PackageDetailPage({ params }: Params) {
                 )}
 
                 {highlights.length > 0 && (
-                  <section style={styles.section} aria-labelledby="pkgd-highlights">
+                  <section className="reveal" style={styles.section} aria-labelledby="pkgd-highlights">
                     <div style={styles.sectionHead}>
                       <h2 id="pkgd-highlights" style={styles.sectionTitle}>{t("packageDetail.highlights")}</h2>
                     </div>
@@ -552,14 +553,14 @@ export default async function PackageDetailPage({ params }: Params) {
                 )}
 
                 {itinerary.length > 0 && (
-                  <section style={styles.section} aria-labelledby="pkgd-itinerary">
+                  <section className="reveal" style={styles.section} aria-labelledby="pkgd-itinerary">
                     <div style={styles.sectionHead}>
                       <h2 id="pkgd-itinerary" style={styles.sectionTitle}>{t("common.itinerary")}</h2>
                       <span style={styles.sectionMeta}>{t("packageDetail.itineraryDays", { count: itinerary.length })}</span>
                     </div>
                     <ol style={styles.timeline}>
                       {itinerary.map((line, i) => (
-                        <li key={i} className="pkgd-day">
+                        <li key={i} className={`pkgd-day reveal-left stagger-${Math.min(i + 1, 5)}`}>
                           <span className="pkgd-stop" aria-hidden="true">{i + 1}</span>
                           <span style={styles.dayLabel}>{t("common.day", { n: i + 1 })}</span>
                           <span style={styles.dayTitle}>{stripDayPrefix(line)}</span>
@@ -570,7 +571,7 @@ export default async function PackageDetailPage({ params }: Params) {
                 )}
 
                 {inclusions.length > 0 && (
-                  <section style={styles.section} aria-labelledby="pkgd-inclusions">
+                  <section className="reveal" style={styles.section} aria-labelledby="pkgd-inclusions">
                     <div style={styles.sectionHead}>
                       <h2 id="pkgd-inclusions" style={styles.sectionTitle}>{t("common.inclusions")}</h2>
                     </div>
@@ -646,7 +647,7 @@ export default async function PackageDetailPage({ params }: Params) {
               </div>
               <div style={styles.moreGrid}>
                 {others.map((p, i) => (
-                  <PackageCard key={p.id} pkg={p} index={i} reveal={false} />
+                  <PackageCard key={p.id} pkg={p} index={i} />
                 ))}
               </div>
             </div>

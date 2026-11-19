@@ -1,4 +1,5 @@
 "use client";
+import RevealWords from "@/components/RevealWords";
 
 import React, { useEffect, useRef, useState } from "react";
 import type { Offer } from "@/lib/types";
@@ -177,7 +178,7 @@ const Offers: React.FC<{ initialOffers: Offer[] }> = ({ initialOffers }) => {
 
       <div className="reveal" style={styles.header}>
         <span style={styles.badge}>{t("offers.badge")}</span>
-        <h2 id="offers-heading" style={styles.heading}>{t("offers.heading")}</h2>
+        <h2 id="offers-heading" className="heading-line" style={styles.heading}><RevealWords text={t("offers.heading")} /></h2>
         <p style={styles.subheading}>
           {t("offers.subheading")}
         </p>

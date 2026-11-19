@@ -1,4 +1,5 @@
 "use client";
+import RevealWords from "@/components/RevealWords";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import SmartImage from "@/components/SmartImage";
@@ -261,7 +262,7 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
 
       <div className="reveal" style={styles.header}>
         <span style={styles.badge}>{t("gallery.badge")}</span>
-        <h2 style={styles.heading}>{t("gallery.heading")}</h2>
+        <h2 className="heading-line" style={styles.heading}><RevealWords text={t("gallery.heading")} /></h2>
         <p style={styles.subheading}>
           {t("gallery.subheading")}
         </p>
@@ -291,7 +292,7 @@ const Gallery: React.FC<{ initialImages: GalleryImage[] }> = ({ initialImages })
         {images.map((img, i) => (
           <div
             key={img.id}
-            className={`gallery-item img-zoom reveal stagger-${(i % 3) + 1}`}
+            className={`gallery-item img-zoom scroll-zoom reveal stagger-${(i % 3) + 1}`}
             style={styles.masonryItem}
             role="button"
             tabIndex={0}

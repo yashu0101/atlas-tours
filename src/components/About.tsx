@@ -1,4 +1,5 @@
 "use client";
+import RevealWords from "@/components/RevealWords";
 
 import React from "react";
 import SmartImage from "@/components/SmartImage";
@@ -164,7 +165,7 @@ const About: React.FC = () => {
       `}</style>
       <div style={styles.container}>
         <div className="reveal-left" style={styles.imageCol}>
-          <div className="img-zoom" style={styles.imgWrap}>
+          <div className="img-zoom reveal-wipe scroll-zoom" style={styles.imgWrap}>
             <SmartImage
               src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=500&q=75"
               alt={t("about.imageAlt")}
@@ -179,8 +180,11 @@ const About: React.FC = () => {
 
         <div className="reveal-right" style={styles.textCol}>
           <span style={styles.badge}>{t("about.badge")}</span>
-          <h2 style={styles.heading}>
-            {t("about.heading")} <span style={styles.accent}>{t("about.headingAccent")}</span>
+          <h2 className="heading-line line-left" style={styles.heading}>
+            <RevealWords text={t("about.heading")} />{" "}
+            <span style={styles.accent}>
+              <RevealWords text={t("about.headingAccent")} start={t("about.heading").split(/\s+/).length} />
+            </span>
           </h2>
           <p style={styles.desc}>
             {t("about.description")}
@@ -188,7 +192,7 @@ const About: React.FC = () => {
 
           <div className="about-features-grid" style={styles.featuresGrid}>
             {features.map((f, i) => (
-              <div key={f.title} className={`about-feature card-hover stagger-${i + 1}`} style={styles.featureCard}>
+              <div key={f.title} className={`about-feature card-hover reveal stagger-${i + 1}`} style={styles.featureCard}>
                 <div style={styles.featureIcon}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d={iconPaths[f.icon]} />

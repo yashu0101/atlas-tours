@@ -143,7 +143,7 @@ export default async function PackagesPage({ searchParams }: Props) {
           />
 
           {packages.length > 0 && (
-            <section className="pkgs-custom" style={styles.custom} aria-labelledby="pkgs-custom-title">
+            <section className="pkgs-custom reveal" style={styles.custom} aria-labelledby="pkgs-custom-title">
               <div>
                 <h2 id="pkgs-custom-title" style={styles.customTitle}>{t("packagesPage.customTitle")}</h2>
                 <p style={styles.customText}>{t("packagesPage.customText")}</p>

@@ -1,4 +1,5 @@
 "use client";
+import RevealWords from "@/components/RevealWords";
 
 import React, { useState } from "react";
 import SmartImage from "@/components/SmartImage";
@@ -163,7 +164,7 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
 
       <div className="reveal" style={styles.header}>
         <span style={styles.badge}>{t("blog.badge")}</span>
-        <h2 style={styles.heading}>{t("blog.heading")}</h2>
+        <h2 className="heading-line" style={styles.heading}><RevealWords text={t("blog.heading")} /></h2>
         <p style={styles.subheading}>
           {t("blog.subheading")}
         </p>
@@ -174,7 +175,7 @@ const Blog: React.FC<{ initialBlogs: BlogPost[] }> = ({ initialBlogs }) => {
           const isExpanded = expanded === blog.id;
           return (
             <div key={blog.id} className="blog-card card-hover reveal" style={styles.card}>
-              <div className="img-zoom" style={styles.imgWrap}>
+              <div className="img-zoom scroll-zoom" style={styles.imgWrap}>
                 <SmartImage
                   src={blog.image || "/images/placeholder.jpg"}
                   alt={blog.title}

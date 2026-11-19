@@ -1,4 +1,5 @@
 "use client";
+import RevealWords from "@/components/RevealWords";
 
 import React, { useState, useEffect, useRef } from "react";
 import type { FAQ as FAQItem } from "@/lib/types";
@@ -168,7 +169,7 @@ const FAQ: React.FC<{ initialFaqs: FAQItem[] }> = ({ initialFaqs }) => {
       `}</style>
       <div className="reveal" style={styles.header}>
         <span style={styles.badge}>{t("faq.badge")}</span>
-        <h2 style={styles.heading}>{t("faq.heading")}</h2>
+        <h2 className="heading-line" style={styles.heading}><RevealWords text={t("faq.heading")} /></h2>
         <p style={styles.subheading}>
           {t("faq.subheading")}
         </p>
@@ -176,12 +177,13 @@ const FAQ: React.FC<{ initialFaqs: FAQItem[] }> = ({ initialFaqs }) => {
 
       <div style={styles.list}>
         {faqs.map((faq, i) => (
-          <FAQAccordionItem
-            key={faq.id}
-            faq={faq}
-            isOpen={openIndex === i}
-            onToggle={() => setOpenIndex(openIndex === i ? null : i)}
-          />
+          <div key={faq.id} className={`reveal stagger-${Math.min(i + 1, 5)}`}>
+            <FAQAccordionItem
+              faq={faq}
+              isOpen={openIndex === i}
+              onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+            />
+          </div>
         ))}
       </div>
     </section>

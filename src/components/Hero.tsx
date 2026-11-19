@@ -331,6 +331,7 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
       <video
         ref={videoRef}
         className="kenburns"
+        data-parallax="0.35"
         style={styles.video}
         src={loadVideo ? HERO_VIDEO_SRC : undefined}
         autoPlay={loadVideo}
@@ -359,7 +360,7 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
         />
       ))}
 
-      <div style={styles.content}>
+      <div className="parallax-fade" data-parallax="0.2" style={styles.content}>
         <p className="hero-stagger-1" style={styles.subtitle}>{t("hero.welcome")}</p>
         <h1 className="hero-stagger-2" style={styles.heading}>{t("hero.discover")}</h1>
         <div className="hero-stagger-2" style={styles.typingWrap}>
@@ -409,7 +410,7 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
         </button>
       )}
 
-      <div style={styles.scrollIndicator}>
+      <div className="parallax-fade" data-parallax="0" style={styles.scrollIndicator}>
         <span>{t("hero.scroll")}</span>
         <div style={styles.scrollMouse}>
           <div

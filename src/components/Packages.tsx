@@ -140,7 +140,7 @@ const Packages: React.FC<{ initialPackages: TourPackage[] }> = ({ initialPackage
 
       <div className="reveal" style={styles.header}>
         <span style={styles.badge}>{t("packages.badge")}</span>
-        <h2 className="gradient-text" style={{ ...styles.heading, WebkitTextFillColor: undefined }}>{t("packages.heading")}</h2>
+        <h2 className="gradient-text heading-line" style={{ ...styles.heading, WebkitTextFillColor: undefined }}>{t("packages.heading")}</h2>
         <p style={styles.subheading}>
           {t("packages.subheading")}
         </p>
