@@ -120,3 +120,68 @@ test("package cards open the detail page: image, title, View Details, Book Now",
   await expect(form).toBeInViewport();
   await expect(form.getByLabel("Travel Date")).toHaveAttribute("min", /^\d{4}-\d{2}-\d{2}$/);
 });
+
+test("/packages lists every public package with search, filter and sort", async ({ page }) => {
+  const res = await page.goto("/packages");
+  expect(res?.status()).toBe(200);
+  await expect(page).toHaveTitle(/Tour Packages/);
+  await expect(page.getByRole("heading", { level: 1, name: "Tour packages" })).toBeVisible();
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/packages$/);
+
+  // admin.spec.ts briefly hides "Royal Rajasthan Explorer" on the shared test DB, so these
+  // assertions only rely on the two spiritual seed packages (Varanasi, Odisha).
+  const cards = page.locator(".pkg-card");
+  await expect(cards.filter({ hasText: "Divine Varanasi & Prayagraj" })).toHaveCount(1);
+  await expect(cards.filter({ hasText: "Sacred Odisha Pilgrimage" })).toHaveCount(1);
+  await expect(page.getByRole("status").filter({ hasText: /^\d+ packages?$/ })).toBeVisible();
+
+  // Search narrows the list and is mirrored into the URL.
+  await page.getByLabel("Search packages").fill("ayodhya");
+  await expect(cards).toHaveCount(1);
+  await expect(page.getByRole("heading", { level: 2, name: "Divine Varanasi & Prayagraj" })).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "1 package" })).toBeVisible();
+  await expect(page).toHaveURL(/\?q=ayodhya$/);
+
+  // No matches → empty state with a reset.
+  await page.getByLabel("Search packages").fill("antarctica");
+  await expect(cards).toHaveCount(0);
+  await page.getByRole("button", { name: "Clear search and filters" }).click();
+  await expect(cards.filter({ hasText: "Sacred Odisha Pilgrimage" })).toHaveCount(1);
+
+  // Category filter.
+  const filters = page.getByRole("group", { name: "Filter packages by category" });
+  await filters.getByRole("button", { name: "Spiritual" }).click();
+  await expect(cards).toHaveCount(2);
+  await filters.getByRole("button", { name: "All" }).click();
+
+  // Sort by price, high to low: Varanasi (₹8,999, the cheapest) ends up last.
+  await page.getByLabel("Sort by").selectOption("price-desc");
+  await expect(cards.last()).toContainText("Divine Varanasi & Prayagraj");
+  await expect(page).toHaveURL(/sort=price-desc/);
+});
+
+test("/packages reads its filters from the URL", async ({ page }) => {
+  await page.goto("/packages?q=temple&sort=price-asc");
+  await expect(page.getByLabel("Search packages")).toHaveValue("temple");
+  await expect(page.getByLabel("Sort by")).toHaveValue("price-asc");
+  const cards = page.locator(".pkg-card");
+  await expect(cards).toHaveCount(2);
+  await expect(cards.first()).toContainText("Divine Varanasi & Prayagraj");
+});
+
+test("detail page links back to /packages and suggests other packages", async ({ page }) => {
+  await page.goto("/packages/pkg-varanasi");
+  await expect(page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link", { name: "Packages" })).toHaveAttribute("href", "/packages");
+  const more = page.locator("section", { has: page.getByRole("heading", { name: "More packages" }) });
+  // Same category first: Odisha is the other spiritual package.
+  await expect(more.locator(".pkg-card").first()).toContainText("Sacred Odisha Pilgrimage");
+  await expect(more.getByText("Divine Varanasi & Prayagraj")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Plan a custom trip" })).toHaveAttribute("href", "/plan-trip");
+});
+
+test("home page links to the full package list", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("#packages").getByRole("link", { name: "See all packages" }).click();
+  await page.waitForURL("**/packages");
+  await expect(page.getByRole("heading", { level: 1, name: "Tour packages" })).toBeVisible();
+});

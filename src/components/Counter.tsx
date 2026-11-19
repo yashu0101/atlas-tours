@@ -151,7 +151,7 @@ const Counter: React.FC = () => {
   };
 
   return (
-    <section ref={sectionRef} style={styles.section}>
+    <section ref={sectionRef} data-header-tone="dark" style={styles.section}>
       <style>{`
         .counter-card:hover {
           background: rgba(255,255,255,0.08) !important;

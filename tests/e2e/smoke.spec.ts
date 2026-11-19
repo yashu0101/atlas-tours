@@ -44,7 +44,15 @@ test("hero package stat matches the visible packages (Q-7)", async ({ page }) =>
   const hero = page.locator("#home");
   await expect(hero.getByText("Tour Packages")).toBeVisible();
   await expect(hero.getByText("15+")).toHaveCount(0);
-  await expect(hero.getByText("3", { exact: true })).toBeVisible();
+  // admin.spec.ts adds and hides a package on the shared test DB in parallel, so compare with
+  // the live public count instead of the seed's 3, re-reading both until they agree.
+  await expect
+    .poll(async () => {
+      const visible = ((await (await page.request.get("/api/packages")).json()) as unknown[]).length;
+      await page.reload();
+      return hero.getByText(String(visible), { exact: true }).count();
+    })
+    .toBeGreaterThan(0);
 });
 
 test("contact form shows a failed submit as an alert, not a success box (Q-3)", async ({ page }) => {

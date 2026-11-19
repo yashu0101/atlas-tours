@@ -221,7 +221,7 @@ export default async function ComparePage({ searchParams }: Props) {
         .cmp-hint { display: none; }
         @media (max-width: 768px) { .cmp-hint { display: block; } }
       `}</style>
-      <div style={styles.heroBand} aria-hidden="true" />
+      <div data-header-tone="dark" style={styles.heroBand} aria-hidden="true" />
       <main id="main-content" tabIndex={-1} style={styles.page}>
         <div id="compare">
           <div style={styles.header}>

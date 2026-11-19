@@ -63,7 +63,7 @@ export default async function WishlistPage() {
       <a href="#main-content" className="skip-link">{t("common.skipToContent")}</a>
       <ScrollProgress />
       <Header />
-      <div style={styles.heroBand} aria-hidden="true" />
+      <div data-header-tone="dark" style={styles.heroBand} aria-hidden="true" />
       <main id="main-content" tabIndex={-1} style={styles.page}>
         <div style={styles.header}>
           <span style={styles.badge}>{t("wishlist.badge")}</span>

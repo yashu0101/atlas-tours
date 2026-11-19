@@ -28,15 +28,39 @@ const PhoneIcon = () => (
   </svg>
 );
 
+/**
+ * The header adapts to the content under it:
+ * - "dark": an element marked `data-header-tone="dark"` (hero photo, navy page bands, stats,
+ *   Reviews, footer). Clear at the very top of the page, dark glass once scrolled.
+ * - "light": anything else (the white sections). Frosted white glass with navy text.
+ * The dark theme has no white sections, so it always uses the dark look.
+ */
+type Tone = "dark" | "light";
+
+/** Tone of the page content directly under the middle of the header. */
+function toneUnder(header: HTMLElement): Tone {
+  const y = header.offsetHeight / 2;
+  for (const el of document.elementsFromPoint(window.innerWidth / 2, y)) {
+    if (header.contains(el)) continue;
+    const marked = el.closest<HTMLElement>("[data-header-tone]");
+    if (marked) return marked.dataset.headerTone === "light" ? "light" : "dark";
+  }
+  return "light";
+}
+
 const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
+  // Every page starts with a dark band or photo, so "dark" matches the server render.
+  const [tone, setTone] = useState<Tone>("dark");
   const [menuOpen, setMenuOpen] = useState(false);
   const [active, setActive] = useState("#home");
+  const headerRef = useRef<HTMLElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
   const { theme, setTheme } = useApp();
   const t = useT();
   // Section links are bare hashes on the home page; on sub-routes (e.g. /packages/[id]) they point back to "/".
-  const onHome = usePathname() === "/";
+  const pathname = usePathname();
+  const onHome = pathname === "/";
   const sectionHref = (hash: string) => (onHome ? hash : `/${hash}`);
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
@@ -53,19 +77,27 @@ const Header: React.FC = () => {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [menuOpen]);
 
+  // Scroll state and the tone under the header: at most one check per frame (rAF), and
+  // React skips the re-render when neither value changed.
   useEffect(() => {
-    let last: boolean | null = null;
-    const onScroll = () => {
-      const next = window.scrollY > 60;
-      if (next !== last) {
-        last = next;
-        setScrolled(next);
-      }
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      setScrolled(window.scrollY > 60);
+      if (headerRef.current) setTone(toneUnder(headerRef.current));
     };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, [pathname]);
 
   // Highlights the link of the section in the middle of the viewport (home page only).
   // IntersectionObserver instead of a scroll listener, so there is no setState per scroll event.
@@ -98,6 +130,8 @@ const Header: React.FC = () => {
     { hash: "#contact", label: t("header.nav.contact") },
   ];
   const isActive = (hash: string) => onHome && active === hash;
+  const look: Tone = theme === "dark" ? "dark" : tone;
+  const surface = look === "light" ? "light" : scrolled ? "dark" : "clear";
 
   const styles: Record<string, React.CSSProperties> = {
     header: {
@@ -106,12 +140,6 @@ const Header: React.FC = () => {
       left: 0,
       width: "100%",
       zIndex: 1000,
-      transition: "background-color 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease",
-      backgroundColor: scrolled ? "rgba(15, 37, 72, 0.92)" : "transparent",
-      backdropFilter: scrolled ? "blur(14px) saturate(140%)" : "none",
-      WebkitBackdropFilter: scrolled ? "blur(14px) saturate(140%)" : "none",
-      boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.18)" : "none",
-      borderBottom: `1px solid ${scrolled ? "rgba(243,156,18,0.35)" : "transparent"}`,
       fontFamily: "'Poppins', sans-serif",
     },
     container: {
@@ -122,8 +150,7 @@ const Header: React.FC = () => {
       alignItems: "center",
       justifyContent: "space-between",
       gap: 24,
-      height: scrolled ? 68 : 84,
-      transition: "height 0.3s ease",
+      height: surface === "clear" ? 84 : 64,
     },
     logoWrap: {
       display: "flex",
@@ -140,11 +167,7 @@ const Header: React.FC = () => {
     logoText: {
       fontSize: 22,
       fontWeight: 700,
-      color: "#fff",
       letterSpacing: 0.5,
-    },
-    logoAccent: {
-      color: "#f39c12",
     },
     nav: {
       display: "flex",
@@ -153,8 +176,6 @@ const Header: React.FC = () => {
       listStyle: "none",
       margin: 0,
       padding: 5,
-      background: "rgba(255,255,255,0.07)",
-      border: "1px solid rgba(255,255,255,0.12)",
       borderRadius: 999,
     },
     actions: {
@@ -169,12 +190,9 @@ const Header: React.FC = () => {
       display: "inline-flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "rgba(255,255,255,0.08)",
-      border: "1px solid rgba(255,255,255,0.18)",
       borderRadius: "50%",
-      color: "#fff",
       cursor: "pointer",
-      transition: "background 0.3s, transform 0.3s",
+      transition: "background 0.3s, color 0.3s, border-color 0.3s, transform 0.3s",
     },
     callBtn: {
       background: "linear-gradient(135deg, #e67e22, #f39c12)",
@@ -207,7 +225,6 @@ const Header: React.FC = () => {
     hamburgerLine: {
       width: 26,
       height: 3,
-      backgroundColor: "#fff",
       borderRadius: 2,
       transition: "all 0.3s",
     },
@@ -261,6 +278,66 @@ const Header: React.FC = () => {
   return (
     <>
       <style>{`
+        /* The header strip itself is invisible and lets clicks through; the bar inside carries
+           the surface. Clear: full width at the top of a dark hero (unchanged look).
+           Dark / light glass: the bar floats, inset from the edges, rounded, with a shadow
+           instead of a bottom line. */
+        .site-header {
+          pointer-events: none;
+          padding: 0;
+          transition: padding 0.35s ease;
+        }
+        .site-header[data-surface="dark"], .site-header[data-surface="light"] {
+          padding: 10px clamp(10px, 2vw, 24px) 0;
+        }
+        .hdr-bar {
+          pointer-events: auto;
+          border: 1px solid transparent;
+          border-radius: 0;
+          transition: background-color 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease,
+            border-radius 0.35s ease, height 0.3s ease, padding 0.35s ease,
+            backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease;
+        }
+        .site-header[data-surface="dark"] .hdr-bar, .site-header[data-surface="light"] .hdr-bar {
+          border-radius: 20px;
+          padding: 0 clamp(12px, 1.6vw, 22px) !important;
+        }
+        .site-header[data-surface="dark"] .hdr-bar {
+          background-color: rgba(10, 22, 40, 0.5);
+          -webkit-backdrop-filter: blur(16px) saturate(160%);
+          backdrop-filter: blur(16px) saturate(160%);
+          border-color: rgba(255, 255, 255, 0.08);
+          box-shadow: 0 14px 40px rgba(0, 0, 0, 0.32), 0 2px 8px rgba(0, 0, 0, 0.18);
+        }
+        .site-header[data-surface="light"] .hdr-bar {
+          background-color: rgba(255, 255, 255, 0.62);
+          -webkit-backdrop-filter: blur(18px) saturate(180%);
+          backdrop-filter: blur(18px) saturate(180%);
+          border-color: rgba(255, 255, 255, 0.7);
+          box-shadow: 0 14px 40px rgba(15, 37, 72, 0.13), 0 2px 8px rgba(15, 37, 72, 0.06);
+        }
+        /* Without backdrop-filter support the glass would be see-through: make it near-solid. */
+        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+          .site-header[data-surface="dark"] .hdr-bar { background-color: rgba(15, 37, 72, 0.95); }
+          .site-header[data-surface="light"] .hdr-bar { background-color: rgba(255, 255, 255, 0.96); }
+        }
+
+        /* Text and controls: white on the dark surfaces, navy on the light glass. */
+        .hdr-logo-text { color: #fff; transition: color 0.3s; }
+        .hdr-logo-accent { color: #f39c12; transition: color 0.3s; }
+        .hdr-pill {
+          background: rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.12);
+          transition: background 0.3s, border-color 0.3s;
+        }
+        .icon-btn-h { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: #fff; }
+        .hdr-line { background-color: #fff; }
+        .site-header[data-tone="light"] .hdr-logo-text { color: #1a3a6b; }
+        .site-header[data-tone="light"] .hdr-logo-accent { color: #e67e22; }
+        .site-header[data-tone="light"] .hdr-pill { background: rgba(255,255,255,0.55); border-color: rgba(26,58,107,0.12); }
+        .site-header[data-tone="light"] .icon-btn-h { background: rgba(26,58,107,0.06); border-color: rgba(26,58,107,0.16); color: #1a3a6b; }
+        .site-header[data-tone="light"] .hdr-line { background-color: #1a3a6b; }
+
         .nav-link-header {
           display: block;
           color: rgba(255,255,255,0.85);
@@ -274,7 +351,11 @@ const Header: React.FC = () => {
         }
         .nav-link-header:hover { color: #fff; background: rgba(255,255,255,0.1); }
         .nav-link-header.is-active { color: #f39c12; background: rgba(243,156,18,0.16); }
-        .icon-btn-h:hover { background: rgba(255,255,255,0.18) !important; transform: rotate(15deg); }
+        .site-header[data-tone="light"] .nav-link-header { color: #1a3a6b; }
+        .site-header[data-tone="light"] .nav-link-header:hover { color: #0f2548; background: rgba(26,58,107,0.07); }
+        .site-header[data-tone="light"] .nav-link-header.is-active { color: #9c5212; background: rgba(230,126,34,0.14); }
+        .icon-btn-h:hover { background: rgba(255,255,255,0.18); transform: rotate(15deg); }
+        .site-header[data-tone="light"] .icon-btn-h:hover { background: rgba(26,58,107,0.12); }
         .call-btn-h:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(230,126,34,0.45) !important; }
         .mobile-link-h {
           color: #fff;
@@ -295,8 +376,14 @@ const Header: React.FC = () => {
         }
       `}</style>
 
-      <header style={styles.header}>
-        <div style={styles.container}>
+      <header
+        ref={headerRef}
+        className="site-header"
+        data-tone={look}
+        data-surface={surface}
+        style={styles.header}
+      >
+        <div className="hdr-bar" style={styles.container}>
           <a href={sectionHref("#home")} style={styles.logoWrap}>
             <Image
               src="/images/atlas-logo.jpeg"
@@ -305,13 +392,13 @@ const Header: React.FC = () => {
               height={44}
               style={styles.logoImg}
             />
-            <span style={styles.logoText}>
-              Atlas<span style={styles.logoAccent}>Tours</span>
+            <span className="hdr-logo-text" style={styles.logoText}>
+              Atlas<span className="hdr-logo-accent">Tours</span>
             </span>
           </a>
 
           <nav className="desktop-nav" style={{ display: "flex" }}>
-            <ul style={styles.nav}>
+            <ul className="hdr-pill" style={styles.nav}>
               {navLinks.map((link) => (
                 <li key={link.hash}>
                   <a
@@ -352,18 +439,21 @@ const Header: React.FC = () => {
             aria-controls="mobile-menu"
           >
             <span
+              className="hdr-line"
               style={{
                 ...styles.hamburgerLine,
                 transform: menuOpen ? "rotate(45deg) translate(5px, 6px)" : "none",
               }}
             />
             <span
+              className="hdr-line"
               style={{
                 ...styles.hamburgerLine,
                 opacity: menuOpen ? 0 : 1,
               }}
             />
             <span
+              className="hdr-line"
               style={{
                 ...styles.hamburgerLine,
                 transform: menuOpen ? "rotate(-45deg) translate(5px, -6px)" : "none",

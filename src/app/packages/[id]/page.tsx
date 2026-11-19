@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SmartImage from "@/components/SmartImage";
 import CompareBar from "@/components/CompareBar";
+import PackageCard, { PACKAGE_CARD_CSS } from "@/components/PackageCard";
 import { CompareToggle, SaveToggle } from "@/components/PackageToggles";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
@@ -25,6 +26,7 @@ import {
   formatPrice,
   packageEnquiryText,
   packagePath,
+  relatedPackages,
   stripDayPrefix,
   whatsappLink,
 } from "../package-utils";
@@ -38,11 +40,12 @@ const t = getT("en");
 
 type Params = { params: Promise<{ id: string }> };
 
-/** The package if it exists and is publicly visible; deduped between generateMetadata and the page. */
-const loadPublicPackage = cache(async (id: string): Promise<TourPackage | null> => {
-  const packages = await getPackages();
-  return packages.find((p) => p.id === id && isPublicPackage(p)) ?? null;
-});
+/** All publicly visible packages; deduped between generateMetadata and the page. */
+const loadPublicPackages = cache(async (): Promise<TourPackage[]> => (await getPackages()).filter(isPublicPackage));
+
+/** The package if it exists and is publicly visible. */
+const loadPublicPackage = async (id: string): Promise<TourPackage | null> =>
+  (await loadPublicPackages()).find((p) => p.id === id) ?? null;
 
 /** Absolute URL for an image field (https: URL or site-relative path, see the "image" field type). */
 const absoluteImage = (src: string | undefined): string | null => {
@@ -127,10 +130,22 @@ function touristTripJsonLd(pkg: TourPackage) {
   };
 }
 
+const srOnly: React.CSSProperties = {
+  position: "absolute",
+  width: 1,
+  height: 1,
+  padding: 0,
+  margin: -1,
+  overflow: "hidden",
+  clip: "rect(0,0,0,0)",
+  whiteSpace: "nowrap",
+  border: 0,
+};
+
 const styles: Record<string, React.CSSProperties> = {
   hero: {
     position: "relative",
-    minHeight: 460,
+    minHeight: 540,
     display: "flex",
     alignItems: "flex-end",
     overflow: "hidden",
@@ -140,7 +155,7 @@ const styles: Record<string, React.CSSProperties> = {
   heroOverlay: {
     position: "absolute",
     inset: 0,
-    background: "linear-gradient(180deg, rgba(10,22,40,0.75) 0%, rgba(10,22,40,0.65) 45%, rgba(10,22,40,0.85) 100%)",
+    background: "linear-gradient(180deg, rgba(10,22,40,0.7) 0%, rgba(10,22,40,0.35) 40%, rgba(10,22,40,0.92) 100%)",
     zIndex: 1,
   },
   heroInner: {
@@ -149,7 +164,7 @@ const styles: Record<string, React.CSSProperties> = {
     maxWidth: 1200,
     width: "100%",
     margin: "0 auto",
-    padding: "140px 24px 48px",
+    padding: "140px 24px 108px",
     color: "#fff",
   },
   breadcrumb: {
@@ -158,135 +173,189 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 8,
     listStyle: "none",
     padding: 0,
-    margin: "0 0 18px",
+    margin: "0 0 22px",
     fontSize: 13,
     color: "rgba(255,255,255,0.8)",
   },
   breadcrumbLink: { color: "#fff", fontWeight: 600 },
-  categoryBadge: {
+  categoryTag: {
     display: "inline-block",
-    background: "rgba(230,126,34,0.2)",
+    background: "rgba(255,255,255,0.14)",
+    border: "1px solid rgba(255,255,255,0.3)",
     color: "#fff",
-    padding: "6px 18px",
-    borderRadius: 20,
+    padding: "5px 14px",
+    borderRadius: 999,
     fontSize: 13,
     fontWeight: 600,
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    marginBottom: 12,
+    marginBottom: 14,
+    backdropFilter: "blur(6px)",
   },
   title: {
-    fontSize: "clamp(30px, 5vw, 48px)",
+    fontSize: "clamp(32px, 5.4vw, 58px)",
     fontWeight: 800,
-    lineHeight: 1.15,
-    marginBottom: 14,
+    lineHeight: 1.08,
+    letterSpacing: -1,
+    margin: "0 0 22px",
+    maxWidth: 820,
     color: "#fff",
   },
-  heroMeta: {
-    display: "flex",
-    flexWrap: "wrap",
-    alignItems: "center",
-    gap: "10px 24px",
-    fontSize: 15,
-    color: "rgba(255,255,255,0.9)",
+  heroActions: { display: "flex", flexWrap: "wrap", gap: 12 },
+
+  // Facts strip: overlaps the bottom of the hero.
+  factsWrap: { position: "relative", zIndex: 3, padding: "0 24px", marginTop: -64, fontFamily: "'Poppins', sans-serif" },
+  facts: {
+    maxWidth: 1200,
+    margin: "0 auto",
+    background: "var(--card-bg)",
+    borderRadius: 20,
+    boxShadow: "var(--shadow2)",
+    display: "grid",
+    gridTemplateColumns: "1fr 1.6fr 1fr 1.2fr",
   },
-  metaItem: { display: "inline-flex", alignItems: "center", gap: 6 },
-  heroActions: { display: "flex", flexWrap: "wrap", gap: 12, marginTop: 20 },
-  heroPrice: {
-    display: "inline-flex",
-    alignItems: "baseline",
-    gap: 10,
+  fact: { padding: "22px 26px", minWidth: 0, borderLeft: "1px solid var(--pkgd-divider, #e8edf3)" },
+  factFirst: { borderLeft: "none" },
+  factLabel: { display: "block", fontSize: 12.5, fontWeight: 500, color: "var(--text2)", marginBottom: 4 },
+  factValue: { display: "block", fontSize: 16, fontWeight: 700, color: "var(--primary)", lineHeight: 1.35 },
+  factPrice: { fontSize: 22, fontWeight: 800, color: "var(--primary)", letterSpacing: -0.5 },
+  factPer: { fontSize: 13, fontWeight: 500, color: "var(--text2)", marginLeft: 4 },
+  jump: {
+    display: "none",
+    alignItems: "center",
+    justifyContent: "center",
+    margin: "0 18px 18px",
+    padding: "13px 0",
+    borderRadius: 12,
     background: "linear-gradient(135deg, #e67e22, #f39c12)",
     color: "var(--on-accent)",
-    padding: "8px 18px",
-    borderRadius: 12,
-    fontSize: 20,
-    fontWeight: 800,
-    boxShadow: "0 4px 12px rgba(230,126,34,0.4)",
-  },
-  heroOriginal: { textDecoration: "line-through", fontSize: 13, fontWeight: 500, color: "rgba(10,22,40,0.8)" },
-  perPerson: { fontSize: 12, fontWeight: 500, color: "var(--on-accent)" },
-  discountBadge: {
-    background: "#1e874a",
-    color: "#fff",
-    padding: "4px 12px",
-    borderRadius: 8,
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: 700,
+    textDecoration: "none",
+    boxShadow: "0 4px 15px rgba(230,126,34,0.3)",
   },
-  body: {
-    padding: "60px 24px 100px",
-    background: "var(--bg)",
-    fontFamily: "'Poppins', sans-serif",
-  },
+
+  body: { padding: "56px 24px 96px", background: "var(--bg)", fontFamily: "'Poppins', sans-serif" },
   layout: {
     maxWidth: 1200,
     margin: "0 auto",
     display: "grid",
-    gridTemplateColumns: "minmax(0, 1.6fr) minmax(0, 1fr)",
-    gap: 40,
+    gridTemplateColumns: "minmax(0, 1.65fr) minmax(0, 1fr)",
+    gap: 56,
     alignItems: "start",
   },
-  card: {
-    background: "var(--card-bg)",
-    borderRadius: 20,
-    padding: "28px 32px",
-    boxShadow: "var(--shadow)",
-    marginBottom: 28,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 700,
-    color: "var(--primary)",
-    marginBottom: 14,
-  },
-  desc: { fontSize: 15, lineHeight: 1.8, color: "var(--text2)" },
-  chips: { listStyle: "none", padding: 0, margin: 0, display: "flex", flexWrap: "wrap", gap: 8 },
-  chip: {
-    background: "var(--pkgd-chip-bg, rgba(26,58,107,0.06))",
-    color: "var(--primary)",
-    padding: "6px 14px",
-    borderRadius: 8,
-    fontSize: 13,
-    fontWeight: 500,
-  },
-  itineraryList: { listStyle: "none", padding: 0, margin: 0 },
-  itineraryDay: {
-    padding: "14px 0",
-    borderBottom: "1px solid var(--pkgd-divider, #eee)",
-    display: "flex",
-    alignItems: "baseline",
+  section: { paddingBottom: 40, marginBottom: 40, borderBottom: "1px solid var(--pkgd-divider, #e8edf3)" },
+  sectionHead: { display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 20 },
+  sectionTitle: { fontSize: 24, fontWeight: 700, color: "var(--primary)", margin: 0 },
+  sectionMeta: { fontSize: 14, fontWeight: 500, color: "var(--text2)" },
+  lead: { fontSize: 17, lineHeight: 1.85, color: "var(--text)", maxWidth: 680, margin: 0 },
+
+  highlightList: {
+    listStyle: "none",
+    padding: 0,
+    margin: 0,
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
     gap: 12,
   },
-  dayNum: {
-    flexShrink: 0,
-    display: "inline-block",
-    background: "linear-gradient(135deg, #e67e22, #f39c12)",
-    color: "var(--on-accent)",
-    padding: "3px 12px",
-    borderRadius: 6,
-    fontSize: 12,
-    fontWeight: 700,
+  highlight: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    padding: "14px 16px",
+    borderRadius: 14,
+    background: "var(--pkgd-tint, rgba(230,126,34,0.07))",
+    fontSize: 15,
+    fontWeight: 500,
+    color: "var(--text)",
   },
-  dayTitle: { fontSize: 15, fontWeight: 600, color: "var(--primary)", lineHeight: 1.6 },
-  inclusionList: { listStyle: "none", padding: 0, margin: 0, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 20px" },
-  inclusionItem: { padding: "6px 0", fontSize: 14, color: "var(--text2)", display: "flex", alignItems: "center", gap: 8 },
+  highlightMark: {
+    flexShrink: 0,
+    width: 10,
+    height: 10,
+    transform: "rotate(45deg)",
+    borderRadius: 2,
+    background: "linear-gradient(135deg, #e67e22, #f39c12)",
+  },
+
+  timeline: { listStyle: "none", padding: 0, margin: 0 },
+  dayLabel: { display: "block", fontSize: 13, fontWeight: 700, color: "var(--orange-text)", marginBottom: 2 },
+  dayTitle: { display: "block", fontSize: 16.5, fontWeight: 600, color: "var(--primary)", lineHeight: 1.5 },
+
+  inclusionList: {
+    listStyle: "none",
+    padding: 0,
+    margin: 0,
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "14px 24px",
+  },
+  inclusion: { display: "flex", alignItems: "center", gap: 12, fontSize: 15, color: "var(--text)" },
+  checkDot: {
+    flexShrink: 0,
+    width: 26,
+    height: 26,
+    borderRadius: "50%",
+    background: "var(--pkgd-check-bg, rgba(30,135,74,0.12))",
+    color: "var(--success-text)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  custom: {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 16,
+    padding: "24px 28px",
+    borderRadius: 18,
+    background: "var(--bg3)",
+  },
+  customTitle: { fontSize: 17, fontWeight: 700, color: "var(--primary)", margin: "0 0 4px" },
+  customText: { fontSize: 14.5, color: "var(--text2)", margin: 0, lineHeight: 1.6 },
+  customLink: {
+    display: "inline-flex",
+    padding: "10px 22px",
+    borderRadius: 10,
+    border: "2px solid var(--primary)",
+    color: "var(--primary)",
+    fontSize: 14,
+    fontWeight: 600,
+    textDecoration: "none",
+    whiteSpace: "nowrap",
+    transition: "all 0.3s",
+  },
+
   // scrollMarginTop keeps the fixed header off the form when "Book Now" jumps to #book.
   aside: { position: "sticky", top: 96, scrollMarginTop: 96 },
   bookingCard: {
     background: "var(--card-bg)",
     borderRadius: 20,
-    padding: 28,
-    boxShadow: "var(--shadow)",
+    boxShadow: "var(--shadow2)",
+    overflow: "hidden",
   },
-  bookingTitle: { fontSize: 22, fontWeight: 800, color: "var(--primary)", marginBottom: 4 },
+  priceHead: {
+    padding: "22px 28px",
+    background: "linear-gradient(135deg, #1a3a6b 0%, #0a1628 100%)",
+    color: "#fff",
+  },
+  priceRow: { display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "4px 10px" },
+  priceNow: { fontSize: 32, fontWeight: 800, letterSpacing: -0.5, lineHeight: 1.1 },
+  pricePer: { fontSize: 14, color: "rgba(255,255,255,0.8)" },
+  priceWasRow: { display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, marginTop: 8 },
+  priceWas: { fontSize: 14, color: "rgba(255,255,255,0.75)", textDecoration: "line-through" },
+  saveBadge: {
+    background: "#1e874a",
+    color: "#fff",
+    padding: "3px 10px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 700,
+  },
+  bookingBody: { padding: 28 },
+  bookingTitle: { fontSize: 20, fontWeight: 800, color: "var(--primary)", marginBottom: 4 },
   bookingSub: { fontSize: 14, color: "var(--text2)", marginBottom: 20 },
-  orDivider: {
-    textAlign: "center",
-    fontSize: 13,
-    color: "var(--text2)",
-    margin: "20px 0 12px",
-  },
+  orDivider: { textAlign: "center", fontSize: 13, color: "var(--text2)", margin: "20px 0 12px" },
   waBtn: {
     display: "flex",
     alignItems: "center",
@@ -303,32 +372,25 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: "'Poppins', sans-serif",
     transition: "all 0.3s",
   },
-  backLink: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 8,
-    padding: "10px 22px",
-    border: "2px solid var(--primary)",
-    borderRadius: 10,
-    color: "var(--primary)",
-    fontSize: 14,
-    fontWeight: 600,
-    transition: "all 0.3s",
+
+  more: { background: "var(--bg2)", padding: "72px 24px 96px", fontFamily: "'Poppins', sans-serif" },
+  moreInner: { maxWidth: 1200, margin: "0 auto" },
+  moreHead: {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    gap: 12,
+    marginBottom: 28,
   },
+  moreTitle: { fontSize: "clamp(24px, 3vw, 32px)", fontWeight: 800, color: "var(--primary)", margin: 0 },
+  moreLink: { color: "var(--orange-text)", fontSize: 15, fontWeight: 600 },
+  moreGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 28 },
 };
 
-const ClockIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="10" />
-    <path d="M12 6v6l4 2" />
-  </svg>
-);
-
-const PinIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z" />
-    <circle cx="12" cy="10" r="3" />
+const CheckIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
   </svg>
 );
 
@@ -342,6 +404,7 @@ export default async function PackageDetailPage({ params }: Params) {
   const { id } = await params;
   const pkg = await loadPublicPackage(id);
   if (!pkg) notFound();
+  const others = relatedPackages(await loadPublicPackages(), pkg);
 
   const highlights = pkg.highlights ?? [];
   const itinerary = pkg.itinerary ?? [];
@@ -354,26 +417,56 @@ export default async function PackageDetailPage({ params }: Params) {
       <ScrollProgress />
       <Header />
       <style>{`
+        ${PACKAGE_CARD_CSS}
         /* E-02-style dark overrides; light mode uses the inline fallbacks. */
         [data-theme="dark"] #package-detail {
-          --pkgd-chip-bg: rgba(91,143,217,0.12);
-          --pkgd-divider: var(--bg3);
+          --pkgd-divider: rgba(148,163,184,0.2);
+          --pkgd-tint: rgba(233,140,58,0.1);
+          --pkgd-check-bg: rgba(39,176,97,0.16);
           --pkgd-wa-text: var(--green);
+          --pkgd-stop-bg: var(--card-bg);
         }
         .pkgd-wa:hover { background: var(--green) !important; color: var(--on-accent) !important; }
-        .pkgd-back:hover { background: var(--primary) !important; color: var(--bg) !important; }
+        .pkgd-custom-link:hover { background: var(--primary) !important; color: var(--bg) !important; }
+
+        /* Itinerary as a route: one stop per day, joined by a line; arrival and departure filled. */
+        .pkgd-day { position: relative; padding: 0 0 30px 64px; min-height: 44px; }
+        .pkgd-day:last-child { padding-bottom: 0; }
+        .pkgd-day::before {
+          content: ""; position: absolute; left: 21px; top: 44px; bottom: 0; width: 2px;
+          background: repeating-linear-gradient(180deg, var(--orange) 0 6px, transparent 6px 12px);
+          opacity: 0.55;
+        }
+        .pkgd-day:last-child::before { display: none; }
+        .pkgd-stop {
+          position: absolute; left: 0; top: 0; width: 44px; height: 44px; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          background: var(--pkgd-stop-bg, #fff); border: 2px solid var(--orange);
+          color: var(--orange-text); font-size: 16px; font-weight: 800;
+        }
+        .pkgd-day:first-child .pkgd-stop, .pkgd-day:last-child .pkgd-stop {
+          background: linear-gradient(135deg, #e67e22, #f39c12); border-color: transparent; color: var(--on-accent);
+        }
+
         @media (max-width: 968px) {
-          .pkgd-layout { grid-template-columns: 1fr !important; }
+          .pkgd-layout { grid-template-columns: 1fr !important; gap: 8px !important; }
           .pkgd-aside { position: static !important; }
+          .pkgd-facts { grid-template-columns: 1fr 1fr !important; }
+          .pkgd-fact:nth-child(3) { border-left: none !important; }
+          .pkgd-fact:nth-child(n+3) { border-top: 1px solid var(--pkgd-divider, #e8edf3); }
+          .pkgd-jump { display: flex !important; grid-column: 1 / -1; }
         }
         @media (max-width: 560px) {
-          .pkgd-card { padding: 22px 20px !important; }
-          .pkgd-inclusions { grid-template-columns: 1fr !important; }
+          .pkgd-hero-inner { padding-bottom: 92px !important; }
+          .pkgd-fact { padding: 16px 18px !important; }
+          .pkgd-two-col { grid-template-columns: 1fr !important; }
+          .pkgd-booking-body { padding: 22px 20px !important; }
+          .pkgd-price-head { padding: 20px !important; }
         }
       `}</style>
       <main id="main-content" tabIndex={-1}>
         <article id="package-detail">
-          <header style={styles.hero}>
+          <header data-header-tone="dark" style={styles.hero}>
             <SmartImage
               src={pkg.image || "/images/placeholder.jpg"}
               alt=""
@@ -383,35 +476,18 @@ export default async function PackageDetailPage({ params }: Params) {
               style={{ objectFit: "cover" }}
             />
             <div style={styles.heroOverlay} aria-hidden="true" />
-            <div style={styles.heroInner}>
+            <div className="pkgd-hero-inner" style={styles.heroInner}>
               <nav aria-label={t("packageDetail.breadcrumbAria")}>
                 <ol style={styles.breadcrumb}>
                   <li><Link href="/" style={styles.breadcrumbLink}>{t("header.nav.home")}</Link></li>
                   <li aria-hidden="true">/</li>
-                  <li><Link href="/#packages" style={styles.breadcrumbLink}>{t("header.nav.packages")}</Link></li>
+                  <li><Link href="/packages" style={styles.breadcrumbLink}>{t("header.nav.packages")}</Link></li>
                   <li aria-hidden="true">/</li>
                   <li aria-current="page">{pkg.name}</li>
                 </ol>
               </nav>
-              {pkg.category && <span style={styles.categoryBadge}>{categoryLabel(pkg.category)}</span>}
+              {pkg.category && <span style={styles.categoryTag}>{categoryLabel(pkg.category)}</span>}
               <h1 style={styles.title}>{pkg.name}</h1>
-              <div style={styles.heroMeta}>
-                {pkg.duration && <span style={styles.metaItem}><ClockIcon /> {pkg.duration}</span>}
-                {pkg.destination && <span style={styles.metaItem}><PinIcon /> {pkg.destination}</span>}
-                <span style={styles.heroPrice}>
-                  &#8377;{formatPrice(pkg.price)}
-                  {hasDiscount && (
-                    <span style={styles.heroOriginal}>
-                      <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>{`${t("packageDetail.wasPrice")} `}</span>
-                      &#8377;{formatPrice(pkg.originalPrice)}
-                    </span>
-                  )}
-                  <span style={styles.perPerson}>{t("packageDetail.perPerson")}</span>
-                </span>
-                {hasDiscount && (
-                  <span style={styles.discountBadge}>{t("common.percentOff", { percent: discountPercent(pkg.originalPrice!, pkg.price) })}</span>
-                )}
-              </div>
               {/* N-7: save / compare (client components; state lives in localStorage). */}
               <div style={styles.heroActions}>
                 <SaveToggle id={pkg.id} name={pkg.name} variant="hero" />
@@ -420,37 +496,72 @@ export default async function PackageDetailPage({ params }: Params) {
             </div>
           </header>
 
+          <div style={styles.factsWrap}>
+            <dl className="pkgd-facts" style={styles.facts} aria-label={t("packageDetail.factsAria")}>
+              <div className="pkgd-fact" style={{ ...styles.fact, ...styles.factFirst }}>
+                <dt style={styles.factLabel}>{t("packageDetail.factDuration")}</dt>
+                <dd style={styles.factValue}>{pkg.duration || "—"}</dd>
+              </div>
+              <div className="pkgd-fact" style={styles.fact}>
+                <dt style={styles.factLabel}>{t("packageDetail.factPlaces")}</dt>
+                <dd style={styles.factValue}>{pkg.destination || "—"}</dd>
+              </div>
+              <div className="pkgd-fact" style={styles.fact}>
+                <dt style={styles.factLabel}>{t("packageDetail.factStyle")}</dt>
+                <dd style={styles.factValue}>{categoryLabel(pkg.category) || "—"}</dd>
+              </div>
+              <div className="pkgd-fact" style={styles.fact}>
+                <dt style={styles.factLabel}>{t("packageDetail.factPrice")}</dt>
+                <dd style={styles.factValue}>
+                  <span style={styles.factPrice}>&#8377;{formatPrice(pkg.price)}</span>
+                  <span style={styles.factPer}>{t("packageDetail.perPerson")}</span>
+                </dd>
+              </div>
+              <a href={`#${BOOKING_ANCHOR}`} className="pkgd-jump" style={styles.jump}>
+                {t("packageDetail.jumpToBook")}
+              </a>
+            </dl>
+          </div>
+
           <div style={styles.body}>
             <div className="pkgd-layout" style={styles.layout}>
               <div>
                 {pkg.description && (
-                  <section className="pkgd-card" style={styles.card} aria-labelledby="pkgd-overview">
-                    <h2 id="pkgd-overview" style={styles.sectionTitle}>{t("packageDetail.overview")}</h2>
-                    <p style={styles.desc}>{pkg.description}</p>
+                  <section style={styles.section} aria-labelledby="pkgd-overview">
+                    <div style={styles.sectionHead}>
+                      <h2 id="pkgd-overview" style={styles.sectionTitle}>{t("packageDetail.overview")}</h2>
+                    </div>
+                    <p style={styles.lead}>{pkg.description}</p>
                   </section>
                 )}
 
                 {highlights.length > 0 && (
-                  <section className="pkgd-card" style={styles.card} aria-labelledby="pkgd-highlights">
-                    <h2 id="pkgd-highlights" style={styles.sectionTitle}>{t("packageDetail.highlights")}</h2>
-                    <ul style={styles.chips}>
+                  <section style={styles.section} aria-labelledby="pkgd-highlights">
+                    <div style={styles.sectionHead}>
+                      <h2 id="pkgd-highlights" style={styles.sectionTitle}>{t("packageDetail.highlights")}</h2>
+                    </div>
+                    <ul className="pkgd-two-col" style={styles.highlightList}>
                       {highlights.map((h, i) => (
-                        <li key={i} style={styles.chip}>{h}</li>
+                        <li key={i} style={styles.highlight}>
+                          <span style={styles.highlightMark} aria-hidden="true" />
+                          {h}
+                        </li>
                       ))}
                     </ul>
                   </section>
                 )}
 
                 {itinerary.length > 0 && (
-                  <section className="pkgd-card" style={styles.card} aria-labelledby="pkgd-itinerary">
-                    <h2 id="pkgd-itinerary" style={styles.sectionTitle}>{t("common.itinerary")}</h2>
-                    <ol style={styles.itineraryList}>
+                  <section style={styles.section} aria-labelledby="pkgd-itinerary">
+                    <div style={styles.sectionHead}>
+                      <h2 id="pkgd-itinerary" style={styles.sectionTitle}>{t("common.itinerary")}</h2>
+                      <span style={styles.sectionMeta}>{t("packageDetail.itineraryDays", { count: itinerary.length })}</span>
+                    </div>
+                    <ol style={styles.timeline}>
                       {itinerary.map((line, i) => (
-                        <li
-                          key={i}
-                          style={{ ...styles.itineraryDay, ...(i === itinerary.length - 1 ? { borderBottom: "none" } : {}) }}
-                        >
-                          <span style={styles.dayNum}>{t("common.day", { n: i + 1 })}</span>
+                        <li key={i} className="pkgd-day">
+                          <span className="pkgd-stop" aria-hidden="true">{i + 1}</span>
+                          <span style={styles.dayLabel}>{t("common.day", { n: i + 1 })}</span>
                           <span style={styles.dayTitle}>{stripDayPrefix(line)}</span>
                         </li>
                       ))}
@@ -459,43 +570,88 @@ export default async function PackageDetailPage({ params }: Params) {
                 )}
 
                 {inclusions.length > 0 && (
-                  <section className="pkgd-card" style={styles.card} aria-labelledby="pkgd-inclusions">
-                    <h2 id="pkgd-inclusions" style={styles.sectionTitle}>{t("common.inclusions")}</h2>
-                    <ul className="pkgd-inclusions" style={styles.inclusionList}>
+                  <section style={styles.section} aria-labelledby="pkgd-inclusions">
+                    <div style={styles.sectionHead}>
+                      <h2 id="pkgd-inclusions" style={styles.sectionTitle}>{t("common.inclusions")}</h2>
+                    </div>
+                    <ul className="pkgd-two-col" style={styles.inclusionList}>
                       {inclusions.map((item, i) => (
-                        <li key={i} style={styles.inclusionItem}>
-                          <span style={{ color: "#27ae60" }} aria-hidden="true">&#10003;</span> {item}
+                        <li key={i} style={styles.inclusion}>
+                          <span style={styles.checkDot}><CheckIcon /></span>
+                          {item}
                         </li>
                       ))}
                     </ul>
                   </section>
                 )}
 
-                <Link href="/#packages" className="pkgd-back" style={styles.backLink}>
-                  &larr; {t("packageDetail.allPackages")}
-                </Link>
+                <aside style={styles.custom} aria-labelledby="pkgd-custom">
+                  <div>
+                    <h2 id="pkgd-custom" style={styles.customTitle}>{t("packageDetail.customTitle")}</h2>
+                    <p style={styles.customText}>{t("packageDetail.customText")}</p>
+                  </div>
+                  <Link href="/plan-trip" className="pkgd-custom-link" style={styles.customLink}>
+                    {t("packageDetail.customCta")}
+                  </Link>
+                </aside>
               </div>
 
               <aside id={BOOKING_ANCHOR} className="pkgd-aside" style={styles.aside} aria-labelledby="pkgd-book">
-                <div className="pkgd-card" style={styles.bookingCard}>
-                  <h2 id="pkgd-book" style={styles.bookingTitle}>{t("packageDetail.bookTitle")}</h2>
-                  <p style={styles.bookingSub}>{t("packageDetail.bookSubtitle")}</p>
-                  <BookingForm packageId={pkg.id} packageName={pkg.name} price={pkg.price} minDate={istDateKey(new Date())} />
-                  <p style={styles.orDivider}>{t("packageDetail.orAsk")}</p>
-                  <a
-                    className="pkgd-wa"
-                    href={whatsappLink(packageEnquiryText(pkg.name))}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={styles.waBtn}
-                  >
-                    <WhatsAppIcon /> {t("packageDetail.enquireWhatsApp")}
-                  </a>
+                <div style={styles.bookingCard}>
+                  <div className="pkgd-price-head" style={styles.priceHead}>
+                    <div style={styles.priceRow}>
+                      <span style={styles.priceNow}>&#8377;{formatPrice(pkg.price)}</span>
+                      <span style={styles.pricePer}>{t("packageDetail.perPerson")}</span>
+                    </div>
+                    {hasDiscount && (
+                      <div style={styles.priceWasRow}>
+                        <span style={styles.priceWas}>
+                          <span style={srOnly}>{`${t("packageDetail.wasPrice")} `}</span>
+                          &#8377;{formatPrice(pkg.originalPrice)}
+                        </span>
+                        <span style={styles.saveBadge}>
+                          {t("packageDetail.youSave", { amount: formatPrice(pkg.originalPrice! - pkg.price) })}
+                          {" "}({t("common.percentOff", { percent: discountPercent(pkg.originalPrice!, pkg.price) })})
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="pkgd-booking-body" style={styles.bookingBody}>
+                    <h2 id="pkgd-book" style={styles.bookingTitle}>{t("packageDetail.bookTitle")}</h2>
+                    <p style={styles.bookingSub}>{t("packageDetail.bookSubtitle")}</p>
+                    <BookingForm packageId={pkg.id} packageName={pkg.name} price={pkg.price} minDate={istDateKey(new Date())} />
+                    <p style={styles.orDivider}>{t("packageDetail.orAsk")}</p>
+                    <a
+                      className="pkgd-wa"
+                      href={whatsappLink(packageEnquiryText(pkg.name))}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={styles.waBtn}
+                    >
+                      <WhatsAppIcon /> {t("packageDetail.enquireWhatsApp")}
+                    </a>
+                  </div>
                 </div>
               </aside>
             </div>
           </div>
         </article>
+
+        {others.length > 0 && (
+          <section style={styles.more} aria-labelledby="pkgd-more">
+            <div style={styles.moreInner}>
+              <div style={styles.moreHead}>
+                <h2 id="pkgd-more" style={styles.moreTitle}>{t("packageDetail.moreTitle")}</h2>
+                <Link href="/packages" style={styles.moreLink}>{t("packageDetail.moreLink")}</Link>
+              </div>
+              <div style={styles.moreGrid}>
+                {others.map((p, i) => (
+                  <PackageCard key={p.id} pkg={p} index={i} reveal={false} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
       </main>
       <Footer />
       <CompareBar />
