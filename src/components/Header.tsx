@@ -5,7 +5,8 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useApp } from "@/lib/context";
 import { useT } from "@/lib/i18n/use-t";
-import { SITE_CONFIG } from "@/lib/config";
+import { SITE_CONFIG, PHONE_DISPLAY, MD_NAME, SOCIAL_LINKS } from "@/lib/config";
+import { SOCIAL_ICONS } from "@/components/social-icons";
 
 const SECTION_IDS = ["home", "about", "packages", "gallery", "blog", "faq", "contact"] as const;
 
@@ -27,6 +28,41 @@ const PhoneIcon = () => (
     <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z" />
   </svg>
 );
+
+const svgProps = {
+  width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor",
+  strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true,
+} as const;
+
+const CloseIcon = () => (
+  <svg {...svgProps} width={20} height={20}><path d="M18 6L6 18M6 6l12 12" /></svg>
+);
+const ChevronIcon = () => (
+  <svg {...svgProps}><path d="M9 6l6 6-6 6" /></svg>
+);
+const MailIcon = () => (
+  <svg {...svgProps}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
+);
+const PinIcon = () => (
+  <svg {...svgProps}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+);
+const CompassIcon = () => (
+  <svg {...svgProps}><circle cx="12" cy="12" r="10" /><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36z" /></svg>
+);
+const TicketIcon = () => (
+  <svg {...svgProps}><path d="M3 9V6a1 1 0 011-1h16a1 1 0 011 1v3a3 3 0 000 6v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3a3 3 0 000-6z" /><path d="M13 5v2M13 11v2M13 17v2" /></svg>
+);
+const WhatsAppIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4C2.7 15.6 2.2 13.8 2.2 12 2.2 6.6 6.6 2.2 12 2.2c2.6 0 5.1 1 6.9 2.9 1.8 1.8 2.9 4.3 2.9 6.9 0 5.4-4.4 9.8-9.8 9.8zM20.5 3.5C18.2 1.2 15.2 0 12 0 5.4 0 0 5.4 0 12c0 2.1.6 4.2 1.6 6L0 24l6.2-1.6c1.8 1 3.8 1.5 5.8 1.5 6.6 0 12-5.4 12-12 0-3.2-1.2-6.2-3.5-8.4z" />
+  </svg>
+);
+
+/** "Mera Bushra Ashfaque" → "MA". */
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
+}
 
 /**
  * The header adapts to the content under it:
@@ -56,6 +92,7 @@ const Header: React.FC = () => {
   const [active, setActive] = useState("#home");
   const headerRef = useRef<HTMLElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
   const { theme, setTheme } = useApp();
   const t = useT();
   // Section links are bare hashes on the home page; on sub-routes (e.g. /packages/[id]) they point back to "/".
@@ -63,6 +100,20 @@ const Header: React.FC = () => {
   const onHome = pathname === "/";
   const sectionHref = (hash: string) => (onHome ? hash : `/${hash}`);
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+  const closeMenu = () => setMenuOpen(false);
+  const waHref = `https://wa.me/${SITE_CONFIG.whatsapp}?text=${encodeURIComponent(t("whatsapp.defaultMessage"))}`;
+  const mapHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${SITE_CONFIG.name}, ${SITE_CONFIG.address}`)}`;
+
+  // While the drawer is open: lock page scroll and move focus into it (the close button).
+  useEffect(() => {
+    if (!menuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [menuOpen]);
 
   // E-06: Escape closes the open mobile menu and returns focus to the hamburger.
   useEffect(() => {
@@ -228,51 +279,6 @@ const Header: React.FC = () => {
       borderRadius: 2,
       transition: "all 0.3s",
     },
-    mobileMenu: {
-      position: "fixed" as const,
-      top: 0,
-      right: 0,
-      width: "min(320px, 85vw)",
-      height: "100vh",
-      background: "linear-gradient(180deg, #1a3a6b 0%, #0f2548 100%)",
-      padding: "100px 24px 32px",
-      display: "flex",
-      flexDirection: "column" as const,
-      gap: 4,
-      overflowY: "auto" as const,
-      transform: menuOpen ? "translateX(0)" : "translateX(100%)",
-      transition: "transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
-      zIndex: 1050,
-      boxShadow: menuOpen ? "-8px 0 30px rgba(0,0,0,0.3)" : "none",
-    },
-    mobileThemeBtn: {
-      marginTop: 16,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-      background: "rgba(255,255,255,0.08)",
-      border: "1px solid rgba(255,255,255,0.18)",
-      borderRadius: 999,
-      padding: "10px 16px",
-      color: "#fff",
-      fontSize: 14,
-      fontWeight: 600,
-      cursor: "pointer",
-      fontFamily: "'Poppins', sans-serif",
-    },
-    overlay: {
-      position: "fixed" as const,
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      backgroundColor: "rgba(0,0,0,0.5)",
-      zIndex: 1040,
-      opacity: menuOpen ? 1 : 0,
-      pointerEvents: menuOpen ? "auto" as const : "none" as const,
-      transition: "opacity 0.3s",
-    },
   };
 
   return (
@@ -357,18 +363,145 @@ const Header: React.FC = () => {
         .icon-btn-h:hover { background: rgba(255,255,255,0.18); transform: rotate(15deg); }
         .site-header[data-tone="light"] .icon-btn-h:hover { background: rgba(26,58,107,0.12); }
         .call-btn-h:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(230,126,34,0.45) !important; }
-        .mobile-link-h {
-          color: #fff;
-          text-decoration: none;
-          font-size: 17px;
-          font-weight: 500;
-          padding: 13px 16px;
-          border-radius: 12px;
-          border-left: 3px solid transparent;
-          transition: background 0.3s;
+        /* ---------- Mobile menu drawer ---------- */
+        .mm-overlay {
+          position: fixed; inset: 0; z-index: 1090;
+          background: rgba(6, 16, 32, 0.55);
+          -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+          opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
         }
-        .mobile-link-h:hover { background: rgba(243,156,18,0.12); }
-        .mobile-link-h.is-active { background: rgba(243,156,18,0.16); border-left-color: #f39c12; color: #f39c12; }
+        .mm-overlay[data-open="true"] { opacity: 1; pointer-events: auto; }
+        .mm {
+          position: fixed; top: 0; right: 0; bottom: 0; z-index: 1100;
+          width: min(400px, 100vw);
+          display: flex; flex-direction: column;
+          color: #fff; font-family: 'Poppins', sans-serif;
+          background:
+            radial-gradient(120% 60% at 100% 0%, rgba(243, 156, 18, 0.16), transparent 60%),
+            linear-gradient(180deg, #16335f 0%, #0f2548 55%, #0a1a33 100%);
+          box-shadow: -16px 0 48px rgba(0, 0, 0, 0.35);
+          transform: translateX(100%); visibility: hidden;
+          transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.4s;
+        }
+        .mm[data-open="true"] {
+          transform: none; visibility: visible;
+          transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+        }
+        .mm-top {
+          display: flex; align-items: center; justify-content: space-between; gap: 12px;
+          padding: 14px 16px 14px 20px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .mm-brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-size: 19px; font-weight: 700; }
+        .mm-brand-accent { color: #f39c12; }
+        .mm-close {
+          width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+          display: inline-flex; align-items: center; justify-content: center;
+          background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.16);
+          color: #fff; cursor: pointer; transition: background 0.25s, transform 0.3s;
+        }
+        .mm-close:hover { background: rgba(255, 255, 255, 0.16); transform: rotate(90deg); }
+        .mm-body {
+          flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 8px 20px 24px;
+          scrollbar-width: none; /* still scrolls by touch, wheel and keyboard */
+        }
+        .mm-body::-webkit-scrollbar { display: none; }
+        .mm-nav { list-style: none; margin: 0; padding: 0; }
+        .mm-nav li {
+          border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+          opacity: 0; transform: translateX(18px);
+          transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .mm[data-open="true"] .mm-nav li {
+          opacity: 1; transform: none;
+          transition-delay: calc(0.08s + var(--i) * 0.035s);
+        }
+        .mm-link {
+          display: flex; align-items: center; justify-content: space-between; gap: 12px;
+          padding: 12px 4px; color: rgba(255, 255, 255, 0.9); text-decoration: none;
+          font-size: 20px; font-weight: 600; letter-spacing: -0.01em;
+          transition: color 0.2s, padding 0.25s;
+        }
+        .mm-link svg { color: rgba(255, 255, 255, 0.3); transition: color 0.2s, transform 0.25s; }
+        .mm-link:hover { color: #fff; padding-left: 8px; }
+        .mm-link:hover svg { color: #f39c12; transform: translateX(3px); }
+        .mm-link.is-active { color: #f6b04a; }
+        .mm-link.is-active span::before {
+          content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+          background: #f39c12; box-shadow: 0 0 0 4px rgba(243, 156, 18, 0.2);
+          margin-right: 12px; vertical-align: middle; position: relative; top: -2px;
+        }
+        .mm-link.is-active svg { color: #f39c12; }
+        .mm-quick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+        .mm-chip {
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          padding: 12px 10px; border-radius: 14px; text-decoration: none;
+          color: #fff; font-size: 14px; font-weight: 600;
+          background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12);
+          transition: background 0.25s, border-color 0.25s;
+        }
+        .mm-chip svg { color: #f39c12; flex-shrink: 0; }
+        .mm-chip:hover { background: rgba(243, 156, 18, 0.12); border-color: rgba(243, 156, 18, 0.4); }
+        .mm-card {
+          border-radius: 18px; padding: 16px;
+          background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .mm-heading { margin: 0 0 12px; font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.6); letter-spacing: 0.02em; }
+        .mm-person { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; margin-bottom: 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        .mm-avatar {
+          width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+          display: inline-flex; align-items: center; justify-content: center;
+          background: linear-gradient(135deg, #e67e22, #f39c12); color: var(--on-accent);
+          font-weight: 700; font-size: 15px;
+        }
+        .mm-person strong { display: block; font-size: 15.5px; font-weight: 600; line-height: 1.3; }
+        .mm-person small { display: block; font-size: 12.5px; color: rgba(255, 255, 255, 0.62); }
+        .mm-contact {
+          display: flex; align-items: center; gap: 12px; padding: 10px 6px; margin: 0 -6px;
+          border-radius: 12px; color: #fff; text-decoration: none; font-size: 14.5px; font-weight: 500;
+          overflow-wrap: anywhere; transition: background 0.2s;
+        }
+        .mm-contact:hover { background: rgba(255, 255, 255, 0.06); }
+        .mm-contact small { display: block; font-size: 11.5px; font-weight: 500; color: rgba(255, 255, 255, 0.55); }
+        .mm-ic {
+          width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+          display: inline-flex; align-items: center; justify-content: center;
+          background: rgba(243, 156, 18, 0.14); color: #f6b04a;
+        }
+        .mm-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 22px; }
+        .mm-foot .mm-heading { margin-bottom: 10px; }
+        .mm-socials { display: flex; gap: 8px; }
+        .mm-social {
+          width: 40px; height: 40px; border-radius: 50%;
+          display: inline-flex; align-items: center; justify-content: center;
+          color: #fff; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.12);
+          transition: background 0.25s, color 0.25s, border-color 0.25s;
+        }
+        .mm-social:hover { background: #f39c12; border-color: #f39c12; color: #1a1205; }
+        .mm-theme {
+          display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px;
+          border-radius: 999px; cursor: pointer; font-family: inherit; font-size: 13.5px; font-weight: 600;
+          color: #fff; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.14);
+          transition: background 0.25s;
+        }
+        .mm-theme:hover { background: rgba(255, 255, 255, 0.14); }
+        .mm-cta {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+          padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(8, 20, 40, 0.6);
+        }
+        .mm-btn {
+          display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+          height: 50px; border-radius: 14px; text-decoration: none;
+          font-size: 15px; font-weight: 600; white-space: nowrap;
+          transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        .mm-btn:active { transform: scale(0.97); }
+        .mm-btn-call { background: linear-gradient(135deg, #e67e22, #f39c12); color: var(--on-accent); box-shadow: 0 8px 22px rgba(230, 126, 34, 0.35); }
+        .mm-btn-wa { background: #0e7a3e; color: #fff; box-shadow: 0 8px 22px rgba(14, 122, 62, 0.3); }
+        .mm-btn-wa:hover { background: #0b6a35; }
+        @media (min-width: 1101px) { .mm, .mm-overlay { display: none; } }
         @media (max-width: 1100px) {
           .desktop-nav { display: none !important; }
           .desktop-actions { display: none !important; }
@@ -463,30 +596,121 @@ const Header: React.FC = () => {
         </div>
       </header>
 
-      {/* Mobile overlay */}
-      <div style={styles.overlay} onClick={() => setMenuOpen(false)} aria-hidden="true" />
+      <div className="mm-overlay" data-open={menuOpen} onClick={closeMenu} aria-hidden="true" />
 
-      {/* Mobile menu: inert while closed so the off-canvas links are neither focusable nor exposed to AT (E-06) */}
-      <div id="mobile-menu" inert={!menuOpen} style={styles.mobileMenu}>
-        {navLinks.map((link) => (
-          <a
-            key={link.hash}
-            href={sectionHref(link.hash)}
-            className={`mobile-link-h${isActive(link.hash) ? " is-active" : ""}`}
-            aria-current={isActive(link.hash) ? "location" : undefined}
-            onClick={() => setMenuOpen(false)}
-          >
-            {link.label}
+      {/* Mobile menu: a modal drawer above the header (it has its own close button). Inert while
+          closed so the off-canvas links are neither focusable nor exposed to AT (E-06). */}
+      <div
+        id="mobile-menu"
+        className="mm"
+        data-open={menuOpen}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t("header.menuLabel")}
+        inert={!menuOpen}
+      >
+        <div className="mm-top">
+          <a href={sectionHref("#home")} className="mm-brand" onClick={closeMenu}>
+            <Image src="/images/atlas-logo.jpeg" alt="" width={38} height={38} style={styles.logoImg} />
+            <span>
+              Atlas<span className="mm-brand-accent">Tours</span>
+            </span>
           </a>
-        ))}
-        <button style={styles.mobileThemeBtn} onClick={toggleTheme}>
-          {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-          {theme === "dark" ? t("header.themeLight") : t("header.themeDark")}
-        </button>
-        <a href={`tel:${SITE_CONFIG.phone}`} style={{ ...styles.callBtn, marginTop: 10, justifyContent: "center" }}>
-          <PhoneIcon />
-          {t("header.callNow")}
-        </a>
+          <button type="button" className="mm-close" ref={closeRef} onClick={() => { closeMenu(); hamburgerRef.current?.focus(); }} aria-label={t("header.menuClose")}>
+            <CloseIcon />
+          </button>
+        </div>
+
+        <div className="mm-body">
+          <nav aria-label={t("header.menuLabel")}>
+            <ul className="mm-nav">
+              {navLinks.map((link, i) => (
+                <li key={link.hash} style={{ "--i": i } as React.CSSProperties}>
+                  <a
+                    href={sectionHref(link.hash)}
+                    className={`mm-link${isActive(link.hash) ? " is-active" : ""}`}
+                    aria-current={isActive(link.hash) ? "location" : undefined}
+                    onClick={closeMenu}
+                  >
+                    <span>{link.label}</span>
+                    <ChevronIcon />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <div className="mm-quick">
+            <a href="/plan-trip" className="mm-chip" onClick={closeMenu}>
+              <CompassIcon />
+              {t("footer.planTrip")}
+            </a>
+            <a href="/track" className="mm-chip" onClick={closeMenu}>
+              <TicketIcon />
+              {t("footer.trackBooking")}
+            </a>
+          </div>
+
+          <section className="mm-card" aria-labelledby="mm-talk">
+            <h2 id="mm-talk" className="mm-heading">{t("header.menuTalk")}</h2>
+            <div className="mm-person">
+              <span className="mm-avatar" aria-hidden="true">{initials(MD_NAME)}</span>
+              <span>
+                <strong>{MD_NAME}</strong>
+                <small>{t("contact.mdLabel")}</small>
+              </span>
+            </div>
+            <a href={`tel:${SITE_CONFIG.phone}`} className="mm-contact">
+              <span className="mm-ic"><PhoneIcon /></span>
+              <span><small>{t("common.phone")}</small>{PHONE_DISPLAY}</span>
+            </a>
+            <a href={`mailto:${SITE_CONFIG.email}`} className="mm-contact">
+              <span className="mm-ic"><MailIcon /></span>
+              <span><small>{t("common.email")}</small>{SITE_CONFIG.email}</span>
+            </a>
+            <a href={mapHref} className="mm-contact" target="_blank" rel="noopener noreferrer" aria-label={t("footer.mapAria", { address: SITE_CONFIG.address })}>
+              <span className="mm-ic"><PinIcon /></span>
+              <span><small>{t("common.address")}</small>{SITE_CONFIG.address}</span>
+            </a>
+          </section>
+
+          <div className="mm-foot">
+            {SOCIAL_LINKS.length > 0 && (
+              <div>
+                <h2 className="mm-heading">{t("header.menuFollow")}</h2>
+                <div className="mm-socials">
+                  {SOCIAL_LINKS.map((s) => (
+                    <a
+                      key={s.name}
+                      href={s.href}
+                      className="mm-social"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={t("footer.socialAria", { name: s.name })}
+                    >
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">{SOCIAL_ICONS[s.name]}</svg>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+            <button type="button" className="mm-theme" onClick={toggleTheme}>
+              {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+              {theme === "dark" ? t("header.themeLight") : t("header.themeDark")}
+            </button>
+          </div>
+        </div>
+
+        <div className="mm-cta">
+          <a href={`tel:${SITE_CONFIG.phone}`} className="mm-btn mm-btn-call">
+            <PhoneIcon />
+            {t("header.callNow")}
+          </a>
+          <a href={waHref} className="mm-btn mm-btn-wa" target="_blank" rel="noopener noreferrer" aria-label={t("footer.whatsappAria")}>
+            <WhatsAppIcon />
+            {t("common.whatsapp")}
+          </a>
+        </div>
       </div>
     </>
   );

@@ -3,7 +3,7 @@ import RevealWords from "@/components/RevealWords";
 
 import React, { useState, useEffect, useRef } from "react";
 import type { TourPackage } from "@/lib/types";
-import { SITE_CONFIG, PHONE_DISPLAY } from "@/lib/config";
+import { SITE_CONFIG, PHONE_DISPLAY, MD_NAME } from "@/lib/config";
 import { useT } from "@/lib/i18n/use-t";
 import { errorStyle } from "@/components/public-form-ui";
 
@@ -21,12 +21,14 @@ const EMPTY_FORM = {
   website: "",
 };
 
-const contactCards = [
-  { icon: "phone", label: "common.phone", value: PHONE_DISPLAY, href: `tel:${SITE_CONFIG.phone}` },
+/** Phone and WhatsApp share one number, so they are one person card with two actions; these are the rest. */
+const infoCards = [
   { icon: "mail", label: "common.email", value: SITE_CONFIG.email, href: `mailto:${SITE_CONFIG.email}` },
-  { icon: "whatsapp", label: "common.whatsapp", value: PHONE_DISPLAY, href: `https://wa.me/${SITE_CONFIG.whatsapp}` },
-  { icon: "map", label: "common.address", value: SITE_CONFIG.address, href: "#" },
+  { icon: "map", label: "common.address", value: SITE_CONFIG.address, href: undefined },
 ] as const;
+
+const WHATSAPP_PATH =
+  "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z";
 
 /** Package options come from the server-rendered page (F-02), already filtered for public visibility. */
 /** `minDate`: earliest selectable travel date (today in IST, "YYYY-MM-DD"), computed on the server. */
@@ -225,6 +227,81 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
       fontWeight: 600,
       color: "var(--text)",
     },
+    person: {
+      padding: "26px 26px 24px",
+      background: "var(--card-bg)",
+      borderRadius: 18,
+      boxShadow: "var(--shadow)",
+      borderTop: "4px solid #e67e22",
+    },
+    personTop: {
+      display: "flex",
+      alignItems: "center",
+      gap: 16,
+    },
+    avatar: {
+      width: 58,
+      height: 58,
+      borderRadius: "50%",
+      background: "linear-gradient(135deg, #e67e22, #f39c12)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+      boxShadow: "0 6px 16px rgba(230,126,34,0.3)",
+    },
+    personEyebrow: {
+      fontSize: 12,
+      fontWeight: 600,
+      color: "var(--orange-text)",
+      letterSpacing: 1.2,
+      textTransform: "uppercase",
+      margin: 0,
+    },
+    personName: {
+      fontSize: 20,
+      fontWeight: 700,
+      color: "var(--primary)",
+      margin: "2px 0 0",
+      lineHeight: 1.3,
+    },
+    personRole: {
+      fontSize: 14,
+      color: "var(--contact-muted, #6e6e6e)",
+      margin: "2px 0 0",
+    },
+    personPhone: {
+      display: "block",
+      fontSize: 24,
+      fontWeight: 700,
+      color: "var(--text)",
+      letterSpacing: 0.5,
+      textDecoration: "none",
+      margin: "18px 0 16px",
+    },
+    actions: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 12,
+    },
+    actionBtn: {
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      padding: "12px 16px",
+      borderRadius: 12,
+      fontSize: 15,
+      fontWeight: 600,
+      textDecoration: "none",
+      fontFamily: "'Poppins', sans-serif",
+      transition: "transform 0.2s, box-shadow 0.2s",
+    },
+    infoGrid: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 16,
+    },
     mapWrap: {
       borderRadius: 14,
       overflow: "hidden",
@@ -236,8 +313,8 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
   const iconSvgs: Record<string, string> = {
     phone: "M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z",
     mail: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zM22 6l-10 7L2 6",
-    whatsapp: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z",
     map: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0zM12 13a3 3 0 100-6 3 3 0 000 6z",
+    user: "M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z",
   };
 
   return (
@@ -245,6 +322,15 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
       <style>{`
         .contact-input:focus { border-color: #e67e22 !important; box-shadow: 0 0 0 3px rgba(230,126,34,0.1) !important; }
         .contact-card-h:hover { border-color: rgba(230,126,34,0.3) !important; box-shadow: 0 4px 15px rgba(0,0,0,0.06) !important; }
+        .contact-action:hover { transform: translateY(-2px); }
+        .contact-call { background: linear-gradient(135deg, #e67e22, #f39c12); color: var(--on-accent); box-shadow: 0 6px 18px rgba(230,126,34,0.3); }
+        .contact-call:hover { box-shadow: 0 8px 24px rgba(230,126,34,0.42); }
+        .contact-wa { background: transparent; color: var(--text); border: 2px solid #25d366; }
+        .contact-wa:hover { background: rgba(37,211,102,0.1); }
+        .contact-wa svg { color: #25d366; }
+        @media (max-width: 480px) {
+          .contact-info-grid { grid-template-columns: 1fr !important; }
+        }
         /* E-02: dark-mode override. Light mode uses the inline fallback (colour unchanged). */
         [data-theme="dark"] #contact { --contact-muted: var(--text2); }
         .submit-btn-h:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(230,126,34,0.45) !important; }
@@ -395,7 +481,7 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
           {/* Q-3: errors use the shared red error box (as on /track, /plan-trip and the booking form). */}
           {submitError && (
             <div role="alert" style={errorStyle}>
-              {t("contact.error", { phone: contactCards[0].value })}
+              {t("contact.error", { phone: PHONE_DISPLAY })}
             </div>
           )}
           {/* N-6: entry points to /plan-trip. */}
@@ -407,35 +493,72 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
         </form>
 
         <div className="reveal-right" style={styles.infoSide}>
-          {contactCards.map((card) => (
-            <a
-              key={card.label}
-              href={card.href}
-              className="contact-card-h"
-              style={styles.contactCard}
-              target={card.icon === "whatsapp" ? "_blank" : undefined}
-              rel={card.icon === "whatsapp" ? "noopener noreferrer" : undefined}
-            >
-              <div style={styles.cardIcon}>
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill={card.icon === "whatsapp" ? "#fff" : "none"}
-                  stroke={card.icon === "whatsapp" ? "none" : "#fff"}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d={iconSvgs[card.icon]} />
+          {/* One person, one number: name + role, the number once, then Call / WhatsApp. */}
+          <div style={styles.person}>
+            <div style={styles.personTop}>
+              <div style={styles.avatar} aria-hidden="true">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d={iconSvgs.user} />
                 </svg>
               </div>
               <div>
-                <div style={styles.cardLabel}>{t(card.label)}</div>
-                <div style={styles.cardValue}>{card.value}</div>
+                <p style={styles.personEyebrow}>{t("contact.personEyebrow")}</p>
+                <h3 style={styles.personName}>{MD_NAME}</h3>
+                <p style={styles.personRole}>{t("contact.mdLabel")}</p>
               </div>
-            </a>
-          ))}
+            </div>
+            <a href={`tel:${SITE_CONFIG.phone}`} style={styles.personPhone}>{PHONE_DISPLAY}</a>
+            <div style={styles.actions}>
+              <a
+                href={`tel:${SITE_CONFIG.phone}`}
+                className="contact-action contact-call"
+                style={styles.actionBtn}
+                aria-label={t("contact.callAria", { name: MD_NAME, phone: PHONE_DISPLAY })}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d={iconSvgs.phone} />
+                </svg>
+                {t("contact.call")}
+              </a>
+              <a
+                href={`https://wa.me/${SITE_CONFIG.whatsapp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="contact-action contact-wa"
+                style={styles.actionBtn}
+                aria-label={t("contact.whatsappAria", { name: MD_NAME })}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d={WHATSAPP_PATH} />
+                </svg>
+                {t("common.whatsapp")}
+              </a>
+            </div>
+          </div>
+
+          <div className="contact-info-grid" style={styles.infoGrid}>
+            {infoCards.map((card) => {
+              const body = (
+                <>
+                  <div style={{ ...styles.cardIcon, width: 42, height: 42 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d={iconSvgs[card.icon]} />
+                    </svg>
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={styles.cardLabel}>{t(card.label)}</div>
+                    <div style={{ ...styles.cardValue, overflowWrap: "anywhere" }}>{card.value}</div>
+                  </div>
+                </>
+              );
+              const cardStyle = { ...styles.contactCard, padding: "16px 18px", gap: 14 };
+              return card.href ? (
+                <a key={card.label} href={card.href} className="contact-card-h" style={cardStyle}>{body}</a>
+              ) : (
+                <div key={card.label} style={cardStyle}>{body}</div>
+              );
+            })}
+          </div>
 
           <div style={styles.mapWrap}>
             <iframe

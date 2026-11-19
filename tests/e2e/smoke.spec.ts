@@ -28,11 +28,27 @@ test("home page shows the team section and UPI payment details", async ({ page }
   await page.goto("/");
   const team = page.locator("#team");
   await expect(team.getByRole("heading", { name: /The People Behind/ })).toBeVisible();
-  for (const role of ["Founder", "General Manager", "Front Desk Team"]) {
-    await expect(team.getByRole("heading", { name: role })).toBeVisible();
+  for (const name of ["Ashfaque Ahmed", "Dinesh Singh Rathore"]) {
+    await expect(team.getByRole("heading", { name })).toBeVisible();
   }
-  await expect(team.getByText("Hotel Ganga Imperial")).toBeVisible();
-  await expect(team.locator("img")).toHaveCount(3);
+  await expect(team.getByText("Front Desk Team")).toHaveCount(0);
+  await expect(team.getByRole("link", { name: /Hotel Ganga Imperial/ })).toBeVisible();
+  await expect(team.locator("img")).toHaveCount(2);
+
+  const about = page.locator("#about");
+  await expect(about.getByText("Travel agency since")).toBeVisible();
+  await expect(about.getByText("1983", { exact: true })).toBeVisible();
+  // People live in Our Team / Contact, not in About.
+  await expect(about.getByText("Ashfaque Ahmed")).toHaveCount(0);
+  await expect(page.locator("#contact").getByText("Mera Bushra Ashfaque")).toBeVisible();
+
+  // Every Hotel Ganga Imperial link goes to the hotel's website in a new tab.
+  const hotelLinks = page.locator('a[href="https://hotel-ganga-imperial.vercel.app/"]');
+  await expect(hotelLinks).toHaveCount(2); // Team GM card + footer partner line
+  for (const link of await hotelLinks.all()) {
+    await expect(link).toHaveAttribute("target", "_blank");
+    await expect(link).toHaveAttribute("rel", /noopener/);
+  }
 
   const contact = page.locator("#contact");
   // UPI payment lives only on /track (per-booking QR); Contact no longer shows a UPI card.

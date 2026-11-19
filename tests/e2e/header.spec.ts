@@ -36,3 +36,33 @@ test("header uses the dark look on white sections in the dark theme", async ({ p
   await expect(header).toHaveAttribute("data-tone", "dark");
   await expect(header).toHaveAttribute("data-surface", "dark");
 });
+
+test("mobile menu shows the links and contact details, and closes", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const menu = page.getByRole("dialog", { name: "Site menu" });
+  await expect(menu).toBeHidden();
+
+  await page.getByRole("button", { name: "Menu" }).click();
+  await expect(menu).toBeVisible();
+  await expect(page.getByRole("button", { name: "Close menu" })).toBeFocused();
+  await expect(menu.getByRole("link", { name: "Packages" })).toBeVisible();
+  await expect(menu.getByRole("link", { name: /\+91 6388360881/ })).toHaveAttribute("href", "tel:+916388360881");
+  await expect(menu.getByRole("link", { name: /info@atlastours\.in/ })).toHaveAttribute("href", "mailto:info@atlastours.in");
+  await expect(menu.getByRole("link", { name: /WhatsApp/ })).toHaveAttribute("href", /wa\.me\/916388360881/);
+  await expect(page.locator("body")).toHaveCSS("overflow", "hidden");
+
+  await page.getByRole("button", { name: "Close menu" }).click();
+  await expect(menu).toBeHidden();
+  await expect(page.getByRole("button", { name: "Menu" })).toBeFocused();
+
+  await page.getByRole("button", { name: "Menu" }).click();
+  await expect(menu).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(menu).toBeHidden();
+
+  await page.getByRole("button", { name: "Menu" }).click();
+  await menu.getByRole("link", { name: "Gallery" }).click();
+  await expect(menu).toBeHidden();
+  await expect(page).toHaveURL(/#gallery$/);
+});

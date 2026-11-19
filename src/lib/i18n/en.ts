@@ -45,6 +45,11 @@ export const en = {
     themeDark: "Dark mode",
     themeToggleAria: "Toggle dark mode",
     menuAria: "Menu",
+    /** Mobile menu drawer. */
+    menuLabel: "Site menu",
+    menuClose: "Close menu",
+    menuTalk: "Talk to us",
+    menuFollow: "Follow us",
   },
   hero: {
     welcome: "Welcome to Atlas Tours",
@@ -67,14 +72,16 @@ export const en = {
     playVideoAria: "Play background video",
   },
   about: {
-    imageAlt: "About Atlas Tours",
+    imageAlt: "Boats and temples along the ghats of Varanasi",
     badge: "About Us",
+    plaqueSince: "Travel agency since",
+    plaqueNote: "Over 40 years of journeys, planned from Varanasi.",
     heading: "Crafting Unforgettable",
     headingAccent: "Travel Experiences",
-    description:
-      "Atlas Tour & Travels, serving travelers since 1983, is a premier travel agency specializing in spiritual, cultural, and international tours. From the sacred ghats of Varanasi to the majestic peaks of the Himalayas, Dubai, Thailand, and beyond — we curate journeys that transform and inspire. With over 40 years of trust and personalized service, we ensure every trip becomes a cherished memory.",
-    trustedTitle: "Trusted Since 1983",
-    trustedDesc: "Over 40 years of trusted travel services across India and abroad.",
+    lead: "Atlas Tour & Travels has planned spiritual, cultural and international tours since 1983.",
+    body: "From the sacred ghats of Varanasi to the Himalayas, Dubai, Thailand and beyond, we plan every trip around you and look after you until you are home.",
+    trustedTitle: "40+ Years of Trust",
+    trustedDesc: "Travel services across India and abroad since 1983.",
     pricesTitle: "Best Prices",
     pricesDesc: "Competitive pricing with no hidden charges or surprises.",
     guidesTitle: "Expert Guides",
@@ -260,9 +267,7 @@ export const en = {
     gmOrg: "Hotel Ganga Imperial",
     gmDesc: "Looks after your stay at our partner hotel, from check-in to your last morning in Varanasi.",
     gmAlt: "General Manager of Hotel Ganga Imperial",
-    frontDeskRole: "Front Desk Team",
-    frontDeskDesc: "Your first point of contact for check-in, bookings and help during your trip.",
-    frontDeskAlt: "The three members of the front desk team at the reception counter",
+    orgLinkAria: "{org} website (opens in a new tab)",
   },
   /** UPI payment card (UpiPayCard.tsx) in Contact and after a booking request. */
   upi: {
@@ -313,6 +318,11 @@ export const en = {
   },
   contact: {
     badge: "Contact",
+    mdLabel: "Managing Director",
+    personEyebrow: "Talk to us directly",
+    call: "Call",
+    callAria: "Call {name} on {phone}",
+    whatsappAria: "Chat with {name} on WhatsApp (opens in a new tab)",
     heading: "Get In Touch",
     subheading: "Plan your dream trip with us. We would love to hear from you.",
     namePlaceholder: "Your name",
@@ -332,7 +342,7 @@ export const en = {
   footer: {
     description:
       "Your trusted partner for spiritual and cultural tours across India. We create memorable journeys with expert guidance and premium service.",
-    partner: "In Partnership with Hotel Ganga Imperial",
+    partner: "In Partnership with",
     quickLinks: "Explore",
     aboutUs: "About Us",
     services: "Tours",
@@ -354,6 +364,7 @@ export const en = {
     mapAria: "Open {address} in Google Maps",
     socialAria: "Atlas Tours on {name} (opens in a new tab)",
     whatsappAria: "Chat with Atlas Tours on WhatsApp (opens in a new tab)",
+    partnerAria: "In partnership with Hotel Ganga Imperial — visit the hotel website (opens in a new tab)",
     copyright: "© {year} Atlas Tours. All rights reserved.",
     tagline: "Crafted with care for unforgettable journeys.",
     /** N-4…N-7 page links in the Quick Links column. */
