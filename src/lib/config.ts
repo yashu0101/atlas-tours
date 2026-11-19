@@ -96,7 +96,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     duration: "11 Days / 10 Nights",
     price: 22999,
     originalPrice: 29999,
-    image: "https://images.unsplash.com/photo-1626621331169-5f68be3ed4da?w=600&q=75",
+    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75",
     description: "The sacred Char Dham Yatra covers all four holy abodes in Uttarakhand — Yamunotri, Gangotri, Kedarnath, and Badrinath. A life-changing spiritual journey through the majestic Himalayas. All packages are customized as per group requirements.",
     highlights: ["Yamunotri Temple", "Gangotri Temple", "Kedarnath Temple (16-18 km trek)", "Badrinath Temple & Mana Village", "Rishikesh Visit", "Himalayan Scenic Drives", "Kashi Vishwanath Temple Uttarkashi", "Gaurikund Trek Start Point"],
     itinerary: [
@@ -124,7 +124,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     duration: "7 Days / 6 Nights",
     price: 15999,
     originalPrice: 19999,
-    image: "https://images.unsplash.com/photo-1626621331169-5f68be3ed4da?w=600&q=75",
+    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=75",
     description: "Visit the two most revered Dhams — Kedarnath and Badrinath — in one spiritual journey through the Garhwal Himalayas. Customized packages available for all group sizes.",
     highlights: ["Kedarnath Temple", "Badrinath Temple", "Mana Village", "Rishikesh", "Joshimath", "Gaurikund Trek", "Himalayan Views"],
     itinerary: [

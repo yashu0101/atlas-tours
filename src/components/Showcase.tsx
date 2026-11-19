@@ -22,8 +22,8 @@ const packageCategories = [
     label: "Hindu Pilgrimage",
     tag: "pilgrimage",
     packages: [
-      { id: "pkg-chardham", src: "https://images.unsplash.com/photo-1626621331169-5f68be3ed4da?w=600&q=75", title: "Char Dham Yatra", duration: "11 Days / 10 Nights", price: "₹22,999", destinations: "Yamunotri • Gangotri • Kedarnath • Badrinath" },
-      { id: "pkg-dodham", src: "https://images.unsplash.com/photo-1626621331169-5f68be3ed4da?w=600&q=75", title: "Do Dham Yatra", duration: "7 Days / 6 Nights", price: "₹15,999", destinations: "Kedarnath • Badrinath" },
+      { id: "pkg-chardham", src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75", title: "Char Dham Yatra", duration: "11 Days / 10 Nights", price: "₹22,999", destinations: "Yamunotri • Gangotri • Kedarnath • Badrinath" },
+      { id: "pkg-dodham", src: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=75", title: "Do Dham Yatra", duration: "7 Days / 6 Nights", price: "₹15,999", destinations: "Kedarnath • Badrinath" },
       { id: "pkg-up-spiritual", src: "/images/pkg-up-spiritual.jpeg", title: "Spiritual Wonders of UP", duration: "3 to 8 Days", price: "₹12,699", destinations: "Ayodhya • Varanasi • Prayagraj • Agra" },
       { id: "pkg-kailash", src: "https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=600&q=75", title: "Kailash Mansarovar Yatra", duration: "14-16 Days", price: "₹1,85,000", destinations: "Kailash Mansarovar • Tibet" },
     ],
