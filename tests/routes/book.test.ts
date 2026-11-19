@@ -84,7 +84,7 @@ describe("POST /api/book with the BookingForm payload (G-01)", () => {
   it("enforces the package's minimum group size (N-18)", async () => {
     const few = await post({ ...formPayload("pkg-group"), travelers: 3 });
     expect(few.status).toBe(400);
-    expect((await few.json()).error).toMatch(/at least 4 travelers/);
+    expect((await few.json()).error).toMatch(/at least 4 travellers/);
     const enough = await post({ ...formPayload("pkg-group"), travelers: 4 });
     expect(enough.status).toBe(200);
     expect((await enough.json()).amount).toBe(4000);

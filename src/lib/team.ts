@@ -1,5 +1,5 @@
 import type { MessageKey } from "@/lib/i18n";
-import { MD_NAME } from "@/lib/config";
+import { MD_NAME, TEAM_PHONES } from "@/lib/config";
 
 /**
  * "Our Team" section (Team.tsx). Fixed in code, not admin-editable.
@@ -25,6 +25,8 @@ export type TeamMember = {
   hotelLogo?: boolean;
   description: MessageKey;
   photo?: TeamPhoto;
+  /** Direct number (E.164, from TEAM_PHONES in config.ts), shown as a call link. */
+  phone?: string;
 };
 
 /** Initials for the no-photo placeholder: first letters of the first and last words. */
@@ -43,6 +45,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: "team.founderRole",
     org: "team.founderOrg",
     description: "team.founderDesc",
+    phone: TEAM_PHONES.founder,
     photo: { alt: "team.founderAlt", image: "/images/team/founder.jpg", width: 866, height: 1148 },
   },
   {
@@ -52,6 +55,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     org: "team.gmOrg",
     hotelLogo: true,
     description: "team.gmDesc",
+    phone: TEAM_PHONES.generalManager,
     photo: { alt: "team.gmAlt", image: "/images/team/general-manager.jpg", width: 960, height: 1280 },
   },
   {
@@ -60,6 +64,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: "team.mdRole",
     org: "team.mdOrg",
     description: "team.mdDesc",
+    phone: TEAM_PHONES.managingDirector,
     // No photo yet: Team.tsx shows an initials placeholder.
   },
 ];

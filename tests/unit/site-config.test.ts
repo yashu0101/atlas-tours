@@ -1,7 +1,8 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { PHONE_DISPLAY, SITE_CONFIG } from "@/lib/config";
+import { PHONE_DISPLAY, SITE_CONFIG, TEAM_PHONES, formatTeamPhone } from "@/lib/config";
+import { TEAM_MEMBERS } from "@/lib/team";
 import { travelAgencyJsonLd } from "@/lib/seo";
 
 // C-09: SITE_CONFIG is the single source of truth for public contact details.
@@ -30,6 +31,22 @@ describe("site contact config", () => {
       return src.includes(digits) || src.includes(SITE_CONFIG.email) || /@gmail\.com/.test(src);
     });
     expect(offenders).toEqual([]);
+  });
+});
+
+describe("team phones", () => {
+  it("are Indian E.164 numbers and format as +91 XXXXX XXXXX", () => {
+    for (const phone of Object.values(TEAM_PHONES)) expect(phone).toMatch(/^\+91\d{10}$/);
+    expect(formatTeamPhone(TEAM_PHONES.founder)).toBe("+91 96160 74995");
+    expect(formatTeamPhone(TEAM_PHONES.generalManager)).toBe("+91 72688 95995");
+  });
+
+  it("are attached to the Founder and the General Manager", () => {
+    const byId = Object.fromEntries(TEAM_MEMBERS.map((m) => [m.id, m.phone]));
+    expect(byId.founder).toBe(TEAM_PHONES.founder);
+    expect(byId["general-manager"]).toBe(TEAM_PHONES.generalManager);
+    expect(byId["managing-director"]).toBe(SITE_CONFIG.phone);
+    expect(formatTeamPhone(TEAM_PHONES.managingDirector)).toBe("+91 63883 60881");
   });
 });
 

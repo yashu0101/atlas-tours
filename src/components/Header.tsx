@@ -7,6 +7,8 @@ import { useApp } from "@/lib/context";
 import { useT } from "@/lib/i18n/use-t";
 import { SITE_CONFIG, PHONE_DISPLAY, MD_NAME, SOCIAL_LINKS } from "@/lib/config";
 import { SOCIAL_ICONS } from "@/components/social-icons";
+// "Mrs. Bushra Ashfaque" → "BA" (skips the title).
+import { teamInitials } from "@/lib/team";
 
 const SECTION_IDS = ["home", "about", "packages", "gallery", "blog", "faq", "contact"] as const;
 
@@ -57,12 +59,6 @@ const WhatsAppIcon = () => (
     <path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4C2.7 15.6 2.2 13.8 2.2 12 2.2 6.6 6.6 2.2 12 2.2c2.6 0 5.1 1 6.9 2.9 1.8 1.8 2.9 4.3 2.9 6.9 0 5.4-4.4 9.8-9.8 9.8zM20.5 3.5C18.2 1.2 15.2 0 12 0 5.4 0 0 5.4 0 12c0 2.1.6 4.2 1.6 6L0 24l6.2-1.6c1.8 1 3.8 1.5 5.8 1.5 6.6 0 12-5.4 12-12 0-3.2-1.2-6.2-3.5-8.4z" />
   </svg>
 );
-
-/** "Mera Bushra Ashfaque" → "MA". */
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
-}
 
 /**
  * The header adapts to the content under it:
@@ -654,7 +650,7 @@ const Header: React.FC = () => {
           <section className="mm-card" aria-labelledby="mm-talk">
             <h2 id="mm-talk" className="mm-heading">{t("header.menuTalk")}</h2>
             <div className="mm-person">
-              <span className="mm-avatar" aria-hidden="true">{initials(MD_NAME)}</span>
+              <span className="mm-avatar" aria-hidden="true">{teamInitials(MD_NAME)}</span>
               <span>
                 <strong>{MD_NAME}</strong>
                 <small>{t("contact.mdLabel")}</small>

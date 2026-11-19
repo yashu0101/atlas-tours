@@ -6,6 +6,7 @@ import SmartImage from "@/components/SmartImage";
 import { TEAM_MEMBERS, teamInitials } from "@/lib/team";
 import HotelPartnerLogo from "@/components/HotelPartnerLogo";
 import { useT } from "@/lib/i18n/use-t";
+import { formatTeamPhone } from "@/lib/config";
 
 /**
  * "Our Team" section. Members are fixed in src/lib/team.ts (not admin-editable).
@@ -115,6 +116,26 @@ const Team: React.FC = () => {
       color: "var(--text2)",
       margin: "8px 0 0",
     },
+    phone: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 10,
+      marginTop: 14,
+      fontSize: 16,
+      fontWeight: 600,
+      color: "var(--primary)",
+      textDecoration: "none",
+    },
+    phoneIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: "50%",
+      display: "inline-grid",
+      placeItems: "center",
+      background: "rgba(230,126,34,0.12)",
+      color: "var(--orange-text)",
+      flexShrink: 0,
+    },
     desc: {
       fontSize: 16,
       lineHeight: 1.8,
@@ -134,6 +155,7 @@ const Team: React.FC = () => {
           column-gap: 72px;
         }
         #team .team-row + .team-row { margin-top: 110px; }
+        #team .team-phone:hover { color: var(--orange-text) !important; }
         #team .team-row.flip { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
         #team .team-row.flip .team-figure { order: 2; }
         /* Frame offset away from the text column. */
@@ -204,6 +226,21 @@ const Team: React.FC = () => {
                 ) : (
                   <p style={styles.org}>{t(m.org)}</p>
                 ))}
+                {m.phone && (
+                  <a
+                    href={`tel:${m.phone}`}
+                    className="team-phone"
+                    style={styles.phone}
+                    aria-label={t("team.callAria", { name: m.name ?? t(m.role), phone: formatTeamPhone(m.phone) })}
+                  >
+                    <span style={styles.phoneIcon} aria-hidden="true">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+                      </svg>
+                    </span>
+                    {formatTeamPhone(m.phone)}
+                  </a>
+                )}
                 <p style={styles.desc}>{t(m.description)}</p>
               </div>
             </article>

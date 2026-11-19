@@ -7,12 +7,25 @@ export const SITE_CONFIG: SiteConfig = {
   // C-09: public email pending client confirmation — change only this line.
   email: "info@atlastours.in",
   address: "Hotel Ganga Imperial, Tilamapur, Varanasi, Rustampur, Uttar Pradesh 221112",
-  tagline: "Spiritual Journey... Lifetime Memories",
+  tagline: "Spiritual Journeys, Lifetime Memories",
   established: 1983,
 };
 
 /** Travel-agency contact person (Managing Director); phone is SITE_CONFIG.phone. Change only here. */
-export const MD_NAME = "Mera Bushra Ashfaque";
+export const MD_NAME = "Mrs. Bushra Ashfaque";
+
+/** Direct numbers shown under people in Our Team (src/lib/team.ts). E.164 format. Change only here. */
+export const TEAM_PHONES = {
+  founder: "+919616074995",
+  generalManager: "+917268895995",
+  /** The MD is the agency's main contact, so her number is the site phone. */
+  managingDirector: SITE_CONFIG.phone,
+} as const;
+
+/** "+919616074995" → "+91 96160 74995" (Indian 10-digit mobile, 5 + 5 grouping). */
+export function formatTeamPhone(phone: string): string {
+  return phone.replace(/^\+91(\d{5})(\d{5})$/, "+91 $1 $2");
+}
 
 /** Partner hotel. Every "Hotel Ganga Imperial" mention on the site links here. Change only here. */
 export const HOTEL_PARTNER = {
@@ -142,7 +155,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     price: 22999,
     originalPrice: 29999,
     image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75",
-    description: "The sacred Char Dham Yatra covers all four holy abodes in Uttarakhand — Yamunotri, Gangotri, Kedarnath, and Badrinath. A life-changing spiritual journey through the majestic Himalayas. All packages are customized as per group requirements.",
+    description: "The sacred Char Dham Yatra covers all four holy abodes in Uttarakhand — Yamunotri, Gangotri, Kedarnath, and Badrinath. A life-changing pilgrimage through the Himalayas. Every package is customised to your group.",
     highlights: ["Yamunotri Temple", "Gangotri Temple", "Kedarnath Temple (16-18 km trek)", "Badrinath Temple & Mana Village", "Rishikesh Visit", "Himalayan Scenic Drives", "Kashi Vishwanath Temple Uttarkashi", "Gaurikund Trek Start Point"],
     itinerary: [
       "Day 1: Dehradun to Barkot — Pickup from Dehradun, drive via Mussoorie (subject to road conditions). Check-in and dinner. Overnight Barkot",
@@ -170,7 +183,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     price: 15999,
     originalPrice: 19999,
     image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=75",
-    description: "Visit the two most revered Dhams — Kedarnath and Badrinath — in one spiritual journey through the Garhwal Himalayas. Customized packages available for all group sizes.",
+    description: "Visit the two most revered Dhams — Kedarnath and Badrinath — in one pilgrimage through the Garhwal Himalayas. Customised packages for all group sizes.",
     highlights: ["Kedarnath Temple", "Badrinath Temple", "Mana Village", "Rishikesh", "Joshimath", "Gaurikund Trek", "Himalayan Views"],
     itinerary: [
       "Day 1: Dehradun/Haridwar to Guptkashi — Arrival and scenic drive. Overnight Guptkashi",
@@ -194,7 +207,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     price: 185000,
     originalPrice: 225000,
     image: "https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=600&q=75",
-    description: "The ultimate spiritual pilgrimage to Mount Kailash and the sacred Mansarovar Lake in Tibet. A once-in-a-lifetime journey that tests your endurance and deepens your faith. Fully customized packages with all permits and logistics handled.",
+    description: "The ultimate spiritual pilgrimage to Mount Kailash and the sacred Mansarovar Lake in Tibet. A once-in-a-lifetime yatra that tests your endurance and deepens your faith. Fully customised packages with all permits and logistics handled.",
     highlights: ["Mount Kailash Parikrama", "Mansarovar Lake Holy Dip", "Gauri Kund", "Kathmandu Pashupatinath", "Tibet Border Crossing", "High Altitude Acclimatization", "Medical Support Throughout"],
     itinerary: [
       "Day 1-2: Arrival Kathmandu — Acclimatization, Pashupatinath & Bouddhanath visit",
@@ -218,7 +231,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     price: 19999,
     originalPrice: 25999,
     image: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=600&q=75",
-    description: "A sacred journey through India's most revered Jain Tirthas — from the magnificent Shatrunjaya Hill in Palitana to the exquisite Ranakpur and Dilwara temples. Customized for Jain families and groups with pure Jain meals.",
+    description: "A pilgrimage to India's most revered Jain Tirthas — from the magnificent Shatrunjaya Hill in Palitana to the exquisite Ranakpur and Dilwara temples. Customised for Jain families and groups with pure Jain meals.",
     highlights: ["Palitana Shatrunjaya Hill", "Ranakpur Jain Temple", "Dilwara Temples Mount Abu", "Shravanabelagola Gommateshwara", "Parasnath Hill Jharkhand", "Girnar Hill", "Jain Meal Arrangements"],
     itinerary: [
       "Day 1: Arrival Ahmedabad — Transfer to Palitana. Overnight Palitana",
@@ -243,7 +256,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     price: 35999,
     originalPrice: 45999,
     image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&q=75",
-    description: "Experience the glamour of Dubai — from the towering Burj Khalifa and Dubai Mall to the golden desert safari and the charm of old Dubai souks. Includes Abu Dhabi city tour with Sheikh Zayed Mosque. Fully customized packages available.",
+    description: "Experience the glamour of Dubai — from the towering Burj Khalifa and Dubai Mall to the golden desert safari and the charm of old Dubai souks. Includes Abu Dhabi city tour with Sheikh Zayed Mosque. Fully customised packages available.",
     highlights: ["Burj Khalifa Observation Deck", "Desert Safari with BBQ Dinner", "Dubai Mall & Fountain Show", "Dhow Cruise Dinner", "Abu Dhabi City Tour", "Sheikh Zayed Grand Mosque", "Palm Jumeirah & Atlantis", "Gold & Spice Souk"],
     itinerary: [
       "Day 1: Arrival Dubai — Airport pickup, hotel check-in, evening Dhow Cruise dinner. Overnight Dubai",
@@ -265,7 +278,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     price: 29999,
     originalPrice: 39999,
     image: "https://images.unsplash.com/photo-1528181304800-259b08848526?w=600&q=75",
-    description: "Discover the Land of Smiles — vibrant Bangkok temples, Pattaya beach life, and island hopping. From street food to floating markets, Thailand offers something for everyone. Customized itineraries available.",
+    description: "Discover the Land of Smiles — vibrant Bangkok temples, Pattaya beach life, and island hopping. From street food to floating markets, Thailand offers something for everyone. Customised itineraries available.",
     highlights: ["Grand Palace & Wat Phra Kaew", "Pattaya Beach & Coral Island", "Floating Market", "Safari World", "Alcazar Show Pattaya", "Gems Gallery", "Thai Street Food Tour", "Phi Phi Islands (Phuket extension)"],
     itinerary: [
       "Day 1: Arrival Bangkok — Airport pickup, hotel check-in. Evening free. Overnight Bangkok",
@@ -311,7 +324,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     price: 32999,
     originalPrice: 42999,
     image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=75",
-    description: "Experience the Island of Gods — Bali's stunning temples, rice terraces, pristine beaches, and vibrant culture. From Ubud's spiritual heart to Kuta's beach vibes and Nusa Penida's dramatic cliffs. Fully customizable.",
+    description: "Experience the Island of Gods — Bali's stunning temples, rice terraces, pristine beaches, and vibrant culture. From Ubud's spiritual heart to Kuta's beach vibes and Nusa Penida's dramatic cliffs. Fully customisable.",
     highlights: ["Tanah Lot Temple Sunset", "Ubud Rice Terraces", "Kecak Fire Dance", "Nusa Penida Day Trip", "Kuta & Seminyak Beach", "Uluwatu Temple", "Bali Swing", "Water Sports"],
     itinerary: [
       "Day 1: Arrival Bali — Airport pickup, hotel check-in, Kuta Beach sunset. Overnight Kuta/Seminyak",
