@@ -91,8 +91,8 @@ export default function BookingsTab({ onChanged }: { onChanged: () => void }) {
       </div>
 
       <div className="adm-table-wrap">
-        <table className="adm-table stack">
-          <thead><tr><th>Reference</th><th>Guest</th><th>Contact</th><th>Package</th><th>Travel date</th><th>Travelers</th><th>Amount</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
+        <table className="adm-table stack compact">
+          <thead><tr><th>Reference</th><th>Guest</th><th>Contact</th><th>Package</th><th>Trip</th><th>Amount</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
             {rows.map(b => (
               <tr key={b.id}>
@@ -100,10 +100,9 @@ export default function BookingsTab({ onChanged }: { onChanged: () => void }) {
                 <td data-label="Guest"><strong>{b.name}</strong><span className="adm-sub">{b.city}</span></td>
                 <td data-label="Contact">{b.phone}<span className="adm-sub">{b.email}</span></td>
                 <td data-label="Package">{b.packageName}</td>
-                <td data-label="Travel date" className="tnum" style={{ whiteSpace: "nowrap" }}>{b.travelDate}</td>
-                <td data-label="Travelers" className="tnum">{b.travelers}</td>
+                <td data-label="Trip" className="tnum" style={{ whiteSpace: "nowrap" }}>{b.travelDate || "—"}<span className="adm-sub">{b.travelers} {b.travelers === 1 ? "traveler" : "travelers"}</span></td>
                 <td data-label="Amount" className="tnum" style={{ whiteSpace: "nowrap" }}>{"₹"}{b.amount?.toLocaleString("en-IN")}
-                  <button className="adm-btn" style={{ marginTop: 4 }} disabled={b.paymentStatus === "paid" || b.paymentStatus === "verifying"} onClick={() => onEditAmount(b)}>Edit</button></td>
+                  <span className="adm-sub"><button className="adm-btn" style={{ marginTop: 4 }} disabled={b.paymentStatus === "paid" || b.paymentStatus === "verifying"} onClick={() => onEditAmount(b)}>Edit</button></span></td>
                 <td data-label="Payment">
                   <select className="adm-sel" aria-label="Payment status" data-value={b.paymentStatus} value={b.paymentStatus} onChange={e => { const v = e.target.value; if (isOneOf(PAYMENT_STATUSES, v)) onUpdate(b.id, { paymentStatus: v }); }}>
                     <option value="pending">Pending</option><option value="verifying">Verifying</option><option value="paid">Paid</option><option value="failed">Failed</option><option value="refunded">Refunded</option>
@@ -117,8 +116,10 @@ export default function BookingsTab({ onChanged }: { onChanged: () => void }) {
                   </select>
                 </td>
                 <td data-label="">
-                  <button className="adm-btn" disabled={!isAwaitingPayment(b)} onClick={() => onCopyLink(b)}>{copiedId === b.id ? "Copied!" : "Copy pay link"}</button>{" "}
-                  <button className="adm-btn danger" onClick={() => onRemove(b.id)}>Delete</button>
+                  <div className="adm-actions-stack">
+                    <button className="adm-btn" disabled={!isAwaitingPayment(b)} onClick={() => onCopyLink(b)}>{copiedId === b.id ? "Copied!" : "Copy pay link"}</button>
+                    <button className="adm-btn danger" onClick={() => onRemove(b.id)}>Delete</button>
+                  </div>
                 </td>
               </tr>
             ))}

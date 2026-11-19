@@ -128,6 +128,10 @@ select.adm-sel:hover{border-color:var(--a-border-strong)}
 .adm-sub{display:block;font-size:.75rem;color:var(--a-muted)}
 .adm-table td strong{white-space:nowrap}
 .adm-table td:last-child{white-space:nowrap}
+.adm-actions-stack{display:flex;flex-direction:column;align-items:stretch;gap:6px}
+/* Wide tables (Bookings): tighter cells and wrapping names so every column fits on a laptop screen. */
+.adm-table.compact th,.adm-table.compact td{padding-left:10px;padding-right:10px}
+.adm-table.compact td strong{white-space:normal}
 .adm-ref{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.8rem;font-weight:600;color:var(--a-accent-text)}
 .adm-detail-row td{background:var(--a-surface-2)}
 .adm-message{white-space:pre-wrap;word-break:break-word;font-size:.85rem;line-height:1.65;color:var(--a-text);max-width:72ch}
