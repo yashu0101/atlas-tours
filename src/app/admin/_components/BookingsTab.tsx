@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import type { Booking } from "@/lib/types";
 import { bookingReference } from "@/lib/booking-ref";
+import { isAwaitingPayment } from "@/lib/upi";
 import { EMPTY_BOOKING_FILTERS, hasFilters, type BookingFilters } from "@/lib/inbox-filters";
 import { istDateTime } from "@/lib/inbox-csv";
 
@@ -116,7 +117,7 @@ export default function BookingsTab({ onChanged }: { onChanged: () => void }) {
                   </select>
                 </td>
                 <td data-label="">
-                  <button className="adm-btn" disabled={b.bookingStatus !== "confirmed" || (b.paymentStatus !== "pending" && b.paymentStatus !== "failed")} onClick={() => onCopyLink(b)}>{copiedId === b.id ? "Copied!" : "Copy pay link"}</button>{" "}
+                  <button className="adm-btn" disabled={!isAwaitingPayment(b)} onClick={() => onCopyLink(b)}>{copiedId === b.id ? "Copied!" : "Copy pay link"}</button>{" "}
                   <button className="adm-btn danger" onClick={() => onRemove(b.id)}>Delete</button>
                 </td>
               </tr>

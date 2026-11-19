@@ -22,6 +22,7 @@ const CONFIRMED = booking({ id: id(3), bookingStatus: "confirmed" });
 const VERIFYING = booking({ id: id(4), bookingStatus: "confirmed", paymentStatus: "verifying", utr: "412356789012", paymentSubmittedAt: "2026-11-11T06:00:00.000Z" });
 const REJECTED = booking({ id: id(5), bookingStatus: "confirmed", paymentStatus: "verifying", utr: "412356789013", paymentSubmittedAt: "2026-11-11T06:00:00.000Z" });
 const FAILED = booking({ id: id(6), paymentStatus: "failed" });
+const MARK_FAILED = booking({ id: id(7), bookingStatus: "confirmed", paymentStatus: "verifying", utr: "412356789014", paymentSubmittedAt: "2026-11-11T06:00:00.000Z" });
 
 let route: typeof import("@/app/api/bookings/route");
 let dbm: typeof import("@/lib/db");
@@ -29,7 +30,7 @@ let db: ReturnType<typeof useTempDb>;
 let adminToken: string;
 
 beforeAll(async () => {
-  db = useTempDb({ bookings: [FRESH, AMOUNT, CONFIRMED, VERIFYING, REJECTED, FAILED] });
+  db = useTempDb({ bookings: [FRESH, AMOUNT, CONFIRMED, VERIFYING, REJECTED, FAILED, MARK_FAILED] });
   route = await import("@/app/api/bookings/route");
   dbm = await import("@/lib/db");
   adminToken = await (await import("@/lib/auth")).createSession("admin@atlastours.com");
@@ -98,6 +99,16 @@ describe("PATCH /api/bookings", () => {
     expect(saved?.utr).toBeUndefined();
     expect(saved?.paymentSubmittedAt).toBeUndefined();
     expect(notifyAfterResponse).not.toHaveBeenCalled(); // already confirmed: no second pay link
+  });
+
+  it("clears the UTR when a claim is marked failed, so the customer can pay again", async () => {
+    const res = await patch({ id: MARK_FAILED.id, paymentStatus: "failed" });
+    expect(res.status).toBe(200);
+    const saved = await dbm.getBookingById(MARK_FAILED.id);
+    expect(saved?.paymentStatus).toBe("failed");
+    expect(saved?.utr).toBeUndefined();
+    expect(saved?.paymentSubmittedAt).toBeUndefined();
+    expect(notifyAfterResponse).not.toHaveBeenCalled();
   });
 
   it("still 400s with nothing to update and 401s without a session", async () => {

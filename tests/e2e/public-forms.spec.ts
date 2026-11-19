@@ -28,12 +28,12 @@ async function createBooking(page: Page, phone: string) {
 }
 
 /** Confirms a booking through the admin API (separate request context = its own cookie jar). */
-async function confirmBooking(request: APIRequestContext, id: string) {
+async function confirmBooking(request: APIRequestContext, id: string, extra: Record<string, unknown> = {}) {
   const login = await request.post("/api/auth/login", {
     data: { email: "admin@atlastours.com", password: "admin123" },
   });
   expect(login.ok()).toBeTruthy();
-  const patch = await request.patch("/api/bookings", { data: { id, bookingStatus: "confirmed" } });
+  const patch = await request.patch("/api/bookings", { data: { id, bookingStatus: "confirmed", ...extra } });
   expect(patch.ok()).toBeTruthy();
 }
 
@@ -59,6 +59,7 @@ test("confirmed booking shows the UPI QR and accepts a UTR (N-13)", async ({ pag
   await confirmBooking(request, id);
   const result = await trackBooking(page, reference, "9876566662");
 
+  await expect(result.getByText(/Your booking is confirmed\. Scan the QR code below to pay/)).toBeVisible();
   await expect(result.getByText("Pay via UPI", { exact: true })).toBeVisible();
   await expect(result.getByRole("img", { name: /UPI ID/ })).toBeVisible();
   await expect(result.getByText(`Amount: ₹${amount.toLocaleString("en-IN")}`)).toBeVisible();
@@ -67,6 +68,20 @@ test("confirmed booking shows the UPI QR and accepts a UTR (N-13)", async ({ pag
   await result.getByRole("button", { name: "Submit transaction ID" }).click();
   await expect(result.getByText("Verifying payment", { exact: true })).toBeVisible();
   await expect(result.getByText("Pay via UPI", { exact: true })).toHaveCount(0);
+});
+
+test("a failed payment can be paid again on /track (N-13)", async ({ page, request }) => {
+  const { id, reference } = await createBooking(page, "9876566664");
+  await confirmBooking(request, id, { paymentStatus: "failed" });
+  const result = await trackBooking(page, reference, "9876566664");
+
+  await expect(result.getByText("Payment failed", { exact: true })).toBeVisible();
+  await expect(result.getByText(/Scan the QR code below to pay again/)).toBeVisible();
+  await expect(result.getByText("Pay via UPI", { exact: true })).toBeVisible();
+
+  await result.getByLabel("UPI transaction ID (UTR)").fill("5123 5678 9012");
+  await result.getByRole("button", { name: "Submit transaction ID" }).click();
+  await expect(result.getByText("Verifying payment", { exact: true })).toBeVisible();
 });
 
 test("an invalid UTR shows an inline error without a request (N-13)", async ({ page, request }) => {

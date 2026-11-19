@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { upiPayLink, UPI_PAY_LINK, normalizeUtr } from "@/lib/upi";
+import { upiPayLink, UPI_PAY_LINK, normalizeUtr, isAwaitingPayment } from "@/lib/upi";
 
 describe("upi", () => {
   it("builds a per-booking link with amount and reference", () => {
@@ -16,5 +16,17 @@ describe("upi", () => {
   ])("normalizes UTR %s", (i, o) => expect(normalizeUtr(i)).toBe(o));
   it.each(["41235678901", "4123567890123", "41235678901A", ""])("rejects UTR %s", (i) =>
     expect(normalizeUtr(i)).toBeNull()
+  );
+  it.each([
+    ["confirmed", "pending", true],
+    ["confirmed", "failed", true],
+    ["confirmed", "verifying", false],
+    ["confirmed", "paid", false],
+    ["confirmed", "refunded", false],
+    ["pending", "pending", false],
+    ["pending", "failed", false],
+    ["cancelled", "failed", false],
+  ])("isAwaitingPayment(%s, %s) = %s", (bookingStatus, paymentStatus, expected) =>
+    expect(isAwaitingPayment({ bookingStatus, paymentStatus })).toBe(expected)
   );
 });

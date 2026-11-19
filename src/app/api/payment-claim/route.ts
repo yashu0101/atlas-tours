@@ -4,7 +4,7 @@ import { HttpError, badRequest, readJson, str, withHandler } from "@/lib/api";
 import { clientIp, consume } from "@/lib/rate-limit";
 import { isHoneypotTripped } from "@/lib/public-form";
 import { findBookingByReferenceAndPhone } from "@/lib/booking-lookup";
-import { normalizeUtr } from "@/lib/upi";
+import { isAwaitingPayment, normalizeUtr } from "@/lib/upi";
 import { notifyAfterResponse } from "@/lib/notify";
 import type { Booking } from "@/lib/types";
 
@@ -35,7 +35,7 @@ export const POST = withHandler(async (req) => {
   const booking = await findBookingByReferenceAndPhone(body);
   const utr = normalizeUtr(str(body, "utr", 40, true));
   if (!utr) throw badRequest("utr must be the 12-digit UPI transaction ID");
-  if (booking.bookingStatus !== "confirmed" || (booking.paymentStatus !== "pending" && booking.paymentStatus !== "failed")) {
+  if (!isAwaitingPayment(booking)) {
     throw new HttpError(409, "This booking is not awaiting payment.");
   }
 

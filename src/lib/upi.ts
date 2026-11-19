@@ -1,5 +1,14 @@
 import { UPI_CONFIG } from "@/lib/config";
 
+/**
+ * A booking the customer can pay (or pay again) by UPI: confirmed by the owner, with payment
+ * still pending or a previous attempt marked failed. Shared by /track, the payment-claim API
+ * and the admin pay link.
+ */
+export function isAwaitingPayment(b: { bookingStatus: string; paymentStatus: string }): boolean {
+  return b.bookingStatus === "confirmed" && (b.paymentStatus === "pending" || b.paymentStatus === "failed");
+}
+
 /** A UPI transaction reference (UTR / RRN) is exactly 12 digits. */
 export const UTR_LENGTH = 12;
 

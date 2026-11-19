@@ -35,6 +35,8 @@ const SECOND = mk("dddddddd-1111-4222-8333-444455556666");
 const HONEY = mk("eeeeeeee-1111-4222-8333-444455556666");
 const HOLDER_UTR = "777766665555";
 const HOLDER = mk("ffffffff-1111-4222-8333-444455556666", { paymentStatus: "verifying", utr: HOLDER_UTR });
+const FAILED = mk("abababab-1111-4222-8333-444455556666", { paymentStatus: "failed" });
+const VERIFYING = mk("cdcdcdcd-1111-4222-8333-444455556666", { paymentStatus: "verifying", utr: "888877776666" });
 
 let route: Route;
 let db: ReturnType<typeof useTempDb>;
@@ -43,7 +45,7 @@ let dbm: typeof import("@/lib/db");
 beforeAll(async () => {
   db = useTempDb({
     packages: [makePackage({ id: "pkg-1", name: "Ganga Aarti Tour" })],
-    bookings: [CONFIRMED, PENDING, PAID, SECOND, HONEY, HOLDER],
+    bookings: [CONFIRMED, PENDING, PAID, SECOND, HONEY, HOLDER, FAILED, VERIFYING],
   });
   route = await import("@/app/api/payment-claim/route");
   dbm = await import("@/lib/db");
@@ -85,6 +87,18 @@ describe("POST /api/payment-claim", () => {
 
   it("rejects an already paid booking", async () => {
     expect((await claim(PAID)).status).toBe(409);
+  });
+
+  it("accepts a new UTR after a failed payment", async () => {
+    const res = await claim(FAILED, { utr: "523456789012" });
+    expect(res.status).toBe(200);
+    expect(await dbm.getBookingById(FAILED.id)).toMatchObject({ paymentStatus: "verifying", utr: "523456789012" });
+    expect(notifyAfterResponse).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a second claim while one is being verified", async () => {
+    expect((await claim(VERIFYING, { utr: "623456789012" })).status).toBe(409);
+    expect((await dbm.getBookingById(VERIFYING.id))?.utr).toBe("888877776666");
   });
 
   it("returns the booking-status 404 for a wrong phone", async () => {

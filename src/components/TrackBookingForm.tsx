@@ -7,6 +7,7 @@ import { formatISTDate } from "@/app/blog/_lib/format-date";
 import { parseBookingReference } from "@/lib/booking-ref";
 import { PHONE_DISPLAY } from "@/lib/config";
 import PaymentPanel from "./PaymentPanel";
+import { isAwaitingPayment } from "@/lib/upi";
 import { useT } from "@/lib/i18n/use-t";
 import {
   Honeypot,
@@ -232,9 +233,12 @@ export default function TrackBookingForm({ initialReference = "" }: { initialRef
                 t("track.paymentStatusLabel"),
                 t(`track.paymentStatus.${result.paymentStatus}`),
                 PAYMENT_TONE[result.paymentStatus],
-                t(`track.paymentStatusHelp.${result.paymentStatus}`),
+                // Payable bookings get the pay-now / pay-again prompt, which points at the QR below.
+                isAwaitingPayment(result)
+                  ? t(result.paymentStatus === "failed" ? "track.paymentStatusHelp.payAgain" : "track.paymentStatusHelp.payNow")
+                  : t(`track.paymentStatusHelp.${result.paymentStatus}`),
               )}
-            {result.bookingStatus === "confirmed" && result.paymentStatus === "pending" && (
+            {isAwaitingPayment(result) && (
               <PaymentPanel
                 reference={result.reference}
                 phone={lookupPhone}

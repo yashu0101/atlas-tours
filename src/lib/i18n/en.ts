@@ -335,6 +335,7 @@ export const en = {
       verifying: "We have your transaction ID and are checking the payment. This usually takes a few hours.",
       paid: "We have received your payment. Thank you!",
       failed: "Your payment did not go through. Please contact us to try again.",
+      payAgain: "Your payment did not go through. Scan the QR code below to pay again, then enter your new UPI transaction ID.",
       refunded: "Your payment has been refunded.",
     },
     invalidReference: "Please enter the 8-character booking reference.",
