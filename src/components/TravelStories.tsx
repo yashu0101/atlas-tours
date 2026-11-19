@@ -207,7 +207,7 @@ const TravelStories: React.FC = () => {
                 loop
                 muted
                 playsInline
-                preload="metadata"
+                preload="auto"
                 controls={activeIdx === i}
                 onClick={(e) => e.stopPropagation()}
               />
@@ -238,13 +238,13 @@ const TravelStories: React.FC = () => {
       {/* Travel Moments */}
       <div className="reveal" style={{ ...styles.header, marginTop: 70 }}>
         <span style={styles.badge}>Travel Moments</span>
-        <h2 style={styles.heading}>Captured on the Journey</h2>
+        <h2 style={styles.heading}>Travel Moments</h2>
         <p style={styles.subheading}>
-          Behind-the-scenes moments that make every trip special.
+          A visual journey through the destinations we love.
         </p>
       </div>
 
-      <div className="stories-grid" style={{ ...styles.grid, gridTemplateColumns: "repeat(2, 1fr)", maxWidth: 740 }}>
+      <div className="stories-grid" style={{ ...styles.grid, gridTemplateColumns: "repeat(2, 1fr)", maxWidth: 900 }}>
         {travelMoments.map((story, i) => {
           const idx = stories.length + i;
           return (
@@ -268,7 +268,7 @@ const TravelStories: React.FC = () => {
                 }
               }}
             >
-              <div style={styles.videoWrap}>
+              <div style={{ ...styles.videoWrap, aspectRatio: "9/14" }}>
                 <video
                   ref={(el) => { videoRefs.current[idx] = el; }}
                   src={story.src}
@@ -276,7 +276,7 @@ const TravelStories: React.FC = () => {
                   loop
                   muted
                   playsInline
-                  preload="metadata"
+                  preload="auto"
                   controls={activeIdx === idx}
                   onClick={(e) => e.stopPropagation()}
                 />
