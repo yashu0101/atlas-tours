@@ -11,6 +11,7 @@ import FAQ from "@/components/FAQ";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import WhatsApp from "@/components/WhatsApp";
+import Showcase from "@/components/Showcase";
 import BackToTop from "@/components/BackToTop";
 import ScrollProgress from "@/components/ScrollProgress";
 import RevealObserver from "@/components/RevealObserver";
@@ -54,16 +55,12 @@ export default async function HomePage() {
       <a href="#main-content" className="skip-link">{translate("en", "common.skipToContent")}</a>
       <ScrollProgress />
       <Header />
-      {/* Unstyled block wrapper (Header is position:fixed, no CSS targets sibling structure),
-          so wrapping the sections in <main> does not change layout. */}
       <main id="main-content" tabIndex={-1}>
         <Hero />
         <WaveDivider fill="var(--bg2)" />
         <About />
         <WaveDivider fill="var(--bg)" />
         <Packages initialPackages={packages} />
-        {/* G-05: only rendered when at least one offer is visible; --bg3 keeps the wave
-            colours distinct from Packages (--bg) above and Gallery (--bg2) below. */}
         {offers.length > 0 && (
           <>
             <WaveDivider fill="var(--bg3)" />
@@ -73,6 +70,8 @@ export default async function HomePage() {
         <WaveDivider fill="var(--bg2)" />
         <Gallery initialImages={gallery} />
         <Counter />
+        <WaveDivider fill="var(--bg2)" />
+        <Showcase />
         <WaveDivider fill="var(--bg)" />
         <Reviews initialReviews={reviews} />
         <WaveDivider fill="var(--bg2)" />
