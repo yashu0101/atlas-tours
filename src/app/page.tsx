@@ -58,7 +58,7 @@ export default async function HomePage() {
       {/* Unstyled block wrapper (Header is position:fixed, no CSS targets sibling structure),
           so wrapping the sections in <main> does not change layout. */}
       <main id="main-content" tabIndex={-1}>
-        <Hero />
+        <Hero packageCount={packages.length} />
         <WaveDivider fill="var(--bg2)" />
         <About />
         <WaveDivider fill="var(--bg)" />

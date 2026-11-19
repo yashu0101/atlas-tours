@@ -78,6 +78,18 @@ export const NAV_ITEMS = [
  * UPI payment details shown in the Contact section and after a booking request
  * (QR supplied by the client: Hotel Ganga Imperial, payee "Dilip"). Change only here.
  */
+/**
+ * Q-7: the marketing numbers shown in the Hero stats and the Counter section — one source so the
+ * two can never disagree. (provisional) Awaiting the real figures from the client. The package
+ * count is not here: the Hero shows the live number of visible packages.
+ */
+export const SITE_STATS = {
+  happyTravellers: 500,
+  destinations: 10,
+  yearsExperience: 10,
+  tripsCompleted: 1000,
+} as const;
+
 export const UPI_CONFIG = {
   id: "d2095760-1@okicici",
   payee: "Dilip",

@@ -38,3 +38,22 @@ test("home page shows the team section and UPI payment details", async ({ page }
   // UPI payment lives only on /track (per-booking QR); Contact no longer shows a UPI card.
   await expect(contact.getByText("Pay via UPI")).toHaveCount(0);
 });
+
+test("hero package stat matches the visible packages (Q-7)", async ({ page }) => {
+  await page.goto("/");
+  const hero = page.locator("#home");
+  await expect(hero.getByText("Tour Packages")).toBeVisible();
+  await expect(hero.getByText("15+")).toHaveCount(0);
+  await expect(hero.getByText("3", { exact: true })).toBeVisible();
+});
+
+test("contact form shows a failed submit as an alert, not a success box (Q-3)", async ({ page }) => {
+  await page.route("**/api/enquiry", route => route.fulfill({ status: 500, body: '{"error":"x"}' }));
+  await page.goto("/");
+  const contact = page.locator("#contact");
+  await contact.locator("#contact-name").fill("Test User");
+  await contact.locator("#contact-phone").fill("9876543210");
+  await contact.locator('button[type="submit"]').click();
+  await expect(contact.getByRole("alert")).toContainText("Something went wrong");
+  await expect(contact.getByRole("status")).toHaveCount(0);
+});

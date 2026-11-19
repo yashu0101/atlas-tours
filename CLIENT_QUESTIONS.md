@@ -20,7 +20,7 @@ The email notifications (G-02 / N-10) and multiple admin logins (N-8) are built.
 |---|---|---|
 | C-09 | Which email is correct for the website: **info@atlastours.in** or **atlastourandtravels01@gmail.com**? | **(provisional)** `info@atlastours.in` everywhere, from `SITE_CONFIG` in `src/lib/config.ts` |
 | C-09 | Is **+91 6388360881** the right phone *and* WhatsApp number? | Kept as is |
-| Q-7 | Correct numbers for the hero stats (it says 500+ / 15+ packages / 10+ destinations, while the counter says 50+ and the site has 3 packages) | Unchanged |
+| Q-7 | Correct numbers for the stats on the home page: happy travellers, destinations, years of experience, trips completed | **(provisional)** The top banner and the counter section now show the same numbers: 500+ travellers, **10+ destinations** (they used to say 10+ and 50+), 10+ years, 1000+ trips. The "Tour Packages" number now counts the packages actually on the site (3 today) instead of "15+" |
 | Q-2 | Production domain (used for canonical links, sharing previews, sitemap) | Falls back to `https://atlastours.in` |
 
 ## Pricing and booking
@@ -57,7 +57,7 @@ The email notifications (G-02 / N-10) and multiple admin logins (N-8) are built.
 | # | Question |
 |---|---|
 | E-10 | **Already applied (please sign off):** for readability/accessibility, grey and orange text is slightly darker, and **text on the orange buttons is now dark navy instead of white** (white on orange was too faint to pass accessibility standards). Keep this, or prefer a darker orange button with white text? |
-| Q-3 | Contact form errors currently use the same green box as success. OK to show errors in red? |
+| Q-3 | **Already applied (please sign off):** if the contact form fails to send, the message is now shown in a **red** box (it used to be the same green box as a successful send), matching the booking, tracking and trip-plan forms. |
 | F-11 | **Resolved — stock photo applied.** The old "Sacred Odisha Pilgrimage" photo no longer existed online; the package now shows a free stock photo of the Konark Sun Temple. If you have your own photo, send it (or set it in Admin → Packages → Edit → Image URL). |
 | Q-5 | **Resolved — sample offers removed.** When you have real offers (title, discount, code, start and end date), add them in Admin → Offers; the Offers section on the home page appears automatically while an offer is valid. |
 | G-06 | Package filter/search and gallery category tabs: review the new UI |

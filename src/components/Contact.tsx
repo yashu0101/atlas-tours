@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import type { TourPackage } from "@/lib/types";
 import { SITE_CONFIG, PHONE_DISPLAY } from "@/lib/config";
 import { useT } from "@/lib/i18n/use-t";
+import { errorStyle } from "@/components/public-form-ui";
 
 type PackageOption = Pick<TourPackage, "id" | "name">;
 
@@ -386,12 +387,13 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
             </div>
           </div>
           {submitted && (
-            <div style={styles.successMsg}>
+            <div role="status" style={styles.successMsg}>
               {t("contact.success")}
             </div>
           )}
+          {/* Q-3: errors use the shared red error box (as on /track, /plan-trip and the booking form). */}
           {submitError && (
-            <div style={styles.successMsg}>
+            <div role="alert" style={errorStyle}>
               {t("contact.error", { phone: contactCards[0].value })}
             </div>
           )}
