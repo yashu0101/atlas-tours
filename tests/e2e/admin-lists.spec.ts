@@ -205,6 +205,14 @@ test("bookings: verifying filter, UTR display, edit amount and copy pay link", a
   await page.getByRole("button", { name: "Clear" }).click();
   await page.getByRole("searchbox", { name: "Search bookings" }).fill(tag);
 
+  // While verifying, the amount and pay link are locked.
+  await expect(row.getByRole("button", { name: "Edit" })).toBeDisabled();
+  await expect(row.getByRole("button", { name: "Copy pay link" })).toBeDisabled();
+
+  // Owner rejects the UTR: back to pending clears it and unlocks both.
+  await row.getByRole("combobox", { name: "Payment status" }).selectOption("pending");
+  await expect(row).not.toContainText("UTR 712356789012");
+
   // Edit amount.
   await row.getByRole("button", { name: "Edit" }).click();
   await expect(row).toContainText("₹9,000");
