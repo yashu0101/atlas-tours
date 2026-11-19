@@ -11,7 +11,7 @@ import { translate, type Lang } from "@/lib/i18n";
 export type PackageCategory = TourPackage["category"];
 
 /** Display order of the category chips; any category present in data appears in this order. */
-export const CATEGORY_ORDER: readonly PackageCategory[] = ["spiritual", "cultural", "heritage", "adventure"];
+export const CATEGORY_ORDER: readonly PackageCategory[] = ["spiritual", "cultural", "heritage", "adventure", "pilgrimage", "international"];
 
 /** English labels of the known categories (catalog keys `packages.categories.*`, G-08). */
 export const CATEGORY_LABELS: Record<PackageCategory, string> = {
@@ -19,12 +19,14 @@ export const CATEGORY_LABELS: Record<PackageCategory, string> = {
   cultural: translate("en", "packages.categories.cultural"),
   heritage: translate("en", "packages.categories.heritage"),
   adventure: translate("en", "packages.categories.adventure"),
+  pilgrimage: "Pilgrimage",
+  international: "International",
 };
 
-export const categoryLabel = (c: string, lang: Lang = "en"): string =>
-  (CATEGORY_ORDER as readonly string[]).includes(c)
-    ? translate(lang, `packages.categories.${c as PackageCategory}`)
-    : c ? c.charAt(0).toUpperCase() + c.slice(1) : "";
+export const categoryLabel = (c: string, _lang: Lang = "en"): string => {
+  if (c in CATEGORY_LABELS) return CATEGORY_LABELS[c as PackageCategory];
+  return c ? c.charAt(0).toUpperCase() + c.slice(1) : "";
+};
 
 /** Categories that actually occur in `packages`, in CATEGORY_ORDER (unknown values last, alphabetically). */
 export function packageCategories(packages: readonly Pick<TourPackage, "category">[]): string[] {

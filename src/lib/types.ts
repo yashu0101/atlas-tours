@@ -10,7 +10,7 @@ export interface TourPackage {
   highlights: string[];
   itinerary: string[];
   inclusions: string[];
-  category: "spiritual" | "cultural" | "adventure" | "heritage";
+  category: "spiritual" | "cultural" | "adventure" | "heritage" | "pilgrimage" | "international";
   hidden?: boolean;
   createdAt: string;
 }
@@ -119,6 +119,7 @@ export interface SiteConfig {
   email: string;
   address: string;
   tagline: string;
+  established?: number;
 }
 
 export interface DB {

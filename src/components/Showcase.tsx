@@ -17,30 +17,41 @@ const showcaseItems = [
   },
 ];
 
-const packagePosters = [
+const packageCategories = [
   {
-    id: "pkg-odisha",
-    src: "/images/pkg-odisha.jpeg",
-    title: "Odisha Tour Package",
-    duration: "6 Days / 5 Nights",
-    price: "₹11,999",
-    destinations: "Bhubaneswar • Puri • Konark • Chilika",
+    label: "Hindu Pilgrimage",
+    tag: "pilgrimage",
+    packages: [
+      { id: "pkg-chardham", src: "https://images.unsplash.com/photo-1626621331169-5f68be3ed4da?w=600&q=75", title: "Char Dham Yatra", duration: "11 Days / 10 Nights", price: "₹22,999", destinations: "Yamunotri • Gangotri • Kedarnath • Badrinath" },
+      { id: "pkg-dodham", src: "https://images.unsplash.com/photo-1626621331169-5f68be3ed4da?w=600&q=75", title: "Do Dham Yatra", duration: "7 Days / 6 Nights", price: "₹15,999", destinations: "Kedarnath • Badrinath" },
+      { id: "pkg-up-spiritual", src: "/images/pkg-up-spiritual.jpeg", title: "Spiritual Wonders of UP", duration: "3 to 8 Days", price: "₹12,699", destinations: "Ayodhya • Varanasi • Prayagraj • Agra" },
+      { id: "pkg-kailash", src: "https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=600&q=75", title: "Kailash Mansarovar Yatra", duration: "14-16 Days", price: "₹1,85,000", destinations: "Kailash Mansarovar • Tibet" },
+    ],
   },
   {
-    id: "pkg-rajasthan",
-    src: "/images/pkg-rajasthan.jpeg",
-    title: "Royal Rajasthan Tour",
-    duration: "8 Days / 7 Nights",
-    price: "₹17,500",
-    destinations: "Jaipur • Jodhpur • Jaisalmer • Udaipur",
+    label: "Jain Pilgrimage",
+    tag: "jain",
+    packages: [
+      { id: "pkg-jain-pilgrimage", src: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=600&q=75", title: "Jain Pilgrimage Tour", duration: "8 Days / 7 Nights", price: "₹19,999", destinations: "Palitana • Ranakpur • Dilwara • Shravanabelagola" },
+    ],
   },
   {
-    id: "pkg-up-spiritual",
-    src: "/images/pkg-up-spiritual.jpeg",
-    title: "Spiritual Wonders of UP",
-    duration: "3 to 8 Days",
-    price: "₹12,699",
-    destinations: "Ayodhya • Varanasi • Prayagraj • Agra",
+    label: "Domestic",
+    tag: "domestic",
+    packages: [
+      { id: "pkg-rajasthan", src: "/images/pkg-rajasthan.jpeg", title: "Royal Rajasthan Tour", duration: "8 Days / 7 Nights", price: "₹17,500", destinations: "Jaipur • Jodhpur • Jaisalmer • Udaipur" },
+      { id: "pkg-odisha", src: "/images/pkg-odisha.jpeg", title: "Odisha Tour Package", duration: "6 Days / 5 Nights", price: "₹11,999", destinations: "Bhubaneswar • Puri • Konark • Chilika" },
+    ],
+  },
+  {
+    label: "International",
+    tag: "international",
+    packages: [
+      { id: "pkg-dubai", src: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&q=75", title: "Dubai Tour Package", duration: "5 Days / 4 Nights", price: "₹35,999", destinations: "Dubai • Abu Dhabi • UAE" },
+      { id: "pkg-thailand", src: "https://images.unsplash.com/photo-1528181304800-259b08848526?w=600&q=75", title: "Thailand Tour Package", duration: "6 Days / 5 Nights", price: "₹29,999", destinations: "Bangkok • Pattaya • Phuket" },
+      { id: "pkg-vietnam", src: "https://images.unsplash.com/photo-1528127269322-539801943592?w=600&q=75", title: "Vietnam Tour Package", duration: "6 Days / 5 Nights", price: "₹34,999", destinations: "Hanoi • Ha Long Bay • Ho Chi Minh" },
+      { id: "pkg-bali", src: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=75", title: "Bali Tour Package", duration: "6 Days / 5 Nights", price: "₹32,999", destinations: "Bali • Ubud • Kuta • Nusa Penida" },
+    ],
   },
 ];
 
@@ -388,44 +399,63 @@ const Showcase: React.FC = () => {
         </div>
       </div>
 
-      {/* Tour Package Posters */}
+      {/* All Packages — Customized */}
       <div className="reveal" style={styles.packagesHeader}>
         <span style={styles.badge}>Tour Packages</span>
         <h2 style={styles.heading}>Our Signature Tours</h2>
         <p style={styles.subheading}>
-          Handcrafted itineraries for unforgettable journeys. Click to explore full details.
+          Serving travelers since 1983. All packages are fully customized. Click to explore full details.
         </p>
       </div>
 
-      <div className="showcase-grid" style={styles.pkgGrid}>
-        {packagePosters.map((pkg, i) => (
-          <Link
-            key={pkg.id}
-            href={`/packages/${pkg.id}`}
-            className={`showcase-card card-hover reveal stagger-${i + 1}`}
-            style={styles.pkgCard}
-          >
-            <div style={styles.pkgImgWrap}>
-              <Image
-                className="showcase-img"
-                src={pkg.src}
-                alt={pkg.title}
-                fill
-                style={{ objectFit: "cover" }}
-              />
-            </div>
-            <div style={styles.pkgInfo}>
-              <div style={styles.pkgTitle}>{pkg.title}</div>
-              <div style={styles.pkgDest}>{pkg.destinations}</div>
-              <div style={styles.pkgMeta}>
-                <span style={styles.pkgDuration}>{pkg.duration}</span>
-                <span style={styles.pkgPrice}>{pkg.price}</span>
-              </div>
-              <span style={styles.viewBtn}>View Details →</span>
-            </div>
-          </Link>
-        ))}
-      </div>
+      {packageCategories.map((cat) => (
+        <div key={cat.tag}>
+          <div className="reveal" style={{ textAlign: "center" as const, marginTop: 50, marginBottom: 28 }}>
+            <span style={{
+              display: "inline-block",
+              background: "linear-gradient(135deg, #1a3a6b, #2a5298)",
+              color: "#fff",
+              padding: "8px 24px",
+              borderRadius: 24,
+              fontSize: 15,
+              fontWeight: 700,
+              letterSpacing: 1,
+            }}>
+              {cat.label}
+            </span>
+          </div>
+          <div className="showcase-grid" style={styles.pkgGrid}>
+            {cat.packages.map((pkg, i) => (
+              <Link
+                key={pkg.id}
+                href={`/packages/${pkg.id}`}
+                className={`showcase-card card-hover reveal stagger-${i + 1}`}
+                style={styles.pkgCard}
+              >
+                <div style={styles.pkgImgWrap}>
+                  <Image
+                    className="showcase-img"
+                    src={pkg.src}
+                    alt={pkg.title}
+                    fill
+                    style={{ objectFit: "cover" }}
+                    unoptimized={pkg.src.startsWith("http")}
+                  />
+                </div>
+                <div style={styles.pkgInfo}>
+                  <div style={styles.pkgTitle}>{pkg.title}</div>
+                  <div style={styles.pkgDest}>{pkg.destinations}</div>
+                  <div style={styles.pkgMeta}>
+                    <span style={styles.pkgDuration}>{pkg.duration}</span>
+                    <span style={styles.pkgPrice}>{pkg.price}</span>
+                  </div>
+                  <span style={styles.viewBtn}>View Details →</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ))}
     </section>
   );
 };

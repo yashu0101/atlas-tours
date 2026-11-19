@@ -72,9 +72,9 @@ export const en = {
     heading: "Crafting Unforgettable",
     headingAccent: "Travel Experiences",
     description:
-      "Atlas Tours is a premier travel agency specializing in spiritual and cultural tours across India. From the sacred ghats of Varanasi to the majestic peaks of the Himalayas, we curate journeys that transform and inspire. With a commitment to quality and personalized service, we ensure every trip becomes a cherished memory.",
-    trustedTitle: "Trusted Agency",
-    trustedDesc: "Registered and reliable travel partner with years of trust.",
+      "Atlas Tour & Travels, serving travelers since 1983, is a premier travel agency specializing in spiritual, cultural, and international tours. From the sacred ghats of Varanasi to the majestic peaks of the Himalayas, Dubai, Thailand, and beyond — we curate journeys that transform and inspire. With over 40 years of trust and personalized service, we ensure every trip becomes a cherished memory.",
+    trustedTitle: "Trusted Since 1983",
+    trustedDesc: "Over 40 years of trusted travel services across India and abroad.",
     pricesTitle: "Best Prices",
     pricesDesc: "Competitive pricing with no hidden charges or surprises.",
     guidesTitle: "Expert Guides",
