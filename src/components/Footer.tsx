@@ -186,7 +186,7 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer style={styles.footer}>
+    <footer data-header-tone="dark" style={styles.footer}>
       <style>{`
         .footer-link:hover { color: #f39c12 !important; padding-left: 6px !important; }
         .footer-social:hover { background: linear-gradient(135deg, #e67e22, #f39c12) !important; border-color: transparent !important; }

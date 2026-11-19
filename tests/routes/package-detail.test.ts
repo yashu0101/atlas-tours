@@ -72,3 +72,12 @@ describe("sitemap", () => {
     expect(urls.some((u) => /\/(track|wishlist|compare)$/.test(u))).toBe(false);
   });
 });
+
+describe("/packages listing", () => {
+  it("renders, and the sitemap lists it", async () => {
+    const listing = await import("@/app/packages/page");
+    await expect(listing.default({ searchParams: Promise.resolve({}) })).resolves.toBeTruthy();
+    const urls = (await sitemap.default()).map((e) => e.url);
+    expect(urls.some((u) => u.endsWith("/packages"))).toBe(true);
+  });
+});

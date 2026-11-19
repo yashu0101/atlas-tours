@@ -177,7 +177,7 @@ const Reviews: React.FC<{ initialReviews: Review[] }> = ({ initialReviews }) => 
   const review = reviews[current];
 
   return (
-    <section id="reviews" style={styles.section}>
+    <section id="reviews" data-header-tone="dark" style={styles.section}>
       <style>{`
         .review-arrow:hover { background: rgba(243,156,18,0.3) !important; border-color: #f39c12 !important; }
       `}</style>

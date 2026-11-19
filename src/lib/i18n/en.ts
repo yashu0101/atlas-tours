@@ -115,6 +115,36 @@ export const en = {
     bookNowAria: "Book {name}",
     /** Prefilled WhatsApp message for a package enquiry. */
     enquiryMessage: "Hi! I'm interested in the {name} package.",
+    /** Home section: link to the full /packages listing. */
+    viewAll: "See all packages",
+  },
+  /** /packages listing page. */
+  packagesPage: {
+    metaTitle: "Tour Packages",
+    metaDescription: "All Atlas Tours packages with prices, day-by-day itineraries and what is included. Send a booking request online or ask us on WhatsApp.",
+    heading: "Tour packages",
+    subheading: "Pick a tour, read the day-by-day plan and send a booking request. Prices start at ₹{price} per person.",
+    subheadingEmpty: "Pick a tour, read the day-by-day plan and send a booking request.",
+    searchLabel: "Search packages",
+    searchPlaceholder: "Search by place, temple or tour name",
+    clearSearch: "Clear search",
+    sortLabel: "Sort by",
+    sort: {
+      recommended: "Recommended",
+      "price-asc": "Price: low to high",
+      "price-desc": "Price: high to low",
+      "duration-asc": "Shortest trip first",
+    },
+    resultCount: "{count} packages",
+    resultCountOne: "1 package",
+    noMatches: "No packages match your search.",
+    clearFilters: "Clear search and filters",
+    noPackages: "No packages are listed right now. Message us on WhatsApp and we will plan a trip for you.",
+    customTitle: "Didn't find the right trip?",
+    customText: "Tell us your dates, group size and the places you want to see, and we will plan a tour around them.",
+    customCta: "Plan my trip",
+    whatsappCta: "Ask on WhatsApp",
+    whatsappMessage: "Hi! I'd like help choosing a tour package.",
   },
   packageDetail: {
     notFoundTitle: "Package not found",
@@ -131,6 +161,21 @@ export const en = {
     bookSubtitle: "Send a booking request — no payment is taken online.",
     orAsk: "or ask us anything",
     enquireWhatsApp: "Enquire on WhatsApp",
+    /** Facts strip under the hero. */
+    factsAria: "Trip summary",
+    factDuration: "Duration",
+    factPlaces: "Places",
+    factStyle: "Trip style",
+    factPrice: "Price",
+    /** Mobile-only link from the facts strip down to the booking form. */
+    jumpToBook: "Check dates and book",
+    youSave: "You save ₹{amount}",
+    itineraryDays: "{count}-day plan",
+    customTitle: "Want to change something?",
+    customText: "We can add days, swap hotels or change stops to suit your group.",
+    customCta: "Plan a custom trip",
+    moreTitle: "More packages",
+    moreLink: "See all packages",
   },
   booking: {
     formAria: "Book {name}",

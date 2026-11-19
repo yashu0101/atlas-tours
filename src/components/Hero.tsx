@@ -310,7 +310,7 @@ const Hero: React.FC<HeroProps> = ({ packageCount }) => {
   };
 
   return (
-    <section id="home" style={styles.section}>
+    <section id="home" data-header-tone="dark" style={styles.section}>
       <style>{`
         @keyframes float-dot {
           0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
