@@ -27,6 +27,9 @@ const stories = [
     description: "Best moments captured from our travelers' unforgettable adventures",
     location: "Across India",
   },
+];
+
+const travelMoments = [
   {
     src: "/videos/travel-story-5.mp4",
     title: "Travel Moments",
@@ -231,6 +234,76 @@ const TravelStories: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {/* Travel Moments */}
+      <div className="reveal" style={{ ...styles.header, marginTop: 70 }}>
+        <span style={styles.badge}>Travel Moments</span>
+        <h2 style={styles.heading}>Captured on the Journey</h2>
+        <p style={styles.subheading}>
+          Behind-the-scenes moments that make every trip special.
+        </p>
+      </div>
+
+      <div className="stories-grid" style={{ ...styles.grid, gridTemplateColumns: "repeat(2, 1fr)", maxWidth: 740 }}>
+        {travelMoments.map((story, i) => {
+          const idx = stories.length + i;
+          return (
+            <div
+              key={idx}
+              className={`story-card card-hover reveal stagger-${i + 1}${activeIdx === idx ? " is-playing" : ""}`}
+              style={styles.card}
+              onClick={() => {
+                const v = videoRefs.current[idx];
+                if (!v) return;
+                if (v.paused) {
+                  v.muted = false;
+                  v.play().catch(() => {
+                    v.muted = true;
+                    v.play();
+                  });
+                  handlePlay(idx);
+                } else {
+                  v.pause();
+                  handlePause(idx);
+                }
+              }}
+            >
+              <div style={styles.videoWrap}>
+                <video
+                  ref={(el) => { videoRefs.current[idx] = el; }}
+                  src={story.src}
+                  style={styles.video}
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                  controls={activeIdx === idx}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <div className="story-play-overlay">
+                  <div className="story-play-btn">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="story-location-tag">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f39c12" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  {story.location}
+                </div>
+                <div className="story-gradient" />
+                <div className="story-info">
+                  <div style={styles.title}>{story.title}</div>
+                  <div style={styles.desc}>{story.description}</div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 };
@@ -273,7 +346,7 @@ const styles: Record<string, React.CSSProperties> = {
     maxWidth: 1100,
     margin: "0 auto",
     display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
+    gridTemplateColumns: "repeat(4, 1fr)",
     gap: 22,
   },
   card: {
