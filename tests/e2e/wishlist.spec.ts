@@ -1,9 +1,9 @@
 import { expect, test, type Locator } from "@playwright/test";
 
 // N-7: wishlist + comparison. Runs against the seed data (see playwright.config.ts → JSON_DB_PATH):
-// pkg-varanasi "Divine Varanasi & Prayagraj", pkg-odisha "Sacred Odisha Pilgrimage". Not pkg-rajasthan: admin.spec.ts hides it while the specs run in parallel.
+// pkg-varanasi "Divine Varanasi & Prayagraj", pkg-odisha "Odisha Temples & Beaches Tour". Not pkg-rajasthan: admin.spec.ts hides it while the specs run in parallel.
 const VARANASI = "Divine Varanasi & Prayagraj";
-const ODISHA = "Sacred Odisha Pilgrimage";
+const ODISHA = "Odisha Temples & Beaches Tour";
 
 /** Presses a toggle until it reports pressed (a click before hydration is otherwise lost). */
 async function pressUntilOn(toggle: Locator) {

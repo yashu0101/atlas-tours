@@ -14,6 +14,7 @@ beforeAll(async () => {
     packages: [
       makePackage({ id: "pkg-1", name: "Ganga Aarti Tour", price: 2500 }),
       makePackage({ id: "pkg-hidden", name: "Secret Tour", price: 9999, hidden: true }),
+      makePackage({ id: "pkg-group", name: "Group Tour", price: 1000, minTravelers: 4 }),
     ],
   });
   route = await import("@/app/api/book/route");
@@ -78,6 +79,15 @@ describe("POST /api/book with the BookingForm payload (G-01)", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ success: true });
     expect(db.read().bookings).toHaveLength(before);
+  });
+
+  it("enforces the package's minimum group size (N-18)", async () => {
+    const few = await post({ ...formPayload("pkg-group"), travelers: 3 });
+    expect(few.status).toBe(400);
+    expect((await few.json()).error).toMatch(/at least 4 travelers/);
+    const enough = await post({ ...formPayload("pkg-group"), travelers: 4 });
+    expect(enough.status).toBe(200);
+    expect((await enough.json()).amount).toBe(4000);
   });
 
   it("rejects an invalid phone with 400", async () => {

@@ -16,8 +16,8 @@ export const SEED_PACKAGES: readonly TourPackage[] = DEFAULT_PACKAGES.map(p => (
 
 export const SEED_REVIEWS: readonly Review[] = [
   { id: "rev-1", name: "Rahul Sharma", rating: 5, text: "Amazing Varanasi trip! Everything was perfectly organized. The Ganga Aarti experience was unforgettable.", city: "Delhi", packageName: "Divine Varanasi & Prayagraj", active: true, createdAt: "2024-06-01T00:00:00.000Z" },
-  { id: "rev-2", name: "Priya Patel", rating: 5, text: "Rajasthan tour was incredible. Desert safari and fort visits were highlights. Great value for money!", city: "Mumbai", packageName: "Royal Rajasthan Explorer", active: true, createdAt: "2024-07-01T00:00:00.000Z" },
-  { id: "rev-3", name: "Amit Kumar", rating: 4, text: "Odisha pilgrimage was very well planned. Jagannath Temple darshan was smooth. Recommended!", city: "Kolkata", packageName: "Sacred Odisha Pilgrimage", active: true, createdAt: "2024-08-01T00:00:00.000Z" },
+  { id: "rev-2", name: "Priya Patel", rating: 5, text: "Rajasthan tour was incredible. Desert safari and fort visits were highlights. Great value for money!", city: "Mumbai", packageName: "Royal Rajasthan Tour", active: true, createdAt: "2024-07-01T00:00:00.000Z" },
+  { id: "rev-3", name: "Amit Kumar", rating: 4, text: "Odisha pilgrimage was very well planned. Jagannath Temple darshan was smooth. Recommended!", city: "Kolkata", packageName: "Odisha Temples & Beaches Tour", active: true, createdAt: "2024-08-01T00:00:00.000Z" },
 ];
 
 export const SEED_GALLERY: readonly GalleryImage[] = [

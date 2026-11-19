@@ -23,6 +23,10 @@ export const POST = withHandler(async (req) => {
   const pkg = found && !found.hidden ? found : null;
   if (!pkg) throw notFound("Package not found");
   if (typeof pkg.price !== "number" || !Number.isFinite(pkg.price)) throw new Error(`Package ${pkg.id} has no valid price`);
+  // N-18: some packages need a minimum group (e.g. "Minimum 4 pax" on the Rajasthan brochure).
+  if (pkg.minTravelers && contact.travelers < pkg.minTravelers) {
+    throw badRequest(`this package needs at least ${pkg.minTravelers} travelers`);
+  }
 
   const booking = await addBooking({
     name: contact.name,
