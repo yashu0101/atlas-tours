@@ -4,6 +4,7 @@ import RevealWords from "@/components/RevealWords";
 import React from "react";
 import SmartImage from "@/components/SmartImage";
 import { TEAM_MEMBERS } from "@/lib/team";
+import HotelPartnerLogo from "@/components/HotelPartnerLogo";
 import { useT } from "@/lib/i18n/use-t";
 
 /**
@@ -169,7 +170,13 @@ const Team: React.FC = () => {
                 ) : (
                   <h3 style={styles.name}>{t(m.role)}</h3>
                 )}
-                {m.org && <p style={styles.org}>{t(m.org)}</p>}
+                {m.org && (m.hotelLogo ? (
+                  <div style={{ margin: "12px 0 4px" }}>
+                    <HotelPartnerLogo size="sm" ariaLabel={t("team.orgLinkAria", { org: t(m.org) })} />
+                  </div>
+                ) : (
+                  <p style={styles.org}>{t(m.org)}</p>
+                ))}
                 <p style={styles.desc}>{t(m.description)}</p>
               </div>
             </article>

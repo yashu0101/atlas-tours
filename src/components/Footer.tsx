@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SITE_CONFIG, PHONE_DISPLAY, SOCIAL_LINKS } from "@/lib/config";
+import { SOCIAL_ICONS } from "@/components/social-icons";
+import HotelPartnerLogo from "@/components/HotelPartnerLogo";
 import { useT } from "@/lib/i18n/use-t";
 
 const exploreLinks = [
@@ -37,18 +39,6 @@ const tripLinks = [
   { label: "footer.wishlist", href: "/wishlist" },
   { label: "footer.writeReview", href: "/reviews/new" },
 ] as const;
-
-const SOCIAL_ICONS: Record<(typeof SOCIAL_LINKS)[number]["name"], React.ReactNode> = {
-  Facebook: <path d="M14 8.5V6.8c0-.8.2-1.3 1.4-1.3H17V2.3c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.3H8.2v3.6h2.6V22H14v-9.9h2.6l.4-3.6z" />,
-  Instagram: (
-    <path
-      fillRule="evenodd"
-      d="M12 2.2c-2.7 0-3 0-4 .1-1 0-1.8.2-2.4.5-.6.2-1.2.6-1.7 1.1-.5.5-.9 1.1-1.1 1.7-.3.6-.4 1.4-.5 2.4 0 1-.1 1.4-.1 4s0 3 .1 4c0 1 .2 1.8.5 2.4.2.6.6 1.2 1.1 1.7.5.5 1.1.9 1.7 1.1.6.3 1.4.4 2.4.5 1 0 1.4.1 4 .1s3 0 4-.1c1 0 1.8-.2 2.4-.5.6-.2 1.2-.6 1.7-1.1.5-.5.9-1.1 1.1-1.7.3-.6.4-1.4.5-2.4 0-1 .1-1.4.1-4s0-3-.1-4c0-1-.2-1.8-.5-2.4-.2-.6-.6-1.2-1.1-1.7-.5-.5-1.1-.9-1.7-1.1-.6-.3-1.4-.4-2.4-.5-1 0-1.3-.1-4-.1zm0 1.8c2.6 0 2.9 0 3.9.1.9 0 1.5.2 1.8.3.4.2.8.4 1.1.7.3.3.6.7.7 1.1.1.3.3.8.3 1.8.1 1 .1 1.3.1 3.9s0 2.9-.1 3.9c0 .9-.2 1.5-.3 1.8-.2.4-.4.8-.7 1.1-.3.3-.7.6-1.1.7-.3.1-.8.3-1.8.3-1 .1-1.3.1-3.9.1s-2.9 0-3.9-.1c-.9 0-1.5-.2-1.8-.3-.4-.2-.8-.4-1.1-.7-.3-.3-.6-.7-.7-1.1-.1-.3-.3-.8-.3-1.8-.1-1-.1-1.3-.1-3.9s0-2.9.1-3.9c0-.9.2-1.5.3-1.8.2-.4.4-.8.7-1.1.3-.3.7-.6 1.1-.7.3-.1.8-.3 1.8-.3 1-.1 1.3-.1 3.9-.1zm0 3.1a4.9 4.9 0 100 9.8 4.9 4.9 0 000-9.8zM12 15a3 3 0 110-6 3 3 0 010 6zm5.1-9.3a1.2 1.2 0 100 2.3 1.2 1.2 0 000-2.3z"
-    />
-  ),
-  YouTube: <path d="M21.6 7.2a2.5 2.5 0 00-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 002.4 7.2 26 26 0 002 12a26 26 0 00.4 4.8 2.5 2.5 0 001.8 1.8c1.6.4 7.8.4 7.8.4s6.2 0 7.8-.4a2.5 2.5 0 001.8-1.8A26 26 0 0022 12a26 26 0 00-.4-4.8zM10 15V9l5.2 3z" />,
-  X: <path d="M17.8 3h3l-6.6 7.6L22 21h-6.1l-4.8-6.2L5.6 21h-3l7.1-8.1L2.2 3h6.2l4.3 5.7zm-1 16.2h1.7L7.3 4.7H5.5z" />,
-};
 
 /* ---------- Ghat skyline: the one decorative element, drawn once at module load. ---------- */
 
@@ -285,7 +275,7 @@ const Footer: React.FC = () => {
         .ft-brand span { font-size: 24px; font-weight: 800; }
         .ft-brand b { color: var(--gold); font-weight: 800; }
         .ft-desc { font-size: 14px; line-height: 1.8; color: var(--ft-text); margin: 0 0 18px; max-width: 30em; }
-        .ft-partner { margin: 0; font-size: 13px; line-height: 1.6; color: var(--ft-gold); font-weight: 500; }
+        .ft-partner p { margin: 0 0 10px; font-size: 13px; line-height: 1.6; color: var(--ft-gold); font-weight: 500; }
 
         .ft h3 { font-size: 15px; font-weight: 600; color: var(--ft-gold); margin: 6px 0 18px; }
         .ft ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
@@ -394,7 +384,10 @@ const Footer: React.FC = () => {
                 <span>Atlas<b>Tours</b></span>
               </a>
               <p className="ft-desc">{t("footer.description")}</p>
-              <p className="ft-partner">{t("footer.partner")}</p>
+              <div className="ft-partner">
+                <p>{t("footer.partner")}</p>
+                <HotelPartnerLogo ariaLabel={t("footer.partnerAria")} />
+              </div>
             </div>
 
             <nav aria-labelledby="ft-explore">

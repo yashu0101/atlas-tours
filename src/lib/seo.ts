@@ -34,8 +34,10 @@ export function travelAgencyJsonLd() {
     email: SITE_CONFIG.email,
     address: {
       "@type": "PostalAddress",
+      streetAddress: "Hotel Ganga Imperial, Tilamapur, Rustampur",
       addressLocality: "Varanasi",
       addressRegion: "Uttar Pradesh",
+      postalCode: "221112",
       addressCountry: "IN",
     },
     areaServed: [

@@ -4,7 +4,13 @@ import RevealWords from "@/components/RevealWords";
 import React from "react";
 import SmartImage from "@/components/SmartImage";
 import { useT } from "@/lib/i18n/use-t";
+import { SITE_CONFIG } from "@/lib/config";
 
+/**
+ * About section. One focal element — the "Since 1983" plaque over the Varanasi photo —
+ * and a quiet text column: lead line, one paragraph, a light 2×2 list (no boxed cards)
+ * and the two CTAs. People (founder, GM, MD) live in Our Team and Contact, not here.
+ */
 const features = [
   { icon: "shield", title: "about.trustedTitle", desc: "about.trustedDesc" },
   { icon: "tag", title: "about.pricesTitle", desc: "about.pricesDesc" },
@@ -21,42 +27,11 @@ const iconPaths: Record<string, string> = {
 
 const About: React.FC = () => {
   const t = useT();
-  const styles: Record<string, React.CSSProperties> = {
+  const s: Record<string, React.CSSProperties> = {
     section: {
-      padding: "100px 24px",
+      padding: "100px 24px 110px",
       fontFamily: "'Poppins', sans-serif",
       background: "var(--bg2)",
-    },
-    container: {
-      maxWidth: 1200,
-      margin: "0 auto",
-      display: "flex",
-      gap: 60,
-      alignItems: "center",
-      flexWrap: "wrap",
-    },
-    imageCol: {
-      flex: "1 1 400px",
-      position: "relative",
-    },
-    imgWrap: {
-      borderRadius: 20,
-      overflow: "hidden",
-      boxShadow: "0 20px 60px rgba(26,58,107,0.15)",
-      position: "relative",
-    },
-    imgDecor: {
-      position: "absolute",
-      bottom: -20,
-      right: -20,
-      width: 150,
-      height: 150,
-      border: "4px solid #e67e22",
-      borderRadius: 20,
-      zIndex: -1,
-    },
-    textCol: {
-      flex: "1 1 400px",
     },
     badge: {
       display: "inline-block",
@@ -75,144 +50,164 @@ const About: React.FC = () => {
       fontWeight: 800,
       color: "var(--primary)",
       lineHeight: 1.25,
-      marginBottom: 20,
+      marginBottom: 22,
     },
-    accent: {
-      color: "var(--orange-text)",
+    accent: { color: "var(--orange-text)" },
+    lead: {
+      fontSize: "clamp(17px, 1.6vw, 19px)",
+      lineHeight: 1.65,
+      fontWeight: 500,
+      color: "var(--text)",
+      margin: "0 0 14px",
+      maxWidth: "34em",
     },
-    desc: {
-      fontSize: 16,
-      lineHeight: 1.8,
+    body: {
+      fontSize: 15.5,
+      lineHeight: 1.85,
       color: "var(--text2)",
-      marginBottom: 32,
-    },
-    featuresGrid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(2, 1fr)",
-      gap: 20,
-      marginBottom: 36,
-    },
-    featureCard: {
-      display: "flex",
-      gap: 14,
-      alignItems: "flex-start",
-      padding: 16,
-      borderRadius: 12,
-      background: "var(--card-bg)",
-      boxShadow: "var(--shadow)",
-      transition: "transform 0.3s, box-shadow 0.3s",
-    },
-    featureIcon: {
-      width: 44,
-      height: 44,
-      borderRadius: 10,
-      background: "linear-gradient(135deg, #e67e22, #f39c12)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      flexShrink: 0,
+      margin: "0 0 34px",
+      maxWidth: "38em",
     },
     featureTitle: {
       fontSize: 15,
       fontWeight: 700,
       color: "var(--primary)",
-      marginBottom: 4,
+      margin: "0 0 4px",
     },
     featureDesc: {
-      fontSize: 13,
+      fontSize: 13.5,
       color: "var(--text2)",
-      lineHeight: 1.5,
-    },
-    btnGroup: {
-      display: "flex",
-      gap: 14,
-      flexWrap: "wrap",
+      lineHeight: 1.6,
+      margin: 0,
     },
     btnPrimary: {
       background: "linear-gradient(135deg, #e67e22, #f39c12)",
       color: "var(--on-accent)",
-      border: "none",
       borderRadius: 28,
       padding: "12px 32px",
       fontSize: 15,
       fontWeight: 600,
-      cursor: "pointer",
       textDecoration: "none",
       boxShadow: "0 6px 20px rgba(230,126,34,0.35)",
-      fontFamily: "'Poppins', sans-serif",
     },
     btnOutline: {
-      background: "transparent",
       color: "var(--primary)",
       border: "2px solid var(--primary)",
       borderRadius: 28,
-      padding: "12px 32px",
+      padding: "10px 30px",
       fontSize: 15,
       fontWeight: 600,
-      cursor: "pointer",
       textDecoration: "none",
-      fontFamily: "'Poppins', sans-serif",
     },
   };
 
   return (
-    <section id="about" style={styles.section}>
+    <section id="about" style={s.section}>
       <style>{`
-        .about-feature:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important; }
-        @media (max-width: 768px) {
-          .about-features-grid { grid-template-columns: 1fr !important; }
+        #about .ab-wrap {
+          max-width: 1180px; margin: 0 auto;
+          display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+          gap: clamp(48px, 6vw, 88px); align-items: center;
+        }
+        #about .ab-media { position: relative; padding: 0 0 56px 0; }
+        #about .ab-photo {
+          border-radius: 22px; overflow: hidden; aspect-ratio: 4 / 5;
+          box-shadow: 0 24px 60px rgba(26,58,107,0.18); position: relative;
+        }
+        #about .ab-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        /* The one bold element: founding-year plaque overlapping the photo. */
+        #about .ab-plaque {
+          position: absolute; right: -28px; bottom: 0;
+          width: min(260px, 70%);
+          background: linear-gradient(155deg, #1a3a6b 0%, #0f2547 100%);
+          color: #fff; border-radius: 18px; padding: 22px 24px 22px;
+          box-shadow: 0 20px 44px rgba(10,22,40,0.35);
+          border-left: 4px solid #e67e22;
+        }
+        #about .ab-plaque-since { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.78); margin: 0; }
+        #about .ab-plaque-year {
+          font-size: clamp(52px, 6vw, 68px); font-weight: 800; line-height: 1;
+          letter-spacing: -0.03em; color: var(--gold-text); margin: 2px 0 10px;
+        }
+        #about .ab-plaque-note { font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,0.88); margin: 0; }
+        #about .ab-features {
+          display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px;
+          margin: 0 0 38px; padding: 0; list-style: none;
+        }
+        #about .ab-feature {
+          display: flex; gap: 14px; align-items: flex-start;
+          padding: 18px 0; border-top: 1px solid rgba(101,112,113,0.22);
+        }
+        #about .ab-icon {
+          width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          background: rgba(230,126,34,0.12); color: #e67e22;
+        }
+        #about .ab-ctas { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+        #about .ab-ctas a { transition: transform 0.2s, box-shadow 0.2s; }
+        #about .ab-ctas a:hover { transform: translateY(-2px); }
+        [data-theme="dark"] #about .ab-icon { background: rgba(243,156,18,0.14); color: #f6b144; }
+        [data-theme="dark"] #about .ab-feature { border-top-color: rgba(148,163,184,0.2); }
+        @media (max-width: 920px) {
+          #about .ab-wrap { grid-template-columns: 1fr; }
+          #about .ab-media { max-width: 460px; margin: 0 auto; width: 100%; }
+          #about .ab-plaque { right: -8px; }
+        }
+        @media (max-width: 560px) {
+          #about .ab-features { grid-template-columns: 1fr; }
+          #about .ab-photo { aspect-ratio: 4 / 4.4; }
+          #about .ab-plaque { right: 12px; width: min(240px, 78%); padding: 18px 20px; }
         }
       `}</style>
-      <div style={styles.container}>
-        <div className="reveal-left" style={styles.imageCol}>
-          <div className="img-zoom reveal-wipe scroll-zoom about-img-3d" style={styles.imgWrap}>
+
+      <div className="ab-wrap">
+        <div className="ab-media reveal-left">
+          <div className="ab-photo img-zoom about-img-3d">
             <SmartImage
-              src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=500&q=75"
+              src="https://images.unsplash.com/photo-1561359313-0639aad49ca6?w=900&q=75"
               alt={t("about.imageAlt")}
-              width={500}
-              height={600}
-              sizes="(max-width: 920px) 100vw, 570px"
-              style={{ width: "100%", height: "auto", display: "block" }}
+              width={900}
+              height={1125}
+              sizes="(max-width: 920px) 460px, 520px"
             />
           </div>
-          <div style={styles.imgDecor} />
+          <div className="ab-plaque">
+            <p className="ab-plaque-since">{t("about.plaqueSince")}</p>
+            <p className="ab-plaque-year">{SITE_CONFIG.established}</p>
+            <p className="ab-plaque-note">{t("about.plaqueNote")}</p>
+          </div>
         </div>
 
-        <div className="reveal-right" style={styles.textCol}>
-          <span style={styles.badge}>{t("about.badge")}</span>
-          <h2 className="heading-line line-left" style={styles.heading}>
+        <div className="reveal-right">
+          <span style={s.badge}>{t("about.badge")}</span>
+          <h2 className="heading-line line-left" style={s.heading}>
             <RevealWords text={t("about.heading")} />{" "}
-            <span style={styles.accent}>
+            <span style={s.accent}>
               <RevealWords text={t("about.headingAccent")} start={t("about.heading").split(/\s+/).length} />
             </span>
           </h2>
-          <p style={styles.desc}>
-            {t("about.description")}
-          </p>
+          <p style={s.lead}>{t("about.lead")}</p>
+          <p style={s.body}>{t("about.body")}</p>
 
-          <div className="about-features-grid" style={styles.featuresGrid}>
-            {features.map((f, i) => (
-              <div key={f.title} className={`about-feature card-hover tilt-3d reveal stagger-${i + 1}`} style={styles.featureCard}>
-                <div style={styles.featureIcon}>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <ul className="ab-features">
+            {features.map((f) => (
+              <li key={f.title} className="ab-feature">
+                <span className="ab-icon" aria-hidden="true">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d={iconPaths[f.icon]} />
                   </svg>
-                </div>
+                </span>
                 <div>
-                  <div style={styles.featureTitle}>{t(f.title)}</div>
-                  <div style={styles.featureDesc}>{t(f.desc)}</div>
+                  <h3 style={s.featureTitle}>{t(f.title)}</h3>
+                  <p style={s.featureDesc}>{t(f.desc)}</p>
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
 
-          <div style={styles.btnGroup}>
-            <a href="#packages" style={styles.btnPrimary}>
-              {t("about.explorePackages")}
-            </a>
-            <a href="#contact" style={styles.btnOutline}>
-              {t("about.getInTouch")}
-            </a>
+          <div className="ab-ctas">
+            <a href="#packages" style={s.btnPrimary}>{t("about.explorePackages")}</a>
+            <a href="#contact" style={s.btnOutline}>{t("about.getInTouch")}</a>
           </div>
         </div>
       </div>

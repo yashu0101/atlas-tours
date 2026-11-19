@@ -6,10 +6,19 @@ export const SITE_CONFIG: SiteConfig = {
   whatsapp: "916388360881",
   // C-09: public email pending client confirmation — change only this line.
   email: "info@atlastours.in",
-  address: "Varanasi, Uttar Pradesh, India",
+  address: "Hotel Ganga Imperial, Tilamapur, Varanasi, Rustampur, Uttar Pradesh 221112",
   tagline: "Spiritual Journey... Lifetime Memories",
   established: 1983,
 };
+
+/** Travel-agency contact person (Managing Director); phone is SITE_CONFIG.phone. Change only here. */
+export const MD_NAME = "Mera Bushra Ashfaque";
+
+/** Partner hotel. Every "Hotel Ganga Imperial" mention on the site links here. Change only here. */
+export const HOTEL_PARTNER = {
+  name: "Hotel Ganga Imperial",
+  url: "https://hotel-ganga-imperial.vercel.app/",
+} as const;
 
 /**
  * Phone formatted for display ("+91 6388360881"), derived from SITE_CONFIG.phone.

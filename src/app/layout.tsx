@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Poppins, Marcellus } from "next/font/google";
 import { AppProvider } from "@/lib/context";
 import { SITE_CONFIG } from "@/lib/config";
 import { SITE_URL, SITE_TITLE, SITE_DESCRIPTION, OG_IMAGE, travelAgencyJsonLd, jsonLdString } from "@/lib/seo";
@@ -12,6 +12,14 @@ const poppins = Poppins({
   weight: ["300", "400", "500", "600", "700", "800", "900"],
   display: "swap",
   variable: "--font-poppins",
+});
+
+// Hotel Ganga Imperial's display font, used only by its wordmark (HotelPartnerLogo.tsx).
+const marcellus = Marcellus({
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+  variable: "--font-marcellus",
 });
 
 // Runs before first paint so dark-theme users don't see a light flash (D-05).
@@ -52,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // data-scroll-behavior tells Next.js that globals.css sets `scroll-behavior: smooth` on <html>,
     // so it can switch smooth scrolling off during route transitions (e.g. opening /packages/[id])
     // while hash links on the home page keep scrolling smoothly.
-    <html lang="en" className={poppins.variable} data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en" className={`${poppins.variable} ${marcellus.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

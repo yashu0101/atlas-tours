@@ -12,6 +12,8 @@ export type TeamMember = {
   role: MessageKey;
   /** Organisation line under the heading (e.g. the partner hotel). */
   org?: MessageKey;
+  /** Show the org as the Hotel Ganga Imperial logo badge, linking to the hotel website. */
+  hotelLogo?: boolean;
   description: MessageKey;
   alt: MessageKey;
   image: string;
@@ -22,6 +24,7 @@ export type TeamMember = {
 export const TEAM_MEMBERS: TeamMember[] = [
   {
     id: "founder",
+    name: "Ashfaque Ahmed",
     role: "team.founderRole",
     org: "team.founderOrg",
     description: "team.founderDesc",
@@ -32,21 +35,14 @@ export const TEAM_MEMBERS: TeamMember[] = [
   },
   {
     id: "general-manager",
+    name: "Dinesh Singh Rathore",
     role: "team.gmRole",
     org: "team.gmOrg",
+    hotelLogo: true,
     description: "team.gmDesc",
     alt: "team.gmAlt",
     image: "/images/team/general-manager.jpg",
     width: 960,
     height: 1280,
-  },
-  {
-    id: "front-desk",
-    role: "team.frontDeskRole",
-    description: "team.frontDeskDesc",
-    alt: "team.frontDeskAlt",
-    image: "/images/team/front-desk-team.jpg",
-    width: 1032,
-    height: 800,
   },
 ];
