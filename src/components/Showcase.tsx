@@ -287,6 +287,56 @@ const Showcase: React.FC = () => {
             }}>
               Atlas Tour & Travels
             </div>
+            <div style={{
+              marginTop: 14,
+              padding: "12px 16px",
+              background: "var(--bg2)",
+              borderRadius: 12,
+              textAlign: "left" as const,
+            }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#e67e22", letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: 6 }}>
+                Varanasi Office
+              </div>
+              <div style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.5 }}>
+                Hotel Ganga Imperial, Tilamapur,<br />
+                Varanasi, Rustampur, Uttar Pradesh 221112
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Travel Manager */}
+        <div style={{
+          marginTop: 20,
+          padding: "18px 22px",
+          background: "var(--card-bg)",
+          borderRadius: 16,
+          boxShadow: "var(--shadow)",
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+        }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #1a3a6b, #2a5298)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f39c12" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
+          <div style={{ textAlign: "left" as const }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--primary)" }}>Bushra Ashfaque</div>
+            <div style={{ fontSize: 12, color: "#e67e22", fontWeight: 600, marginBottom: 2 }}>Travel Manager</div>
+            <a href="tel:+916388360881" style={{ fontSize: 13, color: "var(--text2)", textDecoration: "none" }}>
+              +91 6388360881
+            </a>
           </div>
         </div>
       </div>
