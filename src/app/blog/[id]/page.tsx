@@ -176,7 +176,7 @@ export default async function BlogPostPage({ params }: Params) {
             )}
           </header>
 
-          <div style={styles.imgWrap}>
+          <div className="reveal-wipe scroll-zoom" style={styles.imgWrap}>
             <SmartImage
               src={post.image || "/images/placeholder.jpg"}
               alt={post.title}

@@ -1,4 +1,5 @@
 "use client";
+import RevealWords from "@/components/RevealWords";
 
 import React from "react";
 import SmartImage from "@/components/SmartImage";
@@ -132,8 +133,11 @@ const Team: React.FC = () => {
 
       <div className="reveal" style={styles.header}>
         <span style={styles.badge}>{t("team.badge")}</span>
-        <h2 style={styles.heading}>
-          {t("team.heading")} <span style={styles.accent}>{t("team.headingAccent")}</span>
+        <h2 className="heading-line" style={styles.heading}>
+          <RevealWords text={t("team.heading")} />{" "}
+          <span style={styles.accent}>
+            <RevealWords text={t("team.headingAccent")} start={t("team.heading").split(/\s+/).length} />
+          </span>
         </h2>
         <p style={styles.subheading}>{t("team.subheading")}</p>
       </div>

@@ -211,7 +211,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ pkg, index, headingLevel = "h
 
   return (
     <div className={className} style={styles.card}>
-      <div className="img-zoom" style={styles.cardImgWrap}>
+      <div className="img-zoom scroll-zoom" style={styles.cardImgWrap}>
         {/* Whole image opens the detail page; mouse-only duplicate of the title link, so hidden from AT/Tab. */}
         <Link href={packagePath(pkg.id)} tabIndex={-1} aria-hidden="true" style={styles.cardImgLink}>
           <SmartImage
