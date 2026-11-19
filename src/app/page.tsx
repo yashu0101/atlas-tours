@@ -58,7 +58,7 @@ export default async function HomePage() {
       {/* Unstyled block wrapper (Header is position:fixed, no CSS targets sibling structure),
           so wrapping the sections in <main> does not change layout. */}
       <main id="main-content" tabIndex={-1}>
-        <Hero />
+        <Hero packageCount={packages.length} />
         <WaveDivider fill="var(--bg2)" />
         <About />
         <WaveDivider fill="var(--bg)" />
@@ -73,8 +73,9 @@ export default async function HomePage() {
         )}
         <WaveDivider fill="var(--bg2)" />
         <Gallery initialImages={gallery} />
+        {/* No wave between Counter and Reviews: both are dark navy, and a --bg wave drew a
+            white band between them. */}
         <Counter />
-        <WaveDivider fill="var(--bg)" />
         <Reviews initialReviews={reviews} />
         <WaveDivider fill="var(--bg2)" />
         <Team />

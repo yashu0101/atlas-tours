@@ -32,3 +32,14 @@ describe("site contact config", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+// Q-7: Hero stats and the Counter section read the same numbers from SITE_STATS.
+describe("site stats", () => {
+  it("has no hardcoded stat numbers in Hero or Counter", () => {
+    for (const f of ["Hero.tsx", "Counter.tsx"]) {
+      const src = readFileSync(join(process.cwd(), "src", "components", f), "utf8");
+      expect(src, f).toContain("SITE_STATS");
+      expect(src, f).not.toMatch(/"\d+\+"|num:\s*\d/);
+    }
+  });
+});

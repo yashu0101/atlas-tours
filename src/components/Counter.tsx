@@ -2,28 +2,29 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useT } from "@/lib/i18n/use-t";
+import { SITE_STATS } from "@/lib/config";
 
 const counters = [
   {
-    num: 500,
+    num: SITE_STATS.happyTravellers,
     suffix: "+",
     label: "counter.happyTravelers" as const,
     icon: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75",
   },
   {
-    num: 50,
+    num: SITE_STATS.destinations,
     suffix: "+",
     label: "counter.destinations" as const,
     icon: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0zM12 13a3 3 0 100-6 3 3 0 000 6z",
   },
   {
-    num: 10,
+    num: SITE_STATS.yearsExperience,
     suffix: "+",
     label: "counter.yearsExperience" as const,
     icon: "M12 15l-2 5-3-2-3 3V4a1 1 0 011-1h10a1 1 0 011 1v17l-3-3-3 2z",
   },
   {
-    num: 1000,
+    num: SITE_STATS.tripsCompleted,
     suffix: "+",
     label: "counter.tripsCompleted" as const,
     icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4",

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { SITE_CONFIG } from "@/lib/config";
+import { SITE_CONFIG, SITE_STATS } from "@/lib/config";
 import { useT } from "@/lib/i18n/use-t";
 import { shouldAutoplayVideo } from "@/lib/images";
 
@@ -18,14 +18,19 @@ type NetworkInformationLike = { saveData?: boolean; effectiveType?: string };
 
 const typingKeys = ["hero.typing1", "hero.typing2", "hero.typing3"] as const;
 
-const stats = [
-  { value: "500+", labelKey: "hero.statHappyTravellers" },
-  { value: "15+", labelKey: "hero.statTourPackages" },
-  { value: "10+", labelKey: "hero.statDestinations" },
-] as const;
+type HeroProps = {
+  /** Q-7: number of publicly visible packages, so the stat matches the Packages section. */
+  packageCount: number;
+};
 
-const Hero: React.FC = () => {
+const Hero: React.FC<HeroProps> = ({ packageCount }) => {
   const t = useT();
+  // Q-7: same figures as the Counter section (SITE_STATS); the package stat is hidden when there are none.
+  const stats = [
+    { value: `${SITE_STATS.happyTravellers}+`, labelKey: "hero.statHappyTravellers" as const },
+    ...(packageCount > 0 ? [{ value: String(packageCount), labelKey: "hero.statTourPackages" as const }] : []),
+    { value: `${SITE_STATS.destinations}+`, labelKey: "hero.statDestinations" as const },
+  ];
   const [textIndex, setTextIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
