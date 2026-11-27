@@ -19,6 +19,7 @@ import { SITE_CONFIG } from "@/lib/config";
 import { OG_IMAGE, SITE_URL, jsonLdString } from "@/lib/seo";
 import type { TourPackage } from "@/lib/types";
 import { getT } from "@/lib/i18n";
+import { groupSizeLabel, hasPricing } from "@/lib/pricing";
 import {
   BOOKING_ANCHOR,
   categoryLabel,
@@ -371,6 +372,36 @@ const styles: Record<string, React.CSSProperties> = {
     transition: "all 0.3s",
   },
 
+  // N-22: price grid. Scrolls sideways inside its own box on narrow screens.
+  pricingWrap: {
+    overflowX: "auto",
+    borderRadius: 14,
+    border: "1px solid var(--pkgd-divider, #e8edf3)",
+    background: "var(--card-bg)",
+  },
+  pricingTable: { width: "100%", borderCollapse: "collapse", fontSize: 13.5 },
+  pricingTh: {
+    padding: "11px 9px",
+    textAlign: "right",
+    fontSize: 12.5,
+    fontWeight: 600,
+    color: "var(--text2)",
+    background: "var(--bg3)",
+    verticalAlign: "bottom",
+    lineHeight: 1.3,
+  },
+  pricingRowHead: { padding: "11px 9px 11px 14px", textAlign: "left", fontWeight: 700, color: "var(--primary)", whiteSpace: "nowrap" },
+  pricingTd: {
+    padding: "11px 9px",
+    textAlign: "right",
+    color: "var(--text)",
+    borderTop: "1px solid var(--pkgd-divider, #e8edf3)",
+    whiteSpace: "nowrap",
+    fontVariantNumeric: "tabular-nums",
+  },
+  pricingNote: { fontSize: 13, color: "var(--text2)", margin: "12px 0 0", lineHeight: 1.6 },
+  priceFrom: { fontSize: 13, fontWeight: 500, marginRight: 4 },
+
   // scrollMarginTop keeps the fixed header off the form when "Book Now" jumps to #book.
   aside: { position: "sticky", top: 96, scrollMarginTop: 96 },
   bookingCard: {
@@ -483,6 +514,8 @@ export default async function PackageDetailPage({ params }: Params) {
   const route = tripRoute(itinerary, pkg.startsFrom);
   const routeNights = route.reduce((n, s) => n + s.nights, 0);
   const hasDiscount = typeof pkg.originalPrice === "number" && pkg.originalPrice > pkg.price;
+  const pricing = hasPricing(pkg) ? pkg.pricing : null;
+  const hasExtras = !!pricing?.tiers.some(tr => tr.extraBed !== undefined || tr.childNoBed !== undefined);
 
   return (
     <>
@@ -604,6 +637,7 @@ export default async function PackageDetailPage({ params }: Params) {
               <div className="pkgd-fact" style={styles.fact}>
                 <dt style={styles.factLabel}>{t("packageDetail.factPrice")}</dt>
                 <dd style={styles.factValue}>
+                  {pricing && <span style={{ ...styles.priceFrom, color: "var(--text2)" }}>{t("packageDetail.priceFrom")}</span>}
                   <span style={styles.factPrice}>&#8377;{formatPrice(pkg.price)}</span>
                   <span style={styles.factPer}>{t("packageDetail.perPerson")}</span>
                   {pkg.priceNote && <span style={styles.factNote}>{pkg.priceNote}</span>}
@@ -617,7 +651,8 @@ export default async function PackageDetailPage({ params }: Params) {
 
           <div style={styles.body}>
             <div className="pkgd-layout" style={styles.layout}>
-              <div>
+              {/* minWidth 0: on phones the grid is 1fr; the price table must scroll inside its box, not widen the page. */}
+              <div style={{ minWidth: 0 }}>
                 {pkg.description && (
                   <section className="reveal" style={styles.section} aria-labelledby="pkgd-overview">
                     <div style={styles.sectionHead}>
@@ -745,6 +780,42 @@ export default async function PackageDetailPage({ params }: Params) {
                   </section>
                 )}
 
+                {pricing && (
+                  <section className="reveal" style={styles.section} aria-labelledby="pkgd-pricing">
+                    <div style={styles.sectionHead}>
+                      <h2 id="pkgd-pricing" style={styles.sectionTitle}>{t("packageDetail.pricingTitle")}</h2>
+                      <span style={styles.sectionMeta}>{t("packageDetail.pricingMeta")}</span>
+                    </div>
+                    <div style={styles.pricingWrap} tabIndex={0} role="region" aria-labelledby="pkgd-pricing">
+                      <table style={styles.pricingTable}>
+                        <thead>
+                          <tr>
+                            <th scope="col" style={{ ...styles.pricingTh, textAlign: "left", paddingLeft: 14 }}>{t("packageDetail.pricingCategory")}</th>
+                            {pricing.groupSizes.map((_, i) => (
+                              <th key={i} scope="col" style={styles.pricingTh}>{groupSizeLabel(pricing.groupSizes, i)}</th>
+                            ))}
+                            {hasExtras && <th scope="col" style={styles.pricingTh}>{t("packageDetail.pricingExtraBed")}</th>}
+                            {hasExtras && <th scope="col" style={styles.pricingTh}>{t("packageDetail.pricingChildNoBed")}</th>}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pricing.tiers.map(tier => (
+                            <tr key={tier.name}>
+                              <th scope="row" style={{ ...styles.pricingTd, ...styles.pricingRowHead }}>{tier.name}</th>
+                              {tier.prices.map((p, i) => (
+                                <td key={i} style={styles.pricingTd}>{p === null ? "—" : <>&#8377;{formatPrice(p)}</>}</td>
+                              ))}
+                              {hasExtras && <td style={styles.pricingTd}>{tier.extraBed === undefined ? "—" : <>&#8377;{formatPrice(tier.extraBed)}</>}</td>}
+                              {hasExtras && <td style={styles.pricingTd}>{tier.childNoBed === undefined ? "—" : <>&#8377;{formatPrice(tier.childNoBed)}</>}</td>}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p style={styles.pricingNote}>{t("packageDetail.pricingNote")}</p>
+                  </section>
+                )}
+
                 <aside style={styles.custom} aria-labelledby="pkgd-custom">
                   <div>
                     <h2 id="pkgd-custom" style={styles.customTitle}>{t("packageDetail.customTitle")}</h2>
@@ -760,6 +831,7 @@ export default async function PackageDetailPage({ params }: Params) {
                 <div style={styles.bookingCard}>
                   <div className="pkgd-price-head" style={styles.priceHead}>
                     <div style={styles.priceRow}>
+                      {pricing && <span style={styles.priceFrom}>{t("packageDetail.priceFrom")}</span>}
                       <span style={styles.priceNow}>&#8377;{formatPrice(pkg.price)}</span>
                       <span style={styles.pricePer}>{t("packageDetail.perPerson")}</span>
                     </div>
@@ -783,7 +855,7 @@ export default async function PackageDetailPage({ params }: Params) {
                   <div className="pkgd-booking-body" style={styles.bookingBody}>
                     <h2 id="pkgd-book" style={styles.bookingTitle}>{t("packageDetail.bookTitle")}</h2>
                     <p style={styles.bookingSub}>{t("packageDetail.bookSubtitle")}</p>
-                    <BookingForm packageId={pkg.id} packageName={pkg.name} price={pkg.price} minDate={istDateKey(new Date())} minTravelers={pkg.minTravelers} />
+                    <BookingForm packageId={pkg.id} packageName={pkg.name} price={pkg.price} minDate={istDateKey(new Date())} minTravelers={pkg.minTravelers} pricing={pricing ?? undefined} />
                     <p style={styles.orDivider}>{t("packageDetail.orAsk")}</p>
                     <a
                       className="pkgd-wa"

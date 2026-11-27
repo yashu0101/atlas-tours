@@ -3,11 +3,13 @@ import { addBooking, getPackageById } from "@/lib/db";
 import { badRequest, notFound, readJson, withHandler } from "@/lib/api";
 import { contactFields, guardPublicForm, isHoneypotTripped, str } from "@/lib/public-form";
 import { notifyAfterResponse } from "@/lib/notify";
+import { PRICING_LIMITS, findTier, hasPricing, rateFor } from "@/lib/pricing";
 
 /**
  * Public booking endpoint. Unauthenticated; see public-form.ts for the guards (B-04).
  * `amount` and `packageName` are always derived server-side from the package —
- * any client-supplied values are ignored. Amount = package price × travelers.
+ * any client-supplied values are ignored. Amount = per-person rate × travelers, where the
+ * rate is the package price, or (N-22) the chosen hotel category's rate for the group size.
  */
 export const POST = withHandler(async (req) => {
   await guardPublicForm(req, "book");
@@ -28,6 +30,20 @@ export const POST = withHandler(async (req) => {
     throw badRequest(`this package needs at least ${pkg.minTravelers} travellers`);
   }
 
+  // N-22: packages with a price grid charge the chosen hotel category's rate for the group
+  // size; the category is kept in packageName so the owner, the emails and /track see it.
+  let rate = pkg.price;
+  let packageName = pkg.name;
+  if (hasPricing(pkg)) {
+    const option = str(body, "option", PRICING_LIMITS.maxTierName);
+    const tier = option ? findTier(pkg.pricing, option) : undefined;
+    if (!tier) throw badRequest("please choose a hotel category");
+    const tierRate = rateFor(pkg.pricing, tier, contact.travelers);
+    if (tierRate === null) throw badRequest(`${tier.name} is not available for ${contact.travelers} travellers — please call us`);
+    rate = tierRate;
+    packageName = `${pkg.name} — ${tier.name}`;
+  }
+
   const booking = await addBooking({
     name: contact.name,
     phone: contact.phone,
@@ -36,8 +52,8 @@ export const POST = withHandler(async (req) => {
     travelers: contact.travelers,
     travelDate: contact.travelDate,
     packageId: pkg.id,
-    packageName: pkg.name,
-    amount: pkg.price * contact.travelers,
+    packageName,
+    amount: rate * contact.travelers,
   });
   // G-02 / N-10: owner alert + customer confirmation, sent after the response (notify.ts).
   notifyAfterResponse({ type: "booking", booking });

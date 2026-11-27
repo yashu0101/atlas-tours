@@ -51,8 +51,9 @@ interface Column {
    * array: string[] stored as JSONB (TEXT holding JSON before migration v3); read
    *   defensively, bad data → [] (B-12).
    * timestamp: TIMESTAMPTZ (TEXT before v2); always read back as an ISO string.
+   * json: a JSONB object (N-22 package pricing); unreadable data → undefined.
    */
-  type?: "array" | "timestamp";
+  type?: "array" | "timestamp" | "json";
   /** SQL NULL is read back as `undefined` (an optional field) instead of `null`. */
   optional?: true;
   /** Value written on INSERT; default: `undefined` → NULL (arrays: `undefined` → []). */
@@ -85,11 +86,12 @@ const PACKAGES: Entity<TourPackage> = {
     highlights: c("highlights", { type: "array" }), itinerary: c("itinerary", { type: "array" }), inclusions: c("inclusions", { type: "array" }),
     exclusions: c("exclusions", { type: "array" }), startsFrom: c("starts_from", { optional: true }),
     minTravelers: c("min_travelers", { optional: true }), priceNote: c("price_note", { optional: true }),
+    pricing: c("pricing", { type: "json", optional: true }),
     category: c("category"), hidden: c("hidden", { insert: v => !!v }), createdAt,
   },
   patchable: [
     "name", "destination", "duration", "price", "originalPrice", "image", "description", "highlights", "itinerary", "inclusions",
-    "exclusions", "startsFrom", "minTravelers", "priceNote", "category", "hidden",
+    "exclusions", "startsFrom", "minTravelers", "priceNote", "pricing", "category", "hidden",
   ],
 };
 const ENQUIRIES: Entity<Enquiry> = {
@@ -205,6 +207,21 @@ function safeParseArray(value: unknown, where: string): string[] {
   return [];
 }
 
+/** N-22: a JSONB object column (parsed by the driver, or a JSON string); bad data → undefined. */
+function safeParseObject(value: unknown, where: string): unknown {
+  if (value === null || value === undefined || value === "") return undefined;
+  let v: unknown = value;
+  if (typeof v === "string") {
+    try { v = JSON.parse(v); } catch { v = undefined; }
+  }
+  if (v && typeof v === "object" && !Array.isArray(v)) return v;
+  if (!warnedBadArrays.has(where)) {
+    warnedBadArrays.add(where);
+    console.warn(`[db] ${where} holds invalid JSON object data; ignoring it. (Logged once per column.)`);
+  }
+  return undefined;
+}
+
 /**
  * TIMESTAMPTZ comes back from the driver as a Date (neon and PGlite parse it by default),
  * but as a string if type parsing is off or the column is still TEXT (pre-v2). Either way
@@ -226,6 +243,7 @@ function fromRow<T extends { id: string }>(e: Entity<T>, r: Row): T {
     out[field] = col.optional && v == null ? undefined
       : col.type === "array" ? safeParseArray(v, `${e.table}.${col.col}`)
       : col.type === "timestamp" ? toIsoString(v)
+      : col.type === "json" ? safeParseObject(v, `${e.table}.${col.col}`)
       : col.optional ? v ?? undefined
       : v;
   }
@@ -235,6 +253,7 @@ function fromRow<T extends { id: string }>(e: Entity<T>, r: Row): T {
 function toParam(col: Column, v: unknown): unknown {
   if (col.insert) return col.insert(v);
   if (col.type === "array") return JSON.stringify(v ?? []);
+  if (col.type === "json") return v == null ? null : JSON.stringify(v);
   return v ?? null;
 }
 
@@ -271,7 +290,7 @@ async function pgUpdate<T extends { id: string }>(e: Entity<T>, rowId: string, u
     const v = values[field];
     if (v === undefined) continue;
     const col = e.columns[field];
-    params.push(v === null ? null : col.type === "array" ? JSON.stringify(v) : v);
+    params.push(v === null ? null : col.type === "array" || col.type === "json" ? JSON.stringify(v) : v);
     sets.push(`${col.col}=$${params.length}`);
   }
   if (!sets.length) return pgGet(e, rowId);

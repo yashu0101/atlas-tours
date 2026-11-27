@@ -16,6 +16,8 @@ import { useApp } from "@/lib/context";
 import { useT } from "@/lib/i18n/use-t";
 import { bookingReference } from "@/lib/booking-ref";
 import PartnerNote from "@/components/PartnerNote";
+import type { PackagePricing } from "@/lib/types";
+import { findTier, rateFor } from "@/lib/pricing";
 
 interface BookingFormProps {
   packageId: string;
@@ -26,10 +28,16 @@ interface BookingFormProps {
   minTravelers?: number;
   /** Earliest selectable travel date (today in IST, "YYYY-MM-DD"), computed on the server. */
   minDate: string;
+  /** N-22: price grid; when set the customer picks a hotel category and the rate follows the group size. */
+  pricing?: PackagePricing;
 }
 
-/** Empty form with the travelers field preset to the package minimum (N-18). */
-const emptyForm = (minTravelers: number): BookingFormValues => ({ ...EMPTY_BOOKING_FORM, travelers: String(minTravelers) });
+/** Empty form with the travelers field preset to the package minimum (N-18) and the first hotel category (N-22). */
+const emptyForm = (minTravelers: number, pricing?: PackagePricing): BookingFormValues => ({
+  ...EMPTY_BOOKING_FORM,
+  travelers: String(minTravelers),
+  option: pricing?.tiers[0]?.name ?? "",
+});
 
 type Status = { kind: "idle" } | { kind: "success"; reference?: string } | { kind: "error"; message: string };
 
@@ -37,17 +45,20 @@ type Status = { kind: "idle" } | { kind: "success"; reference?: string } | { kin
  * Online booking request form (G-01) for the package detail page, posting to the
  * public `POST /api/book`. Styling follows the Contact form (inputs, labels, submit button).
  */
-const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price, minDate, minTravelers = 1 }) => {
+const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price, minDate, minTravelers = 1, pricing }) => {
   const { lang } = useApp();
   const t = useT();
-  const [form, setForm] = useState<BookingFormValues>(() => emptyForm(minTravelers));
+  const [form, setForm] = useState<BookingFormValues>(() => emptyForm(minTravelers, pricing));
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
 
   const travelers = clampTravelers(form.travelers);
-  const total = estimateTotal(price, form.travelers);
+  // N-22: same rule as /api/book — the chosen category's rate for this group size.
+  const tier = pricing ? findTier(pricing, form.option) : undefined;
+  const rate = pricing && tier ? rateFor(pricing, tier, travelers) : price;
+  const total = rate === null ? null : estimateTotal(rate, form.travelers);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -71,7 +82,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price
         ? (body as { id: string }).id
         : undefined;
       setStatus({ kind: "success", reference: id ? bookingReference(id) : undefined });
-      setForm(emptyForm(minTravelers));
+      setForm(emptyForm(minTravelers, pricing));
     } catch {
       setStatus({ kind: "error", message: bookingErrorMessage(0, null) });
     } finally {
@@ -224,6 +235,15 @@ const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price
           <input id="booking-travelers" name="travelers" type="number" required min={minTravelers} max={MAX_TRAVELERS} step={1}
             className="booking-input" style={inputStyle} value={form.travelers} onChange={handleChange} />
         </div>
+        {pricing && pricing.tiers.length > 0 && (
+          <div style={styles.full}>
+            <label htmlFor="booking-option" style={labelStyle}>{t("booking.hotelCategory")}</label>
+            <select id="booking-option" name="option" required className="booking-input" style={inputStyle}
+              value={form.option} onChange={handleChange}>
+              {pricing.tiers.map(tr => <option key={tr.name} value={tr.name}>{tr.name}</option>)}
+            </select>
+          </div>
+        )}
         <div style={styles.full}>
           <label htmlFor="booking-city" style={labelStyle}>{t("booking.city")}</label>
           <input id="booking-city" name="city" type="text" maxLength={100} autoComplete="address-level2"
@@ -233,10 +253,16 @@ const BookingForm: React.FC<BookingFormProps> = ({ packageId, packageName, price
 
       <div style={styles.estimate} aria-live="polite">
         <div style={styles.estimateRow}>
-          <span>
-            &#8377;{formatPrice(price)} &times; {travelers} {travelers === 1 ? t("booking.travelerOne") : t("booking.travelerMany")}
-          </span>
-          <span style={styles.estimateTotal}>&#8377;{formatPrice(total)}</span>
+          {rate === null || total === null ? (
+            <span>{t("booking.optionUnavailable", { option: form.option, count: travelers })}</span>
+          ) : (
+            <>
+              <span>
+                &#8377;{formatPrice(rate)} &times; {travelers} {travelers === 1 ? t("booking.travelerOne") : t("booking.travelerMany")}
+              </span>
+              <span style={styles.estimateTotal}>&#8377;{formatPrice(total)}</span>
+            </>
+          )}
         </div>
         <p style={styles.estimateNote}>
           {t("booking.estimateNote")}

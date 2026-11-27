@@ -19,6 +19,7 @@ export default function PackagesTab({ items: packages, editing, creating, onAdd,
               startsFrom: data.startsFrom ?? null,
               minTravelers: data.minTravelers ?? null,
               priceNote: data.priceNote ?? null,
+              pricing: data.pricing ?? null,
             }) : onCreate(data)}
             onCancel={onClose}
           />
@@ -41,6 +42,7 @@ export default function PackagesTab({ items: packages, editing, creating, onAdd,
                 {pkg.destination && <span>{pkg.destination}</span>}
                 {pkg.duration && <span>{pkg.duration}</span>}
                 <span style={{ textTransform: "capitalize" }}>{pkg.category}</span>
+                {pkg.pricing && pkg.pricing.tiers.length > 0 && <span>{pkg.pricing.tiers.length} hotel categories × {pkg.pricing.groupSizes.length} group sizes</span>}
               </div>
             </div>
             <div className="pkg-actions">

@@ -190,6 +190,15 @@ export const en = {
     overnight: "Overnight: {place}",
     included: "What's included",
     notIncluded: "Not included",
+    /** N-22: price grid (hotel category × group size) on the package page. */
+    pricingTitle: "Prices by hotel category",
+    pricingMeta: "Per person, in ₹",
+    pricingCategory: "Hotel category",
+    pricingExtraBed: "Extra bed",
+    pricingChildNoBed: "Child (no bed)",
+    pricingNote: "Rate per person for the group size shown; a group between two columns pays the smaller column's rate. Final rates and hotel availability are reconfirmed when we call you.",
+    /** Prefix before the lowest rate when a package has a price grid. */
+    priceFrom: "from",
     customTitle: "Want to change something?",
     customText: "We can add days, swap hotels or change stops to suit your group.",
     customCta: "Plan a custom trip",
@@ -200,6 +209,10 @@ export const en = {
     formAria: "Book {name}",
     travelers: "Travellers *",
     city: "Your city",
+    /** N-22: hotel category select, shown when the package has a price grid. */
+    hotelCategory: "Hotel category *",
+    /** N-22: the chosen category has no rate for this group size. */
+    optionUnavailable: "{option} is not offered for {count} travellers. Please choose another category or call us.",
     travelerOne: "traveller",
     travelerMany: "travellers",
     estimateNote: "Estimated total. Prices are per person; our team confirms the final amount before any payment.",

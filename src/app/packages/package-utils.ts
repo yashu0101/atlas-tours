@@ -219,6 +219,8 @@ export interface BookingFormValues {
   city: string;
   travelDate: string;
   travelers: string;
+  /** N-22: chosen hotel category (`PricingTier.name`); "" for packages without a price grid. */
+  option: string;
   /** Honeypot — humans leave it empty. */
   website: string;
 }
@@ -230,6 +232,7 @@ export const EMPTY_BOOKING_FORM: BookingFormValues = {
   city: "",
   travelDate: "",
   travelers: "1",
+  option: "",
   website: "",
 };
 
@@ -246,6 +249,7 @@ export function buildBookingPayload(form: BookingFormValues, packageId: string) 
     city: form.city.trim(),
     travelDate: form.travelDate,
     travelers: clampTravelers(form.travelers),
+    ...(form.option ? { option: form.option } : {}),
     website: form.website,
   };
 }

@@ -183,7 +183,7 @@ test("/packages reads its filters from the URL", async ({ page }) => {
   await expect(page.getByLabel("Search packages")).toHaveValue("temple");
   await expect(page.getByLabel("Sort by")).toHaveValue("price-asc");
   const cards = page.locator(".pkg-card");
-  await expect(cards).toHaveCount(7); // 7 seed packages mention "temple" (Royal Rajasthan, which admin.spec hides, is not one)
+  await expect(cards).toHaveCount(8); // 8 seed packages mention "temple", incl. the honeymoon ones (Royal Rajasthan, which admin.spec hides, is not one)
   await expect(cards.first()).toContainText("Divine Varanasi & Prayagraj");
   await expect(cards.last()).toContainText("Bali Tour Package");
 });
