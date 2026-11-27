@@ -184,7 +184,7 @@ const TravelStories: React.FC = () => {
                 playsInline
                 preload="auto"
                 controls={activeIdx === i}
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => { if (activeIdx === i) e.stopPropagation(); }}
               />
               <div className="story-play-overlay">
                 <div className="story-play-btn">
@@ -253,7 +253,7 @@ const TravelStories: React.FC = () => {
                   playsInline
                   preload="auto"
                   controls={activeIdx === idx}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => { if (activeIdx === idx) e.stopPropagation(); }}
                 />
                 <div className="story-play-overlay">
                   <div className="story-play-btn">
