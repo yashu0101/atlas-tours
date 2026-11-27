@@ -199,8 +199,9 @@ select.adm-sel:hover{border-color:var(--a-border-strong)}
 .adm-section-label{font-size:.875rem;font-weight:600;color:var(--a-text);display:flex;flex-direction:column;gap:2px}
 .adm-section-label small{font-size:.78rem;font-weight:400;color:var(--a-muted)}
 .adm-pricing-empty{border:1px dashed var(--a-border-strong);border-radius:10px;padding:14px 16px;color:var(--a-muted);font-size:.8125rem;display:flex;flex-direction:column;gap:10px}
-.adm-pricing{display:flex;flex-direction:column;gap:10px}
-.adm-pricing-scroll{overflow-x:auto;border:1px solid var(--a-border);border-radius:10px;background:var(--a-surface-2)}
+.adm-pricing{display:flex;flex-direction:column;gap:10px;min-width:0}
+.adm-pricing-field{min-width:0}
+.adm-pricing-scroll{position:relative;overflow-x:auto;border:1px solid var(--a-border);border-radius:10px;background:var(--a-surface-2)}
 .adm-pricing-table{border-collapse:collapse;width:100%;font-size:.78rem}
 .adm-pricing-table th{font-weight:500;color:var(--a-muted);text-align:left;padding:8px 6px;white-space:nowrap;border-bottom:1px solid var(--a-border)}
 .adm-pricing-table td{padding:5px 4px}

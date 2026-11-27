@@ -64,3 +64,17 @@ test("admin edits a package's pricing options and the package page shows them", 
     await page.request.delete("/api/packages", { data: { id } });
   }
 });
+
+test("pricing editor scrolls inside the admin modal at phone width", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await login(page);
+  await page.getByRole("button", { name: "Packages", exact: true }).click();
+  await page.locator(".pkg-card", { hasText: "Srinagar Sonamarg Gulmarg Tour" }).getByRole("button", { name: "Edit" }).click();
+  const editor = page.locator(".adm-pricing");
+  await editor.scrollIntoViewIfNeeded();
+  // The grid scrolls in its own box; the modal and the buttons under the grid stay within the screen.
+  const modal = page.locator(".modal-content");
+  expect(await modal.evaluate(e => e.scrollWidth - e.clientWidth)).toBeLessThanOrEqual(1);
+  const box = await editor.getByRole("button", { name: "Remove all pricing options" }).boundingBox();
+  expect(box!.x + box!.width).toBeLessThanOrEqual(390);
+});

@@ -55,7 +55,7 @@ export default function PackageForm({ pkg, onSave, onCancel }: { pkg?: TourPacka
         <label className="adm-fl full"><span>Highlights (one per line)</span><textarea value={highlightsStr} onChange={e => setHighlightsStr(e.target.value)} placeholder={"Ganga Aarti darshan\nKashi Vishwanath Temple\nBoat ride at sunrise"} style={{ minHeight: 80 }} /></label>
         <label className="adm-fl full"><span>Itinerary (one day per line — separate the day&apos;s points with | and end with Overnight in &lt;place&gt;)</span><textarea value={itineraryStr} onChange={e => setItineraryStr(e.target.value)} placeholder={"Day 1: Prayagraj → Jaipur | Hotel check-in | Evening local market | Overnight in Jaipur\nDay 2: Jaipur sightseeing | Amber Fort | Hawa Mahal | Overnight in Jaipur\nDay 3: Departure | Drop at the railway station"} style={{ minHeight: 120 }} /></label>
         <label className="adm-fl full"><span>Inclusions (one per line)</span><textarea value={inclusionsStr} onChange={e => setInclusionsStr(e.target.value)} placeholder={"Hotel accommodation\nBreakfast & dinner\nAC transport\nGuide"} style={{ minHeight: 80 }} /></label>
-        <div className="full adm-fl">
+        <div className="full adm-fl adm-pricing-field">
           <span className="adm-section-label">Pricing options
             <small>Hotel categories × group sizes from the brochure. Optional — leave empty for a single price.</small>
           </span>
