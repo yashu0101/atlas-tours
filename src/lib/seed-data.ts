@@ -22,11 +22,13 @@ export const SEED_REVIEWS: readonly Review[] = [
 
 export const SEED_GALLERY: readonly GalleryImage[] = [
   { id: "g1", src: "https://images.unsplash.com/photo-1561359313-0639aad49ca6?w=600&q=75", caption: "Varanasi Ghats", category: "Varanasi", active: true, createdAt: EPOCH },
-  { id: "g2", src: "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=600&q=75", caption: "Hawa Mahal Jaipur", category: "Rajasthan", active: true, createdAt: EPOCH },
+  // Captions checked against the photos (2026-11-27): g2 is Amber Fort (was captioned Hawa Mahal);
+  // g4/g5/g6 used to show the Taj Mahal, Mumbai's Gateway of India and the Taj Mahal again.
+  { id: "g2", src: "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=600&q=75", caption: "Amber Fort, Jaipur", category: "Rajasthan", active: true, createdAt: EPOCH },
   { id: "g3", src: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=600&q=75", caption: "Taj Mahal", category: "Heritage", active: true, createdAt: EPOCH },
-  { id: "g4", src: "https://images.unsplash.com/photo-1548013146-72479768bada?w=600&q=75", caption: "Amber Fort", category: "Rajasthan", active: true, createdAt: EPOCH },
-  { id: "g5", src: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=600&q=75", caption: "India Gate", category: "Heritage", active: true, createdAt: EPOCH },
-  { id: "g6", src: "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=600&q=75", caption: "Temple Architecture", category: "Spiritual", active: true, createdAt: EPOCH },
+  { id: "g4", src: "https://images.unsplash.com/photo-1650530777057-3a7dbc24bf6c?w=600&q=75", caption: "Hawa Mahal, Jaipur", category: "Rajasthan", active: true, createdAt: EPOCH },
+  { id: "g5", src: "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=600&q=75", caption: "India Gate, Delhi", category: "Heritage", active: true, createdAt: EPOCH },
+  { id: "g6", src: "https://images.unsplash.com/photo-1669557572200-03598458ea58?w=600&q=75", caption: "Ranakpur Jain Temple", category: "Spiritual", active: true, createdAt: EPOCH },
 ];
 
 export const SEED_BLOGS: readonly BlogPost[] = [

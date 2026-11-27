@@ -779,7 +779,7 @@
     {
       "id": "g2",
       "src": "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=600&q=75",
-      "caption": "Hawa Mahal Jaipur",
+      "caption": "Amber Fort, Jaipur",
       "category": "Rajasthan",
       "active": true,
       "createdAt": "2024-01-01T00:00:00.000Z"
@@ -794,24 +794,24 @@
     },
     {
       "id": "g4",
-      "src": "https://images.unsplash.com/photo-1548013146-72479768bada?w=600&q=75",
-      "caption": "Amber Fort",
+      "src": "https://images.unsplash.com/photo-1650530777057-3a7dbc24bf6c?w=600&q=75",
+      "caption": "Hawa Mahal, Jaipur",
       "category": "Rajasthan",
       "active": true,
       "createdAt": "2024-01-01T00:00:00.000Z"
     },
     {
       "id": "g5",
-      "src": "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=600&q=75",
-      "caption": "India Gate",
+      "src": "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=600&q=75",
+      "caption": "India Gate, Delhi",
       "category": "Heritage",
       "active": true,
       "createdAt": "2024-01-01T00:00:00.000Z"
     },
     {
       "id": "g6",
-      "src": "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=600&q=75",
-      "caption": "Temple Architecture",
+      "src": "https://images.unsplash.com/photo-1669557572200-03598458ea58?w=600&q=75",
+      "caption": "Ranakpur Jain Temple",
       "category": "Spiritual",
       "active": true,
       "createdAt": "2024-01-01T00:00:00.000Z"
