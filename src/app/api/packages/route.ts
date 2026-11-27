@@ -17,7 +17,7 @@ const route = crudRoute({
     image: "image", description: "text", highlights: "string[]", itinerary: "string[]", inclusions: "string[]",
     // N-18. Itinerary lines may carry " | "-separated points (see parseItineraryDay).
     exclusions: "string[]", startsFrom: nullable("string"), minTravelers: nullable(int(1, 100)), priceNote: nullable("string"),
-    category: ["spiritual", "cultural", "adventure", "heritage", "pilgrimage", "international"], hidden: "boolean",
+    category: ["spiritual", "cultural", "adventure", "heritage", "pilgrimage", "international", "honeymoon"], hidden: "boolean",
   },
   required: ["name", "price"],
   defaults: { destination: "", duration: "", image: "", description: "", highlights: [], itinerary: [], inclusions: [], exclusions: [], category: "spiritual", hidden: false },

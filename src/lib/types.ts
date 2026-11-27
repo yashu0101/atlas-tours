@@ -18,7 +18,7 @@ export interface TourPackage {
   minTravelers?: number;
   /** Shown under the price, e.g. "Based on double sharing" (N-18). */
   priceNote?: string;
-  category: "spiritual" | "cultural" | "adventure" | "heritage" | "pilgrimage" | "international";
+  category: "spiritual" | "cultural" | "adventure" | "heritage" | "pilgrimage" | "international" | "honeymoon";
   hidden?: boolean;
   createdAt: string;
 }

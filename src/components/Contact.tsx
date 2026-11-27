@@ -3,7 +3,7 @@ import RevealWords from "@/components/RevealWords";
 
 import React, { useState, useEffect, useRef } from "react";
 import type { TourPackage } from "@/lib/types";
-import { SITE_CONFIG, PHONE_DISPLAY, MD_NAME } from "@/lib/config";
+import { SITE_CONFIG, PHONE_DISPLAY, MD_NAME, TEAM_PHONES, formatTeamPhone } from "@/lib/config";
 import { useT } from "@/lib/i18n/use-t";
 import { errorStyle } from "@/components/public-form-ui";
 import PartnerNote from "@/components/PartnerNote";
@@ -544,6 +544,19 @@ const Contact: React.FC<{ initialPackages: PackageOption[]; minDate: string }> =
               </a>
             </div>
           </div>
+
+          {/* Founder contact card */}
+          <a href={`tel:${TEAM_PHONES.founder}`} className="contact-card-h" style={{ ...styles.contactCard, padding: "16px 18px", gap: 14, textDecoration: "none" }}>
+            <div style={{ ...styles.cardIcon, width: 42, height: 42 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d={iconSvgs.phone} />
+              </svg>
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={styles.cardLabel}>{t("contact.founderPhone")}</div>
+              <div style={{ ...styles.cardValue, overflowWrap: "anywhere" }}>{formatTeamPhone(TEAM_PHONES.founder)}</div>
+            </div>
+          </a>
 
           <div className="contact-info-grid" style={styles.infoGrid}>
             {infoCards.map((card) => {

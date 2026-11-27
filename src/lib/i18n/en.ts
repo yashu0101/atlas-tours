@@ -380,6 +380,7 @@ export const en = {
     error: "Something went wrong. Please call or WhatsApp us at {phone}.",
     mapTitle: "Atlas Tours location",
     /** N-6: small links under the form to /plan-trip and /plan-trip?mode=callback. */
+    founderPhone: "Founder — Ashfaque Ahmed",
     planTripLink: "Plan a custom trip",
     callbackLink: "Request a callback",
   },

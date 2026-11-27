@@ -11,7 +11,7 @@ import { translate, type Lang } from "@/lib/i18n";
 export type PackageCategory = TourPackage["category"];
 
 /** Display order of the category chips; any category present in data appears in this order. */
-export const CATEGORY_ORDER: readonly PackageCategory[] = ["spiritual", "cultural", "heritage", "adventure", "pilgrimage", "international"];
+export const CATEGORY_ORDER: readonly PackageCategory[] = ["spiritual", "cultural", "heritage", "adventure", "pilgrimage", "international", "honeymoon"];
 
 /** English labels of the known categories (catalog keys `packages.categories.*`, G-08). */
 export const CATEGORY_LABELS: Record<PackageCategory, string> = {
@@ -21,6 +21,7 @@ export const CATEGORY_LABELS: Record<PackageCategory, string> = {
   adventure: translate("en", "packages.categories.adventure"),
   pilgrimage: "Pilgrimage",
   international: "International",
+  honeymoon: "Honeymoon",
 };
 
 export const categoryLabel = (c: string, _lang: Lang = "en"): string => {
