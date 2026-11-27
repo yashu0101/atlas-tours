@@ -15,6 +15,16 @@ beforeAll(async () => {
       makePackage({ id: "pkg-1", name: "Ganga Aarti Tour", price: 2500 }),
       makePackage({ id: "pkg-hidden", name: "Secret Tour", price: 9999, hidden: true }),
       makePackage({ id: "pkg-group", name: "Group Tour", price: 1000, minTravelers: 4 }),
+      makePackage({
+        id: "pkg-grid", name: "Kashmir Tour", price: 12700,
+        pricing: {
+          groupSizes: [2, 4],
+          tiers: [
+            { name: "3★ Budget", prices: [15400, 13600] },
+            { name: "4★ Deluxe", prices: [20600, null] },
+          ],
+        },
+      }),
     ],
   });
   route = await import("@/app/api/book/route");
@@ -101,5 +111,40 @@ describe("POST /api/book with the BookingForm payload (G-01)", () => {
     for (let i = 0; i < 6; i++) statuses.push((await post({ ...formPayload(), phone: "bad" })).status);
     expect(statuses.slice(0, 5).every((s) => s === 400)).toBe(true);
     expect(statuses[5]).toBe(429);
+  });
+});
+
+describe("POST /api/book with a price grid (N-22)", () => {
+  it("charges the chosen hotel category's rate for the group size and records the category", async () => {
+    const res = await post({ ...formPayload("pkg-grid"), travelers: 5, option: "3★ Budget" });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ packageName: "Kashmir Tour — 3★ Budget", amount: 5 * 13600, travelers: 5 });
+
+    const couple = await post({ ...formPayload("pkg-grid"), travelers: 2, option: "4★ Deluxe" });
+    expect((await couple.json()).amount).toBe(2 * 20600);
+  });
+
+  it("sends the option chosen in the BookingForm", () => {
+    expect(buildBookingPayload({ ...EMPTY_BOOKING_FORM, option: "3★ Budget" }, "pkg-grid")).toMatchObject({ option: "3★ Budget" });
+    expect(buildBookingPayload(EMPTY_BOOKING_FORM, "pkg-1")).not.toHaveProperty("option");
+  });
+
+  it("400s without a known hotel category", async () => {
+    for (const option of [undefined, "", "5★ Palace"]) {
+      const res = await post({ ...formPayload("pkg-grid"), option });
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toMatch(/hotel category/);
+    }
+  });
+
+  it("400s when the category has no rate for that group size", async () => {
+    const res = await post({ ...formPayload("pkg-grid"), travelers: 4, option: "4★ Deluxe" });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toMatch(/not available for 4 travellers/);
+  });
+
+  it("ignores an option on a package without a grid", async () => {
+    const res = await post({ ...formPayload(), option: "anything" });
+    expect(await res.json()).toMatchObject({ packageName: "Ganga Aarti Tour", amount: 7500 });
   });
 });

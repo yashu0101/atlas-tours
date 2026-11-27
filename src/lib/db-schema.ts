@@ -207,6 +207,15 @@ END $$`,
       "ALTER TABLE packages ADD CONSTRAINT packages_min_travelers_valid CHECK (min_travelers IS NULL OR min_travelers BETWEEN 1 AND 100)",
     ],
   },
+  {
+    // N-22: price grid per package — hotel categories × group sizes (validated in pricing.ts).
+    version: 9,
+    name: "package_pricing",
+    statements: [
+      "ALTER TABLE packages ADD COLUMN IF NOT EXISTS pricing JSONB",
+      "ALTER TABLE packages ADD CONSTRAINT packages_pricing_object CHECK (pricing IS NULL OR jsonb_typeof(pricing) = 'object')",
+    ],
+  },
 ];
 
 /**

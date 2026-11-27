@@ -69,6 +69,67 @@ export function searchPackages<T extends Pick<TourPackage, "name" | "destination
   });
 }
 
+// ------------------------------------------------------------
+// /packages listing: budget and trip-length filters (filter modal)
+// ------------------------------------------------------------
+
+/** Per-person budget bands (₹). `min` inclusive, `max` exclusive. */
+export const BUDGET_RANGES = [
+  { id: "under-15k", max: 15_000 },
+  { id: "15k-30k", min: 15_000, max: 30_000 },
+  { id: "30k-60k", min: 30_000, max: 60_000 },
+  { id: "60k-plus", min: 60_000 },
+] as const satisfies readonly { id: string; min?: number; max?: number }[];
+export type BudgetId = (typeof BUDGET_RANGES)[number]["id"];
+export type BudgetFilter = "any" | BudgetId;
+export const isBudgetId = (v: unknown): v is BudgetId => BUDGET_RANGES.some((r) => r.id === v);
+
+/** Trip-length bands in days, both ends inclusive. */
+export const DURATION_RANGES = [
+  { id: "short", max: 4 },
+  { id: "week", min: 5, max: 7 },
+  { id: "long", min: 8 },
+] as const satisfies readonly { id: string; min?: number; max?: number }[];
+export type DurationId = (typeof DURATION_RANGES)[number]["id"];
+export type DurationFilter = "any" | DurationId;
+export const isDurationId = (v: unknown): v is DurationId => DURATION_RANGES.some((r) => r.id === v);
+
+export function filterByBudget<T extends Pick<TourPackage, "price">>(packages: readonly T[], filter: BudgetFilter): T[] {
+  const r = BUDGET_RANGES.find((b) => b.id === filter) as { min?: number; max?: number } | undefined;
+  if (!r) return [...packages];
+  return packages.filter((p) => (r.min === undefined || p.price >= r.min) && (r.max === undefined || p.price < r.max));
+}
+
+/** Packages whose duration has no day count never match a trip-length filter. */
+export function filterByDuration<T extends Pick<TourPackage, "duration">>(packages: readonly T[], filter: DurationFilter): T[] {
+  const r = DURATION_RANGES.find((d) => d.id === filter) as { min?: number; max?: number } | undefined;
+  if (!r) return [...packages];
+  return packages.filter((p) => {
+    const days = durationDays(p.duration);
+    return days !== null && (r.min === undefined || days >= r.min) && (r.max === undefined || days <= r.max);
+  });
+}
+
+/** Everything the listing filters on (search box, category chips and the filter modal). */
+export interface PackageFilters {
+  query: string;
+  category: CategoryFilter;
+  budget: BudgetFilter;
+  days: DurationFilter;
+}
+
+/** Search + category + budget + trip length, in that order (sorting is separate). */
+export function applyPackageFilters<T extends Pick<TourPackage, "name" | "destination" | "category" | "highlights" | "description" | "price" | "duration">>(
+  packages: readonly T[],
+  f: PackageFilters,
+): T[] {
+  return filterByDuration(filterByBudget(searchPackages(filterByCategory(packages, f.category), f.query), f.budget), f.days);
+}
+
+/** Number of filters set in the modal (category, budget, trip length) — the Filters button badge. */
+export const activeFilterCount = (f: Pick<PackageFilters, "category" | "budget" | "days">): number =>
+  (f.category !== "all" ? 1 : 0) + (f.budget !== "any" ? 1 : 0) + (f.days !== "any" ? 1 : 0);
+
 export const PACKAGE_SORTS = ["recommended", "price-asc", "price-desc", "duration-asc"] as const;
 export type PackageSort = (typeof PACKAGE_SORTS)[number];
 
@@ -219,6 +280,8 @@ export interface BookingFormValues {
   city: string;
   travelDate: string;
   travelers: string;
+  /** N-22: chosen hotel category (`PricingTier.name`); "" for packages without a price grid. */
+  option: string;
   /** Honeypot — humans leave it empty. */
   website: string;
 }
@@ -230,6 +293,7 @@ export const EMPTY_BOOKING_FORM: BookingFormValues = {
   city: "",
   travelDate: "",
   travelers: "1",
+  option: "",
   website: "",
 };
 
@@ -246,6 +310,7 @@ export function buildBookingPayload(form: BookingFormValues, packageId: string) 
     city: form.city.trim(),
     travelDate: form.travelDate,
     travelers: clampTravelers(form.travelers),
+    ...(form.option ? { option: form.option } : {}),
     website: form.website,
   };
 }

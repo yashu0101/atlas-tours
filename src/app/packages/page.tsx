@@ -140,6 +140,8 @@ export default async function PackagesPage({ searchParams }: Props) {
             initialQuery={first(params.q) ?? ""}
             initialCategory={first(params.category)}
             initialSort={first(params.sort)}
+            initialBudget={first(params.budget)}
+            initialDays={first(params.days)}
           />
 
           {packages.length > 0 && (

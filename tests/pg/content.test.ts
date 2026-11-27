@@ -47,6 +47,18 @@ describe("Postgres backend: packages", () => {
     expect("originalPrice" in byName.none).toBe(true); // mapped key, undefined value (dropped by JSON)
   });
 
+  it("round-trips a pricing grid as JSONB, replaces it and clears it with null (N-22)", async () => {
+    const pricing = { groupSizes: [2, 4], tiers: [{ name: "3★ Deluxe", prices: [16000, null], childNoBed: 4800 }] };
+    const added = await addPackage(newPackage({ name: "grid", pricing }));
+    expect(added.pricing).toEqual(pricing);
+    expect((await getPackageById(added.id))?.pricing).toEqual(pricing);
+    expect((await addPackage(newPackage({ name: "flat" }))).pricing).toBeUndefined();
+
+    const next = { groupSizes: [2], tiers: [{ name: "4★", prices: [20600] }] };
+    expect((await updatePackage(added.id, { pricing: next }))?.pricing).toEqual(next);
+    expect((await updatePackage(added.id, { pricing: null }))?.pricing).toBeUndefined();
+  });
+
   it("lists newest first", async () => {
     const a = await addPackage(newPackage({ name: "first" }));
     await new Promise(r => setTimeout(r, 5));

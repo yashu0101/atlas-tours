@@ -119,6 +119,618 @@
       "startsFrom": "Bhubaneswar",
       "category": "spiritual",
       "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "pkg-chardham",
+      "name": "Char Dham Yatra",
+      "destination": "Yamunotri, Gangotri, Kedarnath, Badrinath",
+      "duration": "11 Days / 10 Nights",
+      "price": 22999,
+      "originalPrice": 29999,
+      "image": "https://images.unsplash.com/photo-1612438214708-f428a707dd4e?w=600&q=75",
+      "description": "The sacred Char Dham Yatra covers all four holy abodes in Uttarakhand — Yamunotri, Gangotri, Kedarnath, and Badrinath. A life-changing pilgrimage through the Himalayas. Every package is customised to your group.",
+      "highlights": [
+        "Yamunotri Temple",
+        "Gangotri Temple",
+        "Kedarnath Temple (16-18 km trek)",
+        "Badrinath Temple & Mana Village",
+        "Rishikesh Visit",
+        "Himalayan Scenic Drives",
+        "Kashi Vishwanath Temple Uttarkashi",
+        "Gaurikund Trek Start Point"
+      ],
+      "itinerary": [
+        "Day 1: Dehradun to Barkot — Pickup from Dehradun, drive via Mussoorie (subject to road conditions). Check-in and dinner. Overnight Barkot",
+        "Day 2: Yamunotri Darshan — Drive to Janki Chatti, trek ~5-6 km one way to Yamunotri Temple, return to Barkot. Overnight Barkot",
+        "Day 3: Barkot to Uttarkashi — Scenic drive through mountain region. Visit Kashi Vishwanath Temple if time permits. Overnight Uttarkashi",
+        "Day 4: Gangotri Darshan — Excursion to Gangotri Temple and return to Uttarkashi. Overnight Uttarkashi",
+        "Day 5: Uttarkashi to Guptkashi — Long mountain drive via Tehri and Rudraprayag. Rest after arrival. Overnight Guptkashi",
+        "Day 6: Kedarnath Yatra — Transfer to Gaurikund, trek ~16-18 km to Kedarnath. Overnight near temple (subject to availability). Overnight Kedarnath",
+        "Day 7: Kedarnath to Guptkashi — Morning darshan if possible, descend to Gaurikund, transfer back. Overnight Guptkashi",
+        "Day 8: Guptkashi to Badrinath — Drive via Joshimath, reach Badrinath for darshan. Overnight Badrinath",
+        "Day 9: Badrinath & Return — Morning darshan, Mana Village visit if accessible, drive towards Rudraprayag. Overnight Rudraprayag",
+        "Day 10: Rudraprayag to Rishikesh — Drive towards Rishikesh, short visit if time allows. Overnight Rishikesh",
+        "Day 11: Rishikesh to Dehradun — Breakfast and transfer to Dehradun airport/railway station/hotel. Departure"
+      ],
+      "inclusions": [
+        "AC/Non-AC Vehicle",
+        "Hotel Stay (3-Star)",
+        "Daily Breakfast & Dinner",
+        "All Sightseeing & Transfers",
+        "Driver Charges, Toll & Parking",
+        "GST Included"
+      ],
+      "exclusions": [],
+      "category": "pilgrimage",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "pkg-dodham",
+      "name": "Do Dham Yatra",
+      "destination": "Kedarnath, Badrinath",
+      "duration": "7 Days / 6 Nights",
+      "price": 15999,
+      "originalPrice": 19999,
+      "image": "https://images.unsplash.com/photo-1601821139314-66a4d14cfc00?w=600&q=75",
+      "description": "Visit the two most revered Dhams — Kedarnath and Badrinath — in one pilgrimage through the Garhwal Himalayas. Customised packages for all group sizes.",
+      "highlights": [
+        "Kedarnath Temple",
+        "Badrinath Temple",
+        "Mana Village",
+        "Rishikesh",
+        "Joshimath",
+        "Gaurikund Trek",
+        "Himalayan Views"
+      ],
+      "itinerary": [
+        "Day 1: Dehradun/Haridwar to Guptkashi — Arrival and scenic drive. Overnight Guptkashi",
+        "Day 2: Kedarnath Yatra — Trek from Gaurikund to Kedarnath (~16-18 km). Overnight Kedarnath",
+        "Day 3: Kedarnath to Guptkashi — Morning darshan, descend and return. Overnight Guptkashi",
+        "Day 4: Guptkashi to Badrinath — Drive via Joshimath. Evening darshan. Overnight Badrinath",
+        "Day 5: Badrinath Darshan — Morning darshan, Mana Village. Drive to Rudraprayag. Overnight Rudraprayag",
+        "Day 6: Rudraprayag to Rishikesh — Visit Rishikesh attractions. Overnight Rishikesh",
+        "Day 7: Departure — Transfer to Dehradun/Haridwar for departure"
+      ],
+      "inclusions": [
+        "AC/Non-AC Vehicle",
+        "Hotel Stay",
+        "Daily Breakfast & Dinner",
+        "All Transfers",
+        "Driver Charges, Toll & Parking"
+      ],
+      "exclusions": [],
+      "category": "pilgrimage",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "pkg-kailash",
+      "name": "Kailash Mansarovar Yatra",
+      "destination": "Kailash Mansarovar, Tibet (via Lucknow/Kathmandu)",
+      "duration": "14-16 Days",
+      "price": 185000,
+      "originalPrice": 225000,
+      "image": "https://images.unsplash.com/photo-1691166502012-5dc9c769a1d3?w=600&q=75",
+      "description": "The ultimate spiritual pilgrimage to Mount Kailash and the sacred Mansarovar Lake in Tibet. A once-in-a-lifetime yatra that tests your endurance and deepens your faith. Fully customised packages with all permits and logistics handled.",
+      "highlights": [
+        "Mount Kailash Parikrama",
+        "Mansarovar Lake Holy Dip",
+        "Gauri Kund",
+        "Kathmandu Pashupatinath",
+        "Tibet Border Crossing",
+        "High Altitude Acclimatization",
+        "Medical Support Throughout"
+      ],
+      "itinerary": [
+        "Day 1-2: Arrival Kathmandu — Acclimatization, Pashupatinath & Bouddhanath visit",
+        "Day 3: Kathmandu to Kerung — Cross Nepal-Tibet border. Overnight Kerung",
+        "Day 4-5: Kerung to Mansarovar — Drive through Tibetan plateau. Holy dip at Mansarovar Lake",
+        "Day 6-7: Mansarovar to Darchen — Transfer to base of Mount Kailash",
+        "Day 8-10: Kailash Parikrama — 3-day trek around Mount Kailash (52 km)",
+        "Day 11-12: Return to Kerung — Drive back via Saga",
+        "Day 13-14: Kerung to Kathmandu — Border crossing and return. Departure"
+      ],
+      "inclusions": [
+        "All Permits & Visa",
+        "Hotels & Guest Houses",
+        "All Meals",
+        "Experienced Guide & Sherpa",
+        "Medical Kit & Oxygen",
+        "All Transfers",
+        "Tibet Border Fees"
+      ],
+      "exclusions": [],
+      "category": "pilgrimage",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "pkg-jain-pilgrimage",
+      "name": "Jain Pilgrimage Tour",
+      "destination": "Palitana, Ranakpur, Dilwara, Shravanabelagola, Parasnath",
+      "duration": "8 Days / 7 Nights",
+      "price": 19999,
+      "originalPrice": 25999,
+      "image": "https://images.unsplash.com/photo-1684990214842-a5b1c8761a4e?w=600&q=75",
+      "description": "A pilgrimage to India's most revered Jain Tirthas — from the magnificent Shatrunjaya Hill in Palitana to the exquisite Ranakpur and Dilwara temples. Customised for Jain families and groups with pure Jain meals.",
+      "highlights": [
+        "Palitana Shatrunjaya Hill",
+        "Ranakpur Jain Temple",
+        "Dilwara Temples Mount Abu",
+        "Shravanabelagola Gommateshwara",
+        "Parasnath Hill Jharkhand",
+        "Girnar Hill",
+        "Jain Meal Arrangements"
+      ],
+      "itinerary": [
+        "Day 1: Arrival Ahmedabad — Transfer to Palitana. Overnight Palitana",
+        "Day 2: Palitana — Shatrunjaya Hill climb (3,500+ steps), temple darshan. Overnight Palitana",
+        "Day 3: Palitana to Ranakpur — Visit Ranakpur Jain Temple (1,444 pillars). Overnight Ranakpur",
+        "Day 4: Ranakpur to Mount Abu — Dilwara Temple darshan. Overnight Mount Abu",
+        "Day 5: Mount Abu to Udaipur — Sightseeing if time permits. Overnight Udaipur",
+        "Day 6: Fly/Drive to next Tirtha as per itinerary. Overnight en route",
+        "Day 7: Temple visits and darshan. Overnight at destination",
+        "Day 8: Departure — Transfer to airport/station"
+      ],
+      "inclusions": [
+        "AC Vehicle",
+        "3-Star Hotels",
+        "Pure Jain Meals",
+        "All Entry Tickets",
+        "Temple Guide",
+        "Toll & Parking",
+        "GST Included"
+      ],
+      "exclusions": [],
+      "category": "pilgrimage",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "pkg-dubai",
+      "name": "Dubai Tour Package",
+      "destination": "Dubai, Abu Dhabi, UAE",
+      "duration": "5 Days / 4 Nights",
+      "price": 35999,
+      "originalPrice": 45999,
+      "image": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&q=75",
+      "description": "Experience the glamour of Dubai — from the towering Burj Khalifa and Dubai Mall to the golden desert safari and the charm of old Dubai souks. Includes Abu Dhabi city tour with Sheikh Zayed Mosque. Fully customised packages available.",
+      "highlights": [
+        "Burj Khalifa Observation Deck",
+        "Desert Safari with BBQ Dinner",
+        "Dubai Mall & Fountain Show",
+        "Dhow Cruise Dinner",
+        "Abu Dhabi City Tour",
+        "Sheikh Zayed Grand Mosque",
+        "Palm Jumeirah & Atlantis",
+        "Gold & Spice Souk"
+      ],
+      "itinerary": [
+        "Day 1: Arrival Dubai — Airport pickup, hotel check-in, evening Dhow Cruise dinner. Overnight Dubai",
+        "Day 2: Dubai City Tour — Burj Khalifa, Dubai Mall, Dubai Frame, Old Dubai Souks, Jumeirah Beach. Overnight Dubai",
+        "Day 3: Desert Safari — Morning free, afternoon Desert Safari with dune bashing, camel ride, BBQ dinner, belly dance. Overnight Dubai",
+        "Day 4: Abu Dhabi Day Tour — Sheikh Zayed Mosque, Corniche, Emirates Palace photo stop. Return Dubai. Overnight Dubai",
+        "Day 5: Departure — Breakfast, free time for shopping, airport transfer"
+      ],
+      "inclusions": [
+        "4-Star Hotel",
+        "Daily Breakfast",
+        "Airport Transfers",
+        "Desert Safari with BBQ",
+        "Dhow Cruise Dinner",
+        "Dubai & Abu Dhabi City Tours",
+        "All Sightseeing Tickets",
+        "Visa Assistance"
+      ],
+      "exclusions": [],
+      "category": "international",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "pkg-thailand",
+      "name": "Thailand Tour Package",
+      "destination": "Bangkok, Pattaya, Phuket",
+      "duration": "6 Days / 5 Nights",
+      "price": 29999,
+      "originalPrice": 39999,
+      "image": "https://images.unsplash.com/photo-1528181304800-259b08848526?w=600&q=75",
+      "description": "Discover the Land of Smiles — vibrant Bangkok temples, Pattaya beach life, and island hopping. From street food to floating markets, Thailand offers something for everyone. Customised itineraries available.",
+      "highlights": [
+        "Grand Palace & Wat Phra Kaew",
+        "Pattaya Beach & Coral Island",
+        "Floating Market",
+        "Safari World",
+        "Alcazar Show Pattaya",
+        "Gems Gallery",
+        "Thai Street Food Tour",
+        "Phi Phi Islands (Phuket extension)"
+      ],
+      "itinerary": [
+        "Day 1: Arrival Bangkok — Airport pickup, hotel check-in. Evening free. Overnight Bangkok",
+        "Day 2: Bangkok City Tour — Grand Palace, Wat Phra Kaew, Wat Pho, Wat Arun. Overnight Bangkok",
+        "Day 3: Bangkok to Pattaya — Floating Market, Nong Nooch Garden. Overnight Pattaya",
+        "Day 4: Pattaya — Coral Island tour, water sports, Alcazar Show evening. Overnight Pattaya",
+        "Day 5: Pattaya to Bangkok — Safari World or shopping. Overnight Bangkok",
+        "Day 6: Departure — Breakfast, airport transfer"
+      ],
+      "inclusions": [
+        "4-Star Hotel",
+        "Daily Breakfast",
+        "Airport Transfers",
+        "All Sightseeing & Tours",
+        "Coral Island Tour",
+        "Alcazar Show",
+        "English Speaking Guide",
+        "Visa on Arrival Assistance"
+      ],
+      "exclusions": [],
+      "category": "international",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "pkg-vietnam",
+      "name": "Vietnam Tour Package",
+      "destination": "Hanoi, Ha Long Bay, Ho Chi Minh City",
+      "duration": "6 Days / 5 Nights",
+      "price": 34999,
+      "originalPrice": 44999,
+      "image": "https://images.unsplash.com/photo-1528127269322-539801943592?w=600&q=75",
+      "description": "Explore the beauty of Vietnam — cruise through the stunning Ha Long Bay, walk the streets of historic Hanoi, and experience the energy of Ho Chi Minh City. Rich culture, amazing food, and breathtaking landscapes.",
+      "highlights": [
+        "Ha Long Bay Cruise",
+        "Hanoi Old Quarter",
+        "Ho Chi Minh City",
+        "Cu Chi Tunnels",
+        "Hoan Kiem Lake",
+        "Water Puppet Show",
+        "Vietnamese Cuisine Tour",
+        "Mekong Delta (optional)"
+      ],
+      "itinerary": [
+        "Day 1: Arrival Hanoi — Airport pickup, Hoan Kiem Lake walk, Water Puppet Show. Overnight Hanoi",
+        "Day 2: Hanoi City Tour — Ho Chi Minh Mausoleum, Temple of Literature, Old Quarter. Overnight Hanoi",
+        "Day 3: Ha Long Bay — Drive to Ha Long, cruise through limestone karsts, kayaking. Overnight on cruise/hotel",
+        "Day 4: Ha Long to Hanoi — Morning cruise, return to Hanoi. Fly to Ho Chi Minh City. Overnight HCMC",
+        "Day 5: Ho Chi Minh City — Cu Chi Tunnels, War Remnants Museum, Ben Thanh Market. Overnight HCMC",
+        "Day 6: Departure — Breakfast, free time, airport transfer"
+      ],
+      "inclusions": [
+        "4-Star Hotels",
+        "Daily Breakfast",
+        "Ha Long Bay Cruise",
+        "Domestic Flight",
+        "All Transfers",
+        "English Speaking Guide",
+        "Sightseeing Tickets",
+        "Visa Assistance"
+      ],
+      "exclusions": [],
+      "category": "international",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "pkg-kashmir-4d",
+      "name": "Srinagar Sonamarg Gulmarg Tour",
+      "destination": "Srinagar, Sonamarg, Gulmarg",
+      "duration": "4 Days / 3 Nights",
+      "price": 12700,
+      "image": "https://images.unsplash.com/photo-1568889753852-196c487a536e?w=800&q=75",
+      "description": "Discover the paradise of Kashmir — the City of Lakes Srinagar, the golden meadows of Sonamarg, and the stunning slopes of Gulmarg. Includes Mughal gardens, a houseboat night, and breathtaking Himalayan views. 2 nights Srinagar + 1 night Houseboat.",
+      "highlights": [
+        "Nishat Bagh, Shalimar Bagh & Chashme Shahi",
+        "Sonamarg — Meadow of Gold",
+        "Thajiwas Glacier Pony Ride (optional)",
+        "Gulmarg Gondola Ride (optional)",
+        "Dal Lake Houseboat Night Stay",
+        "Scenic Sindh Valley Drive"
+      ],
+      "itinerary": [
+        "Day 1: Arrival in Srinagar | Transfer to hotel | Nishat Bagh, Shalimar Bagh & Chashme Shahi | Overnight in Srinagar",
+        "Day 2: Srinagar to Sonamarg excursion | Sindh Valley scenic drive | Thajiwas Glacier (optional pony ride) | Return to Srinagar | Overnight in Srinagar",
+        "Day 3: Srinagar to Gulmarg (60 km) | Explore Gulmarg meadows | Gondola ride (optional, payable separately) | Overnight in Houseboat",
+        "Day 4: Breakfast | Transfer to Srinagar Airport | Departure"
+      ],
+      "inclusions": [
+        "Hotel stay — 2 nights Srinagar + 1 night Houseboat",
+        "Daily breakfast & dinner",
+        "AC vehicle for all transfers & sightseeing",
+        "Airport pickup & drop"
+      ],
+      "exclusions": [
+        "Airfare to/from Srinagar",
+        "Pony rides at Sonamarg",
+        "Gondola tickets at Gulmarg",
+        "Local union taxi charges & entry fees",
+        "Personal expenses (shopping, tips, laundry)"
+      ],
+      "startsFrom": "Srinagar",
+      "minTravelers": 2,
+      "priceNote": "Per person: 3★ Budget, group of 10. Rates vary by hotel category and group size.",
+      "pricing": {
+        "groupSizes": [
+          2,
+          4,
+          6,
+          8,
+          10,
+          12
+        ],
+        "tiers": [
+          {
+            "name": "3★ Budget",
+            "prices": [
+              15400,
+              13600,
+              13100,
+              13000,
+              12700,
+              13900
+            ],
+            "extraBed": 6900,
+            "childNoBed": 4500
+          },
+          {
+            "name": "3★ Deluxe",
+            "prices": [
+              16000,
+              14200,
+              13700,
+              13600,
+              13300,
+              13400
+            ],
+            "extraBed": 7500,
+            "childNoBed": 4800
+          },
+          {
+            "name": "3★ Premium",
+            "prices": [
+              17400,
+              15600,
+              15100,
+              15000,
+              14700,
+              14400
+            ],
+            "extraBed": 8100,
+            "childNoBed": 5400
+          },
+          {
+            "name": "4★ Deluxe",
+            "prices": [
+              20600,
+              18800,
+              18300,
+              18200,
+              17900,
+              17600
+            ],
+            "extraBed": 11200,
+            "childNoBed": 5400
+          },
+          {
+            "name": "4★ Premium",
+            "prices": [
+              25600,
+              23600,
+              23300,
+              23200,
+              22900,
+              22600
+            ],
+            "extraBed": 15600,
+            "childNoBed": 7500
+          }
+        ]
+      },
+      "category": "adventure",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "pkg-kashmir-honeymoon",
+      "name": "Kashmir Honeymoon Package",
+      "destination": "Srinagar, Pahalgam, Gulmarg, Sonamarg",
+      "duration": "6 Days / 5 Nights",
+      "price": 22999,
+      "originalPrice": 29999,
+      "image": "https://images.unsplash.com/photo-1595815771614-ade9d652a65d?w=800&q=75",
+      "description": "A romantic escape through the paradise on Earth — Kashmir. Cruise on Dal Lake in a private Shikara, explore the flower-filled Mughal gardens, walk through Pahalgam's pine valleys, ride the Gulmarg Gondola with snow-capped peaks, and stay in a luxury houseboat under the stars. Perfect for couples and honeymooners.",
+      "highlights": [
+        "Private Shikara Ride on Dal Lake",
+        "Luxury Houseboat Night Stay",
+        "Pahalgam — Betaab Valley & Aru Valley",
+        "Gulmarg Gondola & Snow Point",
+        "Mughal Gardens — Nishat, Shalimar, Chashme Shahi",
+        "Sonamarg — Meadow of Gold",
+        "Candlelight Dinner (on request)"
+      ],
+      "itinerary": [
+        "Day 1: Arrival in Srinagar | Airport pickup | Check-in at hotel | Evening Shikara ride on Dal Lake | Overnight in Srinagar",
+        "Day 2: Srinagar local sightseeing | Mughal Gardens — Nishat Bagh, Shalimar Bagh, Chashme Shahi | Shankaracharya Temple | Local market | Overnight in Srinagar",
+        "Day 3: Srinagar to Pahalgam (95 km) | Betaab Valley | Aru Valley | Chandanwari (optional) | Overnight in Pahalgam",
+        "Day 4: Pahalgam to Gulmarg (140 km) | Gulmarg Gondola Phase 1 & 2 | Snow activities | Meadow walk | Overnight in Gulmarg",
+        "Day 5: Gulmarg to Srinagar via Sonamarg | Thajiwas Glacier view | Return to Srinagar | Houseboat check-in | Overnight in Houseboat",
+        "Day 6: Breakfast on Houseboat | Transfer to Srinagar Airport | Departure"
+      ],
+      "inclusions": [
+        "Deluxe hotel stay — 4 nights + 1 night Luxury Houseboat",
+        "Daily breakfast & dinner",
+        "AC vehicle for all transfers & sightseeing",
+        "Airport pickup & drop",
+        "Private Shikara ride on Dal Lake",
+        "Welcome gift for couples"
+      ],
+      "exclusions": [
+        "Airfare to/from Srinagar",
+        "Gondola tickets at Gulmarg",
+        "Pony rides & snow activities",
+        "Personal expenses (shopping, tips, laundry)",
+        "Candlelight dinner arrangement (available on request at extra cost)"
+      ],
+      "startsFrom": "Srinagar",
+      "minTravelers": 2,
+      "priceNote": "Per person, couple package on double sharing",
+      "category": "honeymoon",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "pkg-kashmir-honeymoon-4d",
+      "name": "Kashmir Honeymoon Escape — Srinagar, Sonamarg & Gulmarg",
+      "destination": "Srinagar, Sonamarg, Gulmarg",
+      "duration": "4 Days / 3 Nights",
+      "price": 15400,
+      "image": "https://images.unsplash.com/photo-1716447340468-5521e4746230?w=800&q=75",
+      "description": "A short, romantic Kashmir getaway for couples — the Mughal gardens of Srinagar, the golden meadows of Sonamarg, the mountain views of Gulmarg and a night together on a Kashmiri houseboat. 2 nights Srinagar + 1 night Houseboat.",
+      "highlights": [
+        "Houseboat Night Stay for Two",
+        "Nishat Bagh, Shalimar Bagh & Chashme Shahi",
+        "Sonamarg — Meadow of Gold in the Sindh Valley",
+        "Thajiwas Glacier Pony Ride (optional)",
+        "Gulmarg Meadows & Gondola Ride (optional)"
+      ],
+      "itinerary": [
+        "Day 1: Arrival in Srinagar | Meet our representative & transfer to hotel | Nishat Bagh, Shalimar Bagh & Chashme Shahi | Dinner & overnight in Srinagar",
+        "Day 2: Srinagar to Sonamarg excursion (approx. 100 km / 3 hrs) | Sindh Valley mountain views & meadows | Thajiwas Glacier (optional pony ride, payable) | Return for dinner & overnight in Srinagar",
+        "Day 3: Srinagar to Gulmarg (approx. 60 km / 2–3 hrs) | Explore Gulmarg | Gondola ride (optional, payable separately) | Overnight in Houseboat",
+        "Day 4: Breakfast | Transfer to Srinagar Airport | Departure"
+      ],
+      "inclusions": [
+        "2 nights hotel in Srinagar + 1 night Houseboat",
+        "Daily breakfast & dinner",
+        "Vehicle for all transfers & sightseeing",
+        "Srinagar airport pickup & drop"
+      ],
+      "exclusions": [
+        "Airfare to/from Srinagar",
+        "Pony rides at Sonamarg",
+        "Gondola tickets at Gulmarg",
+        "Local union taxi charges & entry fees",
+        "Optional activities & personal expenses"
+      ],
+      "startsFrom": "Srinagar",
+      "minTravelers": 2,
+      "priceNote": "Per person for a couple (2 Pax), 3★ Budget. Choose your hotel category when booking.",
+      "pricing": {
+        "groupSizes": [
+          2
+        ],
+        "tiers": [
+          {
+            "name": "3★ Budget",
+            "prices": [
+              15400
+            ]
+          },
+          {
+            "name": "3★ Deluxe",
+            "prices": [
+              16000
+            ]
+          },
+          {
+            "name": "3★ Premium",
+            "prices": [
+              17400
+            ]
+          },
+          {
+            "name": "4★ Deluxe",
+            "prices": [
+              20600
+            ]
+          },
+          {
+            "name": "4★ Premium",
+            "prices": [
+              25600
+            ]
+          }
+        ]
+      },
+      "category": "honeymoon",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "pkg-manali-honeymoon",
+      "name": "Manali Honeymoon Package",
+      "destination": "Delhi, Manali, Solang Valley, Rohtang Pass",
+      "duration": "5 Days / 4 Nights",
+      "price": 18999,
+      "originalPrice": 24999,
+      "image": "https://images.unsplash.com/photo-1597167231350-d057a45dc868?w=800&q=75",
+      "description": "A dreamy honeymoon in the lap of the Himalayas — snow-capped peaks, pine forests, and cosy nights in Manali. Explore the adventure playground of Solang Valley, drive up to Rohtang Pass (subject to permit), stroll through Old Manali's cafés and visit the ancient Hadimba Temple. Perfect for newlyweds seeking mountains and romance.",
+      "highlights": [
+        "Solang Valley — Snow Activities & Paragliding",
+        "Rohtang Pass Excursion (subject to permit & weather)",
+        "Hadimba Devi Temple & Old Manali",
+        "Mall Road & Tibetan Monastery",
+        "Beas River Riverside Walk",
+        "Cosy Mountain Resort Stay"
+      ],
+      "itinerary": [
+        "Day 1: Arrival in Delhi | Overnight Volvo bus to Manali (or flight to Kullu + transfer) | Overnight on bus / in transit",
+        "Day 2: Arrival in Manali | Hotel check-in & rest | Afternoon Hadimba Temple, Club House & Mall Road | Overnight in Manali",
+        "Day 3: Solang Valley day trip | Snow activities, zorbing, paragliding (seasonal, payable) | Atal Tunnel viewpoint | Overnight in Manali",
+        "Day 4: Rohtang Pass / Gulaba excursion (permit-dependent) | Afternoon visit Vashisht Hot Springs & Old Manali cafés | Overnight in Manali",
+        "Day 5: Breakfast & check-out | Departure to Delhi by Volvo / Kullu airport transfer"
+      ],
+      "inclusions": [
+        "Deluxe hotel / resort stay — 3 nights Manali",
+        "Daily breakfast & dinner",
+        "AC Volvo bus Delhi–Manali–Delhi (or Kullu airport transfers)",
+        "All local sightseeing by private vehicle",
+        "Welcome honeymoon decoration in room"
+      ],
+      "exclusions": [
+        "Rohtang Pass permit fee (₹550/person, subject to availability)",
+        "Adventure activities at Solang (paragliding, zorbing, skiing — seasonal)",
+        "Lunch and snacks",
+        "Personal expenses (shopping, tips, laundry)",
+        "Anything not listed under What's included"
+      ],
+      "startsFrom": "Delhi",
+      "minTravelers": 2,
+      "priceNote": "Per person, couple package on double sharing",
+      "category": "honeymoon",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "pkg-bali",
+      "name": "Bali Tour Package",
+      "destination": "Bali, Ubud, Kuta, Nusa Penida",
+      "duration": "6 Days / 5 Nights",
+      "price": 32999,
+      "originalPrice": 42999,
+      "image": "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=75",
+      "description": "Experience the Island of Gods — Bali's stunning temples, rice terraces, pristine beaches, and vibrant culture. From Ubud's spiritual heart to Kuta's beach vibes and Nusa Penida's dramatic cliffs. Fully customisable.",
+      "highlights": [
+        "Tanah Lot Temple Sunset",
+        "Ubud Rice Terraces",
+        "Kecak Fire Dance",
+        "Nusa Penida Day Trip",
+        "Kuta & Seminyak Beach",
+        "Uluwatu Temple",
+        "Bali Swing",
+        "Water Sports"
+      ],
+      "itinerary": [
+        "Day 1: Arrival Bali — Airport pickup, hotel check-in, Kuta Beach sunset. Overnight Kuta/Seminyak",
+        "Day 2: Ubud Tour — Monkey Forest, Tegallalang Rice Terrace, Ubud Market, Bali Swing. Overnight Ubud",
+        "Day 3: Temples Tour — Tanah Lot Temple, Uluwatu Temple, Kecak Dance at sunset. Overnight Kuta",
+        "Day 4: Nusa Penida Day Trip — Kelingking Beach, Angel's Billabong, Broken Beach. Overnight Kuta",
+        "Day 5: Water Sports & Free Day — Tanjung Benoa water sports, shopping. Overnight Kuta",
+        "Day 6: Departure — Breakfast, airport transfer"
+      ],
+      "inclusions": [
+        "4-Star Hotel/Villa",
+        "Daily Breakfast",
+        "Airport Transfers",
+        "All Sightseeing Tours",
+        "Nusa Penida Boat & Tour",
+        "Water Sports Package",
+        "English Speaking Driver",
+        "Visa on Arrival"
+      ],
+      "exclusions": [],
+      "category": "international",
+      "createdAt": "2024-01-01T00:00:00.000Z"
     }
   ],
   "enquiries": [],
@@ -167,7 +779,7 @@
     {
       "id": "g2",
       "src": "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=600&q=75",
-      "caption": "Hawa Mahal Jaipur",
+      "caption": "Amber Fort, Jaipur",
       "category": "Rajasthan",
       "active": true,
       "createdAt": "2024-01-01T00:00:00.000Z"
@@ -182,24 +794,24 @@
     },
     {
       "id": "g4",
-      "src": "https://images.unsplash.com/photo-1548013146-72479768bada?w=600&q=75",
-      "caption": "Amber Fort",
+      "src": "https://images.unsplash.com/photo-1650530777057-3a7dbc24bf6c?w=600&q=75",
+      "caption": "Hawa Mahal, Jaipur",
       "category": "Rajasthan",
       "active": true,
       "createdAt": "2024-01-01T00:00:00.000Z"
     },
     {
       "id": "g5",
-      "src": "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=600&q=75",
-      "caption": "India Gate",
+      "src": "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=600&q=75",
+      "caption": "India Gate, Delhi",
       "category": "Heritage",
       "active": true,
       "createdAt": "2024-01-01T00:00:00.000Z"
     },
     {
       "id": "g6",
-      "src": "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=600&q=75",
-      "caption": "Temple Architecture",
+      "src": "https://images.unsplash.com/photo-1669557572200-03598458ea58?w=600&q=75",
+      "caption": "Ranakpur Jain Temple",
       "category": "Spiritual",
       "active": true,
       "createdAt": "2024-01-01T00:00:00.000Z"
@@ -299,6 +911,7 @@
     "whatsapp": "916388360881",
     "email": "info@atlastours.in",
     "address": "Hotel Ganga Imperial, Tilamapur, Varanasi, Rustampur, Uttar Pradesh 221112",
-    "tagline": "Spiritual Journeys, Lifetime Memories"
+    "tagline": "Spiritual Journeys, Lifetime Memories",
+    "established": 1983
   }
 }

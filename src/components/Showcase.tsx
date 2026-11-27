@@ -28,17 +28,17 @@ const packageCategories = [
     label: "Hindu Pilgrimage",
     tag: "pilgrimage",
     packages: [
-      { id: "pkg-chardham", src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75", title: "Char Dham Yatra", duration: "11 Days / 10 Nights", price: "₹22,999", destinations: "Yamunotri • Gangotri • Kedarnath • Badrinath" },
-      { id: "pkg-dodham", src: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=75", title: "Do Dham Yatra", duration: "7 Days / 6 Nights", price: "₹15,999", destinations: "Kedarnath • Badrinath" },
+      { id: "pkg-chardham", src: "https://images.unsplash.com/photo-1612438214708-f428a707dd4e?w=600&q=75", title: "Char Dham Yatra", duration: "11 Days / 10 Nights", price: "₹22,999", destinations: "Yamunotri • Gangotri • Kedarnath • Badrinath" },
+      { id: "pkg-dodham", src: "https://images.unsplash.com/photo-1601821139314-66a4d14cfc00?w=600&q=75", title: "Do Dham Yatra", duration: "7 Days / 6 Nights", price: "₹15,999", destinations: "Kedarnath • Badrinath" },
       { id: "pkg-up-spiritual", src: "/images/pkg-up-spiritual.jpeg", title: "Spiritual Wonders of UP", duration: "3 to 8 Days", price: "₹12,699", destinations: "Ayodhya • Varanasi • Prayagraj • Agra" },
-      { id: "pkg-kailash", src: "https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=600&q=75", title: "Kailash Mansarovar Yatra", duration: "14-16 Days", price: "₹1,85,000", destinations: "Kailash Mansarovar • Tibet" },
+      { id: "pkg-kailash", src: "https://images.unsplash.com/photo-1691166502012-5dc9c769a1d3?w=600&q=75", title: "Kailash Mansarovar Yatra", duration: "14-16 Days", price: "₹1,85,000", destinations: "Kailash Mansarovar • Tibet" },
     ],
   },
   {
     label: "Jain Pilgrimage",
     tag: "jain",
     packages: [
-      { id: "pkg-jain-pilgrimage", src: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=600&q=75", title: "Jain Pilgrimage Tour", duration: "8 Days / 7 Nights", price: "₹19,999", destinations: "Palitana • Ranakpur • Dilwara • Shravanabelagola" },
+      { id: "pkg-jain-pilgrimage", src: "https://images.unsplash.com/photo-1684990214842-a5b1c8761a4e?w=600&q=75", title: "Jain Pilgrimage Tour", duration: "8 Days / 7 Nights", price: "₹19,999", destinations: "Palitana • Ranakpur • Dilwara • Shravanabelagola" },
     ],
   },
   {

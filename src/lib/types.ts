@@ -18,9 +18,32 @@ export interface TourPackage {
   minTravelers?: number;
   /** Shown under the price, e.g. "Based on double sharing" (N-18). */
   priceNote?: string;
+  /**
+   * N-22: per-person rates by hotel category × group size (src/lib/pricing.ts). When set, the
+   * booking form asks for a hotel category and /api/book charges the matching rate.
+   */
+  pricing?: PackagePricing;
   category: "spiritual" | "cultural" | "adventure" | "heritage" | "pilgrimage" | "international" | "honeymoon";
   hidden?: boolean;
   createdAt: string;
+}
+
+/** N-22: one hotel category row of a package's price grid. */
+export interface PricingTier {
+  /** e.g. "3★ Deluxe". Unique within the package; saved with the booking. */
+  name: string;
+  /** Per-person rate for each `PackagePricing.groupSizes` column; null = not offered. */
+  prices: (number | null)[];
+  /** Extra bed (third person in the room), per person. */
+  extraBed?: number;
+  /** Child without bed ("CNB"), per child. */
+  childNoBed?: number;
+}
+
+/** N-22: hotel categories × group sizes. `groupSizes` are increasing, e.g. [2, 4, 6, 8, 10, 12]. */
+export interface PackagePricing {
+  groupSizes: number[];
+  tiers: PricingTier[];
 }
 
 export interface Enquiry {

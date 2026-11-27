@@ -195,6 +195,28 @@ select.adm-sel:hover{border-color:var(--a-border-strong)}
 .adm-check-cell{display:flex;align-items:flex-end;padding-bottom:9px}
 .adm-check{display:inline-flex;gap:8px;align-items:center;font-size:.875rem;cursor:pointer}
 .adm-form input[type="checkbox"]{width:16px;height:16px;padding:0;accent-color:var(--a-accent);box-shadow:none}
+.adm-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.adm-section-label{font-size:.875rem;font-weight:600;color:var(--a-text);display:flex;flex-direction:column;gap:2px}
+.adm-section-label small{font-size:.78rem;font-weight:400;color:var(--a-muted)}
+.adm-pricing-empty{border:1px dashed var(--a-border-strong);border-radius:10px;padding:14px 16px;color:var(--a-muted);font-size:.8125rem;display:flex;flex-direction:column;gap:10px}
+.adm-pricing{display:flex;flex-direction:column;gap:10px;min-width:0}
+.adm-pricing-field{min-width:0}
+.adm-pricing-scroll{position:relative;overflow-x:auto;border:1px solid var(--a-border);border-radius:10px;background:var(--a-surface-2)}
+.adm-pricing-table{border-collapse:collapse;width:100%;font-size:.78rem}
+.adm-pricing-table th{font-weight:500;color:var(--a-muted);text-align:left;padding:8px 6px;white-space:nowrap;border-bottom:1px solid var(--a-border)}
+.adm-pricing-table td{padding:5px 4px}
+.adm-form .adm-pricing-table input{padding:6px 8px;min-width:76px;font-size:.8125rem}
+.adm-form .adm-pricing-table .adm-pricing-name input{min-width:130px}
+.adm-pricing-name{padding-left:8px!important}
+.adm-pricing-col{display:flex;align-items:center;gap:4px}
+.adm-form .adm-pricing-col input{min-width:0;width:58px}
+.adm-pricing-actions{white-space:nowrap}
+.adm-pricing-x{border:1px solid var(--a-border-strong);background:var(--a-surface);color:var(--a-muted);border-radius:6px;width:24px;height:24px;cursor:pointer;font-size:.85rem;line-height:1;padding:0;margin-left:2px}
+.adm-pricing-x:hover:not(:disabled){border-color:var(--a-accent);color:var(--a-accent-text)}
+.adm-pricing-x:disabled{opacity:.4;cursor:not-allowed}
+.adm-pricing-tools{display:flex;flex-wrap:wrap;gap:8px}
+.adm-pricing-help{font-size:.78rem;color:var(--a-muted);line-height:1.5}
+.adm-inline-btn{align-self:flex-start;border:none;background:none;color:var(--a-accent-text);font-size:.78rem;cursor:pointer;padding:0;text-decoration:underline}
 .adm-preview{padding:0 28px}
 .adm-preview img{max-width:220px;max-height:130px;object-fit:cover;border-radius:8px;border:1px solid var(--a-border)}
 .adm-actions{display:flex;flex-direction:row-reverse;justify-content:flex-start;gap:8px;padding:16px 28px;border-top:1px solid var(--a-border);

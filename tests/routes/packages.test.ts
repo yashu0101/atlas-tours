@@ -121,3 +121,35 @@ describe("admin writes", () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe("package pricing grid (N-22)", () => {
+  beforeEach(() => {
+    session.token = adminToken;
+  });
+  const pricing = { groupSizes: [2, 4], tiers: [{ name: "3★ Deluxe", prices: [16000, 14200], extraBed: 7500 }] };
+
+  it("POST stores the grid, PATCH replaces it and null clears it", async () => {
+    const created = await (await route.POST(jsonReq("POST", JSON.stringify({ name: "Grid Tour", price: 14200, pricing })))).json();
+    expect(created.pricing).toEqual(pricing);
+
+    const next = { groupSizes: [2], tiers: [{ name: "4★", prices: [20600] }] };
+    const patched = await (await route.PATCH(jsonReq("PATCH", JSON.stringify({ id: created.id, pricing: next })))).json();
+    expect(patched.pricing).toEqual(next);
+
+    const cleared = await route.PATCH(jsonReq("PATCH", JSON.stringify({ id: created.id, pricing: null })));
+    expect(cleared.status).toBe(200);
+    expect(db.read().packages.find((p) => p.id === created.id)?.pricing).toBeUndefined();
+  });
+
+  it("rejects an invalid grid with a 400 that names the problem", async () => {
+    const bad = { groupSizes: [4, 2], tiers: [{ name: "a", prices: [1, 1] }] };
+    const res = await route.PATCH(jsonReq("PATCH", JSON.stringify({ id: "visible", pricing: bad })));
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toMatch(/pricing: group sizes must increase/);
+  });
+
+  it("accepts the honeymoon category", async () => {
+    const res = await route.PATCH(jsonReq("PATCH", JSON.stringify({ id: "visible", category: "honeymoon" })));
+    expect(res.status).toBe(200);
+  });
+});

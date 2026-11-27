@@ -1,4 +1,4 @@
-import { SiteConfig, TourPackage } from "./types";
+import { PackagePricing, SiteConfig, TourPackage } from "./types";
 
 export const SITE_CONFIG: SiteConfig = {
   name: "Atlas Tour & Travels",
@@ -38,6 +38,27 @@ export const HOTEL_PARTNER = {
  * Kept out of SITE_CONFIG because that object is also the seeded DB `config` row (SiteConfig).
  */
 export const PHONE_DISPLAY = SITE_CONFIG.phone.replace(/^\+91(\d+)$/, "+91 $1");
+
+/**
+ * N-22: "Tour cost per person" table of Srinagar_Sonamarg_Gulmarg_4D3N_Package_Revised.pdf, as
+ * printed. (3★ Budget 12 pax, 13,900, is higher than its 10 pax rate; copied as printed — Q-11.)
+ */
+const KASHMIR_4D_PRICING: PackagePricing = {
+  groupSizes: [2, 4, 6, 8, 10, 12],
+  tiers: [
+    { name: "3★ Budget", prices: [15400, 13600, 13100, 13000, 12700, 13900], extraBed: 6900, childNoBed: 4500 },
+    { name: "3★ Deluxe", prices: [16000, 14200, 13700, 13600, 13300, 13400], extraBed: 7500, childNoBed: 4800 },
+    { name: "3★ Premium", prices: [17400, 15600, 15100, 15000, 14700, 14400], extraBed: 8100, childNoBed: 5400 },
+    { name: "4★ Deluxe", prices: [20600, 18800, 18300, 18200, 17900, 17600], extraBed: 11200, childNoBed: 5400 },
+    { name: "4★ Premium", prices: [25600, 23600, 23300, 23200, 22900, 22600], extraBed: 15600, childNoBed: 7500 },
+  ],
+};
+
+/** The same brochure for a couple: only the 2 pax column. */
+const KASHMIR_4D_COUPLE_PRICING: PackagePricing = {
+  groupSizes: [2],
+  tiers: KASHMIR_4D_PRICING.tiers.map(t => ({ name: t.name, prices: [t.prices[0]] })),
+};
 
 export const DEFAULT_PACKAGES: TourPackage[] = [
   {
@@ -154,7 +175,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     duration: "11 Days / 10 Nights",
     price: 22999,
     originalPrice: 29999,
-    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75",
+    image: "https://images.unsplash.com/photo-1612438214708-f428a707dd4e?w=600&q=75",
     description: "The sacred Char Dham Yatra covers all four holy abodes in Uttarakhand — Yamunotri, Gangotri, Kedarnath, and Badrinath. A life-changing pilgrimage through the Himalayas. Every package is customised to your group.",
     highlights: ["Yamunotri Temple", "Gangotri Temple", "Kedarnath Temple (16-18 km trek)", "Badrinath Temple & Mana Village", "Rishikesh Visit", "Himalayan Scenic Drives", "Kashi Vishwanath Temple Uttarkashi", "Gaurikund Trek Start Point"],
     itinerary: [
@@ -183,7 +204,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     duration: "7 Days / 6 Nights",
     price: 15999,
     originalPrice: 19999,
-    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=75",
+    image: "https://images.unsplash.com/photo-1601821139314-66a4d14cfc00?w=600&q=75",
     description: "Visit the two most revered Dhams — Kedarnath and Badrinath — in one pilgrimage through the Garhwal Himalayas. Customised packages for all group sizes.",
     highlights: ["Kedarnath Temple", "Badrinath Temple", "Mana Village", "Rishikesh", "Joshimath", "Gaurikund Trek", "Himalayan Views"],
     itinerary: [
@@ -208,7 +229,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     duration: "14-16 Days",
     price: 185000,
     originalPrice: 225000,
-    image: "https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?w=600&q=75",
+    image: "https://images.unsplash.com/photo-1691166502012-5dc9c769a1d3?w=600&q=75",
     description: "The ultimate spiritual pilgrimage to Mount Kailash and the sacred Mansarovar Lake in Tibet. A once-in-a-lifetime yatra that tests your endurance and deepens your faith. Fully customised packages with all permits and logistics handled.",
     highlights: ["Mount Kailash Parikrama", "Mansarovar Lake Holy Dip", "Gauri Kund", "Kathmandu Pashupatinath", "Tibet Border Crossing", "High Altitude Acclimatization", "Medical Support Throughout"],
     itinerary: [
@@ -233,7 +254,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     duration: "8 Days / 7 Nights",
     price: 19999,
     originalPrice: 25999,
-    image: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=600&q=75",
+    image: "https://images.unsplash.com/photo-1684990214842-a5b1c8761a4e?w=600&q=75",
     description: "A pilgrimage to India's most revered Jain Tirthas — from the magnificent Shatrunjaya Hill in Palitana to the exquisite Ranakpur and Dilwara temples. Customised for Jain families and groups with pure Jain meals.",
     highlights: ["Palitana Shatrunjaya Hill", "Ranakpur Jain Temple", "Dilwara Temples Mount Abu", "Shravanabelagola Gommateshwara", "Parasnath Hill Jharkhand", "Girnar Hill", "Jain Meal Arrangements"],
     itinerary: [
@@ -328,9 +349,8 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     name: "Srinagar Sonamarg Gulmarg Tour",
     destination: "Srinagar, Sonamarg, Gulmarg",
     duration: "4 Days / 3 Nights",
-    price: 13600,
-    originalPrice: 15400,
-    image: "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800&q=75",
+    price: 12700,
+    image: "https://images.unsplash.com/photo-1568889753852-196c487a536e?w=800&q=75",
     description: "Discover the paradise of Kashmir — the City of Lakes Srinagar, the golden meadows of Sonamarg, and the stunning slopes of Gulmarg. Includes Mughal gardens, a houseboat night, and breathtaking Himalayan views. 2 nights Srinagar + 1 night Houseboat.",
     highlights: [
       "Nishat Bagh, Shalimar Bagh & Chashme Shahi",
@@ -361,7 +381,8 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     ],
     startsFrom: "Srinagar",
     minTravelers: 2,
-    priceNote: "Per person, 4 Pax in 3★ Deluxe",
+    priceNote: "Per person: 3★ Budget, group of 10. Rates vary by hotel category and group size.",
+    pricing: KASHMIR_4D_PRICING,
     category: "adventure",
     createdAt: new Date().toISOString(),
   },
@@ -413,6 +434,49 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     category: "honeymoon",
     createdAt: new Date().toISOString(),
   },
+  // --- Kashmir Honeymoon short escape: couple (2 pax) edition of the Srinagar-Sonamarg-Gulmarg
+  // brochure (Srinagar_Sonamarg_Gulmarg_4D3N_Package_Revised.pdf). Price = lowest 2 PAX rate, per person. ---
+  {
+    id: "pkg-kashmir-honeymoon-4d",
+    name: "Kashmir Honeymoon Escape — Srinagar, Sonamarg & Gulmarg",
+    destination: "Srinagar, Sonamarg, Gulmarg",
+    duration: "4 Days / 3 Nights",
+    price: 15400,
+    image: "https://images.unsplash.com/photo-1716447340468-5521e4746230?w=800&q=75",
+    description: "A short, romantic Kashmir getaway for couples — the Mughal gardens of Srinagar, the golden meadows of Sonamarg, the mountain views of Gulmarg and a night together on a Kashmiri houseboat. 2 nights Srinagar + 1 night Houseboat.",
+    highlights: [
+      "Houseboat Night Stay for Two",
+      "Nishat Bagh, Shalimar Bagh & Chashme Shahi",
+      "Sonamarg — Meadow of Gold in the Sindh Valley",
+      "Thajiwas Glacier Pony Ride (optional)",
+      "Gulmarg Meadows & Gondola Ride (optional)",
+    ],
+    itinerary: [
+      "Day 1: Arrival in Srinagar | Meet our representative & transfer to hotel | Nishat Bagh, Shalimar Bagh & Chashme Shahi | Dinner & overnight in Srinagar",
+      "Day 2: Srinagar to Sonamarg excursion (approx. 100 km / 3 hrs) | Sindh Valley mountain views & meadows | Thajiwas Glacier (optional pony ride, payable) | Return for dinner & overnight in Srinagar",
+      "Day 3: Srinagar to Gulmarg (approx. 60 km / 2–3 hrs) | Explore Gulmarg | Gondola ride (optional, payable separately) | Overnight in Houseboat",
+      "Day 4: Breakfast | Transfer to Srinagar Airport | Departure",
+    ],
+    inclusions: [
+      "2 nights hotel in Srinagar + 1 night Houseboat",
+      "Daily breakfast & dinner",
+      "Vehicle for all transfers & sightseeing",
+      "Srinagar airport pickup & drop",
+    ],
+    exclusions: [
+      "Airfare to/from Srinagar",
+      "Pony rides at Sonamarg",
+      "Gondola tickets at Gulmarg",
+      "Local union taxi charges & entry fees",
+      "Optional activities & personal expenses",
+    ],
+    startsFrom: "Srinagar",
+    minTravelers: 2,
+    priceNote: "Per person for a couple (2 Pax), 3★ Budget. Choose your hotel category when booking.",
+    pricing: KASHMIR_4D_COUPLE_PRICING,
+    category: "honeymoon",
+    createdAt: new Date().toISOString(),
+  },
   // --- Manali Honeymoon ---
   {
     id: "pkg-manali-honeymoon",
@@ -421,7 +485,7 @@ export const DEFAULT_PACKAGES: TourPackage[] = [
     duration: "5 Days / 4 Nights",
     price: 18999,
     originalPrice: 24999,
-    image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800&q=75",
+    image: "https://images.unsplash.com/photo-1597167231350-d057a45dc868?w=800&q=75",
     description: "A dreamy honeymoon in the lap of the Himalayas — snow-capped peaks, pine forests, and cosy nights in Manali. Explore the adventure playground of Solang Valley, drive up to Rohtang Pass (subject to permit), stroll through Old Manali's cafés and visit the ancient Hadimba Temple. Perfect for newlyweds seeking mountains and romance.",
     highlights: [
       "Solang Valley — Snow Activities & Paragliding",

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySession, type AdminIdentity } from "./auth";
+import { parsePricing } from "./pricing";
 
 /**
  * Shared helpers for API route handlers (B-03).
@@ -123,7 +124,7 @@ export function positiveInt(value: unknown, key: string, fallback: number, max: 
  *   site-relative paths starting with a single `/` are accepted (B-09); `""` means
  *   "no image". Anything else (`http:`, `javascript:`, `data:`, `//host`, …) is a 400.
  */
-export type BaseFieldType = "string" | "text" | "number" | "boolean" | "string[]" | "image" | readonly string[] | IntField;
+export type BaseFieldType = "string" | "text" | "number" | "boolean" | "string[]" | "image" | "pricing" | readonly string[] | IntField;
 
 /**
  * B-13: a whole number within [min, max] (inclusive). Use it for every field stored in a
@@ -201,6 +202,12 @@ function coerceField(key: string, type: BaseFieldType, v: unknown): unknown {
     case "boolean":
       if (typeof v !== "boolean") throw badRequest(`${key} must be a boolean`);
       return v;
+    case "pricing": {
+      // N-22: package price grid (hotel categories × group sizes), see pricing.ts.
+      const parsed = parsePricing(v);
+      if (!parsed.ok) throw badRequest(parsed.error);
+      return parsed.value;
+    }
     case "string[]":
       if (!Array.isArray(v) || v.length > ARRAY_MAX_ITEMS || !v.every((x) => typeof x === "string" && x.length <= STRING_MAX)) {
         throw badRequest(`${key} must be an array of strings`);
@@ -224,7 +231,7 @@ export function pickFields(body: Body, spec: FieldSpec): Body {
     if (v === undefined) continue;
     const isNullable = typeof fieldType === "object" && !Array.isArray(fieldType) && "nullable" in fieldType;
     const type: BaseFieldType = isNullable ? (fieldType as NullableField).nullable : (fieldType as BaseFieldType);
-    if (isNullable && (v === null || (typeof v === "string" && !v.trim() && !Array.isArray(type) && type !== "boolean" && type !== "string[]"))) {
+    if (isNullable && (v === null || (typeof v === "string" && !v.trim() && !Array.isArray(type) && type !== "boolean" && type !== "string[]" && type !== "pricing"))) {
       out[key] = null;
       continue;
     }
