@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  activeFilterCount,
+  applyPackageFilters,
   durationDays,
+  filterByBudget,
+  filterByDuration,
+  isBudgetId,
+  isDurationId,
   isPackageSort,
   lowestPrice,
   relatedPackages,
@@ -103,5 +109,42 @@ describe("relatedPackages", () => {
 
   it("respects the limit", () => {
     expect(relatedPackages([varanasi, rajasthan, odisha, custom], varanasi, 2)).toHaveLength(2);
+  });
+});
+
+describe("filter modal helpers: budget and trip length", () => {
+  const big = makePackage({ id: "k", name: "Kailash", duration: "14-16 Days", price: 185000, category: "pilgrimage" });
+  const mid = makePackage({ id: "m", name: "Manali", duration: "5 Days / 4 Nights", price: 15000, category: "honeymoon" });
+
+  it("budget bands include the lower bound and exclude the upper", () => {
+    const list = [varanasi, rajasthan, odisha, big, mid];
+    expect(filterByBudget(list, "under-15k").map((p) => p.id)).toEqual(["v", "o"]);
+    expect(filterByBudget(list, "15k-30k").map((p) => p.id)).toEqual(["r", "m"]);
+    expect(filterByBudget(list, "30k-60k")).toEqual([]);
+    expect(filterByBudget(list, "60k-plus").map((p) => p.id)).toEqual(["k"]);
+    expect(filterByBudget(list, "any")).toHaveLength(5);
+  });
+
+  it("trip-length bands are inclusive; packages without a day count never match a band", () => {
+    const list = [varanasi, rajasthan, odisha, big, custom];
+    expect(filterByDuration(list, "short").map((p) => p.id)).toEqual(["v"]);
+    expect(filterByDuration(list, "week").map((p) => p.id)).toEqual(["r", "o"]);
+    expect(filterByDuration(list, "long").map((p) => p.id)).toEqual(["k"]);
+    expect(filterByDuration(list, "any")).toHaveLength(5);
+  });
+
+  it("applyPackageFilters combines search, category, budget and trip length", () => {
+    const list = [varanasi, rajasthan, odisha, big];
+    expect(applyPackageFilters(list, { query: "temple", category: "spiritual", budget: "under-15k", days: "week" }).map((p) => p.id)).toEqual(["o"]);
+    expect(applyPackageFilters(list, { query: "", category: "all", budget: "any", days: "any" })).toHaveLength(4);
+  });
+
+  it("counts active modal filters and validates URL values", () => {
+    expect(activeFilterCount({ category: "all", budget: "any", days: "any" })).toBe(0);
+    expect(activeFilterCount({ category: "heritage", budget: "15k-30k", days: "long" })).toBe(3);
+    expect(isBudgetId("15k-30k")).toBe(true);
+    expect(isBudgetId("cheap")).toBe(false);
+    expect(isDurationId("week")).toBe(true);
+    expect(isDurationId("")).toBe(false);
   });
 });
