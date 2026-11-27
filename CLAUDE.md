@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status & fix tracker
 
-**`PROJECT_AUDIT.md` is the source of truth for open issues and project status.** Every issue has an ID (`A-01`, `B-05`, …), severity, status and owner. When you fix something, update its row, the progress table and the changelog there. When you find something new, add it with the next free ID. As of 2026-11-18 every item that needs no client decision is done; G-02/N-10 (Resend email) and N-8 (multi-admin, all equal) are built on provisional answers awaiting client sign-off; the 5 remaining items (G-04, G-08, G-09, N-2, N-3) are blocked on client decisions (marked ⏸ in the file). Non-numbered launch checks (V-1…V-4) and client questions (Q-x) are in its §2; the `dev` → `master` release is PR #8.
+**`PROJECT_AUDIT.md` is the source of truth for open issues and project status.** Every issue has an ID (`A-01`, `B-05`, …), severity, status and owner. When you fix something, update its row, the progress table and the changelog there. When you find something new, add it with the next free ID. As of 2026-11-27 (`master` @ `dae1bde`, PRs #1–#19 merged) 98 of 103 items are done; several (G-02/N-10 Resend email, N-8 multi-admin with all admins equal, and the visible changes N-11…N-23) are built on provisional answers or await client sign-off; the 5 remaining items (G-04, G-08, G-09, N-2, N-3) are blocked on client decisions (marked ⏸ in the file). Non-numbered launch checks (V-1…V-5) and client questions (Q-x) are in its §2. Work now lands on `master` through feature-branch PRs.
 
 ## Commands
 
