@@ -135,7 +135,6 @@ export const en = {
     searchLabel: "Search packages",
     searchPlaceholder: "Search by place, temple or tour name",
     clearSearch: "Clear search",
-    sortLabel: "Sort by",
     sort: {
       recommended: "Recommended",
       "price-asc": "Price: low to high",

@@ -7,7 +7,6 @@ import type { TourPackage } from "@/lib/types";
 import { useApp } from "@/lib/context";
 import { useT } from "@/lib/i18n/use-t";
 import {
-  PACKAGE_SORTS,
   activeFilterCount,
   applyPackageFilters,
   categoryLabel,
@@ -24,8 +23,8 @@ import {
 } from "@/app/packages/package-utils";
 
 /**
- * /packages: search, category chips, a filter modal (trip type, budget, trip length, sort) and a
- * sort select over the public packages (loaded on the server). The current filters are mirrored
+ * /packages: search, category chips and a filter modal (trip type, budget, trip length, sort)
+ * over the public packages (loaded on the server). The current filters are mirrored
  * into the URL (?q=&category=&budget=&days=&sort=) with replaceState, so a filtered list can be
  * shared or reloaded; the page reads them back as the initial state.
  */
@@ -65,7 +64,7 @@ const styles: Record<string, React.CSSProperties> = {
   wrap: { maxWidth: 1200, margin: "0 auto" },
   toolbar: {
     display: "grid",
-    gridTemplateColumns: "minmax(0, 1fr) auto auto",
+    gridTemplateColumns: "minmax(0, 1fr) auto",
     gap: 12,
     alignItems: "end",
     marginBottom: 18,
@@ -105,20 +104,6 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    cursor: "pointer",
-  },
-  sortWrap: { display: "flex", flexDirection: "column", gap: 4 },
-  sortLabel: { fontSize: 12, fontWeight: 600, color: "var(--text2)" },
-  sort: {
-    height: 50,
-    padding: "0 14px",
-    borderRadius: 14,
-    border: "1.5px solid var(--input-border)",
-    background: "var(--card-bg)",
-    color: "var(--text)",
-    fontSize: 14,
-    fontWeight: 500,
-    fontFamily: "'Poppins', sans-serif",
     cursor: "pointer",
   },
   srOnly: {
@@ -258,6 +243,7 @@ const PackageExplorer: React.FC<PackageExplorerProps> = ({ packages, initialQuer
   const pills: { key: string; label: string; clear: Partial<State> }[] = [
     ...(budget !== "any" ? [{ key: "budget", label: t(`packagesPage.budget.${budget}`), clear: { budget: "any" as const } }] : []),
     ...(days !== "any" ? [{ key: "days", label: t(`packagesPage.duration.${days}`), clear: { days: "any" as const } }] : []),
+    ...(sort !== "recommended" ? [{ key: "sort", label: t(`packagesPage.sort.${sort}`), clear: { sort: "recommended" as const } }] : []),
   ];
 
   if (packages.length === 0) {
@@ -341,8 +327,6 @@ const PackageExplorer: React.FC<PackageExplorerProps> = ({ packages, initialQuer
           .pkgx-grid > :last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc((100% - 28px) / 2); }
         }
         @media (max-width: 640px) {
-          .pkgx-toolbar { grid-template-columns: auto minmax(0, 1fr) !important; }
-          .pkgx-toolbar > :first-child { grid-column: 1 / -1; }
           /* One row of chips that swipes sideways instead of four wrapped rows. */
           .pkgx-chips {
             flex-wrap: nowrap !important; overflow-x: auto; scroll-snap-type: x proximity; scroll-padding-inline: 24px; scrollbar-width: none;
@@ -396,20 +380,6 @@ const PackageExplorer: React.FC<PackageExplorerProps> = ({ packages, initialQuer
             <span>{t("packagesPage.filtersButton")}</span>
             {activeCount > 0 && <span key={activeCount} className="pkgx-filter-badge" aria-hidden="true">{activeCount}</span>}
           </button>
-          <div className="pkgx-sort-wrap" style={styles.sortWrap}>
-            <label htmlFor="pkgx-sort" style={styles.sortLabel}>{t("packagesPage.sortLabel")}</label>
-            <select
-              id="pkgx-sort"
-              className="pkgx-input"
-              value={sort}
-              onChange={(e) => update({ sort: isPackageSort(e.target.value) ? e.target.value : "recommended" })}
-              style={styles.sort}
-            >
-              {PACKAGE_SORTS.map((s) => (
-                <option key={s} value={s}>{t(`packagesPage.sort.${s}`)}</option>
-              ))}
-            </select>
-          </div>
         </form>
 
         <div style={styles.filterRow}>
@@ -451,7 +421,7 @@ const PackageExplorer: React.FC<PackageExplorerProps> = ({ packages, initialQuer
                 <CloseIcon />
               </button>
             ))}
-            <button type="button" className="pkgx-pill-clear" onClick={() => update({ category: "all", budget: "any", days: "any" })}>
+            <button type="button" className="pkgx-pill-clear" onClick={() => update({ category: "all", budget: "any", days: "any", sort: "recommended" })}>
               {t("packagesPage.filtersClearAll")}
             </button>
           </div>

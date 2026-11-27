@@ -172,16 +172,22 @@ test("/packages lists every public package with search, filter and sort", async 
   await expect(cards).toHaveCount(2);
   await filters.getByRole("button", { name: "All" }).click();
 
-  // Sort by price, high to low: Varanasi (₹8,999, the cheapest) ends up last.
-  await page.getByLabel("Sort by").selectOption("price-desc");
+  // Sort by price, high to low (in the filter modal): Varanasi (₹8,999, the cheapest) ends up last.
+  await page.getByRole("button", { name: "Filters" }).click();
+  const dialog = page.getByRole("dialog", { name: "Filter packages" });
+  await dialog.getByText("Price: high to low").click();
+  await dialog.getByRole("button", { name: /^Show \d+ packages$/ }).click();
   await expect(cards.last()).toContainText("Divine Varanasi & Prayagraj");
   await expect(page).toHaveURL(/sort=price-desc/);
+  // The sort shows as a removable pill.
+  await page.getByRole("group", { name: "Active filters" }).getByRole("button", { name: "Remove filter: Price: high to low" }).click();
+  await expect(page).not.toHaveURL(/sort=/);
 });
 
 test("/packages reads its filters from the URL", async ({ page }) => {
   await page.goto("/packages?q=temple&sort=price-asc");
   await expect(page.getByLabel("Search packages")).toHaveValue("temple");
-  await expect(page.getByLabel("Sort by")).toHaveValue("price-asc");
+  await expect(page.getByRole("group", { name: "Active filters" })).toContainText("Price: low to high");
   const cards = page.locator(".pkg-card");
   await expect(cards).toHaveCount(8); // 8 seed packages mention "temple", incl. the honeymoon ones (Royal Rajasthan, which admin.spec hides, is not one)
   await expect(cards.first()).toContainText("Divine Varanasi & Prayagraj");
