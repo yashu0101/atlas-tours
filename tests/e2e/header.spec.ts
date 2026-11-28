@@ -48,7 +48,7 @@ test("mobile menu shows the links and contact details, and closes", async ({ pag
   await expect(page.getByRole("button", { name: "Close menu" })).toBeFocused();
   await expect(menu.getByRole("link", { name: "Packages" })).toBeVisible();
   await expect(menu.getByRole("link", { name: /\+91 6388360881/ })).toHaveAttribute("href", "tel:+916388360881");
-  await expect(menu.getByRole("link", { name: /info@atlastours\.in/ })).toHaveAttribute("href", "mailto:info@atlastours.in");
+  await expect(menu.getByRole("link", { name: /atlastourandtravels01@gmail\.com/ })).toHaveAttribute("href", "mailto:atlastourandtravels01@gmail.com");
   await expect(menu.getByRole("link", { name: /WhatsApp/ })).toHaveAttribute("href", /wa\.me\/916388360881/);
   await expect(page.locator("body")).toHaveCSS("overflow", "hidden");
 

@@ -5,7 +5,7 @@ export const SITE_CONFIG: SiteConfig = {
   phone: "+916388360881",
   whatsapp: "916388360881",
   // C-09: public email pending client confirmation — change only this line.
-  email: "info@atlastours.in",
+  email: "atlastourandtravels01@gmail.com",
   address: "Hotel Ganga Imperial, Tilamapur, Varanasi, Rustampur, Uttar Pradesh 221112",
   tagline: "Spiritual Journeys, Lifetime Memories",
   established: 1983,

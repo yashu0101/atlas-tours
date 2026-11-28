@@ -44,7 +44,7 @@ In **development** every var is optional and the fallbacks below apply. In **pro
 | `ADMIN_PASSWORD_HASH` | unset | optional, preferred | bcrypt hash; wins over `ADMIN_PASSWORD` |
 | `SEED_SECRET` | `atlas-seed-2024` | required to use `/api/seed` | guards `/api/seed` |
 | `SESSION_VERSION` | `"1"` | optional | embedded in session tokens; change it to log every admin out |
-| `NEXT_PUBLIC_SITE_URL` | `https://atlastours.in` | should be set (domain unconfirmed) | `metadataBase`, canonical, OG, sitemap, robots |
+| `NEXT_PUBLIC_SITE_URL` | `https://atlastravelvns.com` | set to `https://atlastravelvns.com` (live since 2026-11-27) | `metadataBase`, canonical, OG, sitemap, robots |
 | `JSON_DB_PATH` | `data/db.json` | — (JSON backend only) | overrides the JSON file path; resolved on every call; used by tests |
 | `RESEND_API_KEY` / `NOTIFY_FROM` | unset (no emails) | needed for emails | both set → emails via Resend (G-02/N-10); `NOTIFY_FROM` is a verified sender, e.g. `Atlas Tours <bookings@domain>` |
 | `NOTIFY_EMAIL` | unset | needed for owner alerts | owner address(es), comma-separated; without it only customer emails are sent |
@@ -156,7 +156,7 @@ Images (N-9): public components render images through `src/components/SmartImage
 
 ### Contact info, routes and colours (P4)
 
-- **Contact details come only from `SITE_CONFIG` / `PHONE_DISPLAY` in `src/lib/config.ts`** — `tests/unit/site-config.test.ts` fails if a component hardcodes the phone or email. The email `info@atlastours.in` is provisional (C-09, see `CLIENT_QUESTIONS.md`). Footer social links come from `SOCIAL_LINKS` in the same file (guessed handles, Q-9).
+- **Contact details come only from `SITE_CONFIG` / `PHONE_DISPLAY` in `src/lib/config.ts`** — `tests/unit/site-config.test.ts` fails if a component hardcodes the phone or email. The email is `atlastourandtravels01@gmail.com` (C-09; `info@atlastours.in` was dropped because that domain is not ours). Footer social links come from `SOCIAL_LINKS` in the same file (guessed handles, Q-9).
 - **Our Team** (N-12, `Team.tsx`, after Reviews) is fixed in code: members in `src/lib/team.ts` (optional `name` — role is the heading while unset; photo-beside-text rows, alternating sides), photos in `public/images/team/`. **UPI payment** details come only from `UPI_CONFIG` in `config.ts` (`UpiPayCard.tsx`, shown only in per-booking mode (amount + reference) in the `/track` pay panel (`PaymentPanel.tsx`); the Contact section no longer shows a UPI card; manual payment, not G-09).
 - **Package listing `/packages` (N-14):** server page + `PackageExplorer.tsx` (search, category chips, sort; state mirrored to `?q=&category=&sort=` via `replaceState`). Package cards are one component, `PackageCard.tsx`, used by the home section, the listing and the detail page's "More packages" row — change cards there. Search/sort helpers live in `package-utils.ts`.
 - Detail routes: `/packages/[id]` (with `BookingForm` → `/api/book`) and `/blog/[id]`, both server components that `notFound()` on hidden/inactive items and reuse the home chrome. `Header`/`Footer` turn section links into `/#x` off the home page via `usePathname()`. The sitemap lists both.

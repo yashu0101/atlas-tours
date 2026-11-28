@@ -18,13 +18,13 @@ The email notifications (G-02 / N-10) and multiple admin logins (N-8) are built.
 
 | # | Question | Current provisional choice |
 |---|---|---|
-| C-09 | Which email is correct for the website: **info@atlastours.in** or **atlastourandtravels01@gmail.com**? | **(provisional)** `info@atlastours.in` everywhere, from `SITE_CONFIG` in `src/lib/config.ts` |
+| C-09 | Which email is correct for the website: **info@atlastours.in** or **atlastourandtravels01@gmail.com**? | ✅ **Answered (2026-11-28):** `atlastourandtravels01@gmail.com` everywhere, from `SITE_CONFIG` in `src/lib/config.ts` — atlastours.in is not the client's domain and atlastravelvns.com has no mailbox yet |
 | C-09 | Is **+91 6388360881** the right phone *and* WhatsApp number? | Kept as is |
 | Q-9 | What are your real **Facebook, Instagram, YouTube and X (Twitter)** pages? The footer icons currently link to `…/atlastours`, which were guessed and may belong to someone else. Send the links, or tell us which to remove. | **(provisional)** guessed links kept; change or remove them in `SOCIAL_LINKS` in `src/lib/config.ts` |
 | Q-11 | **Srinagar–Sonamarg–Gulmarg brochure:** the 3★ Budget rate for **12 pax is ₹13,900**, higher than for 10 pax (₹12,700) — every other category gets cheaper with more people. Is ₹13,900 a typo (₹12,400?)? Should **extra bed and child-without-bed** be bookable online, or quoted on the call? | **(provisional)** copied as printed; extra bed / child rates are shown on the package page but not added to the online estimate. Editable in Admin → Packages → Pricing options |
 | Q-10 | **Package brochures:** the **Odisha** brochure has no price or "package includes" — what is the price per person, and what is included (hotel, meals, Chilika boat ride, entry tickets)? For **both** tours, what is **not included** (we listed lunch/dinner, personal expenses, travel to the start city for Odisha, the optional Udaipur boat ride)? Is the Rajasthan price for 3★ or 4★, and is the desert-camp dinner included? | **(provisional)** Odisha keeps the old ₹11,999 placeholder and the Rajasthan brochure's standard inclusions; exclusions written from what the brochures leave out. All editable in Admin → Packages |
 | Q-7 | Correct numbers for the stats on the home page: happy travellers, destinations, years of experience, trips completed | **(provisional)** The top banner and the counter section now show the same numbers: 500+ travellers, **10+ destinations** (they used to say 10+ and 50+), 10+ years, 1000+ trips. The "Tour Packages" number now counts the packages actually on the site (3 today) instead of "15+" |
-| Q-2 | Production domain (used for canonical links, sharing previews, sitemap) | Falls back to `https://atlastours.in` |
+| Q-2 | ~~Production domain (used for canonical links, sharing previews, sitemap)~~ | ✅ **Answered:** https://atlastravelvns.com (live 2026-11-27) |
 
 ## Pricing and booking
 
