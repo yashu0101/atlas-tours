@@ -3,7 +3,7 @@ import type { FAQ } from "./types";
 
 // TODO: confirm the production domain with the client before launch.
 // Set NEXT_PUBLIC_SITE_URL in the deployment environment to override.
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://atlastours.in").replace(/\/+$/, "");
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://atlastravelvns.com").replace(/\/+$/, "");
 
 export const SITE_TITLE = `${SITE_CONFIG.name} | Spiritual Journeys Across India`;
 
